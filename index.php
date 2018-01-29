@@ -38,15 +38,15 @@
 	
 		<!--BODY-->
 		<div class="container-fluid">
-			<p>List of Views:</p>
-			<p><a href="application_builder.php">Application Builder (Faculty)</a></p>
-			<p><a href="application_signature.php">Application Signature (Head of Chair)</a></p>
+			<p>List of Views(Use CAS login to limit which views are available to which users):</p>
+			<p><a href="application_builder.php">Application Builder (Faculty- CANNOT BE DEPARTMENT CHAIR)</a></p>
+			<p><a href="application_signature.php">Application Signature (Department chair- CANNOT BE SAME AS APPLICANT)</a></p>
 			<p><a href="application_confirmation.php">Application Confirmation (Dr. Metro-Roland)</a></p>
-			<p><a href="application_viewer.php">Application Viewer (Committee members )</a></p>
-			<p><a href="follow_up_report_builder.php">Follow-up Report Builder (Faculty)</a></p>
+			<p><a href="application_viewer.php">Application Viewer (Committee members & Dr. Metro-Roland)</a></p>
+			<p><a href="follow_up_report_builder.php">Follow-up Report Builder (Faculty- MUST BE SAME AS APPLICANT)</a></p>
 			<p><a href="follow_up_report_confirmation.php">Follow-up Report Confirmation (Billy)</a></p>
-			<p><a href="follow_up_report_viewer.php">Follow-up Report Viewer (?)</a></p>
-			<p><a href="administrator.php">Administrator (Jon)</a></p>
+			<p><a href="follow_up_report_viewer.php">Follow-up Report Viewer (Billy & Dr. Metro-Roland)</a></p>
+			<p><a href="administrator.php">Administrator(Jon)</a></p>
 		</div>
 		<!--BODY-->
 	
