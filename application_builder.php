@@ -473,7 +473,6 @@
 			}
 			$scope.remInput = function() {
 				$scope.bitems.splice($scope.bitems.length - 1, 1);
-				$scope.bitems.splice($scope.bitems.length - 1, 1);
 			}
 			$scope.getTotal = function(){
 				var total = 0;
