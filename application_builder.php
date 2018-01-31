@@ -269,21 +269,24 @@
 				<div class="row"><div class="col-md-1"></div>
 					<p class="title" style="font-size: 18px !important;">Budget:(please separate room and board calculating per diem)</p>
 				<div class="col-md-1"></div></div>
-				<div class="row"><div class="col-md-1"></div>
+				<div class="row"><div class="col-md-3"></div>
 					<div class="col-md-2">
 						<p class="title" style="font-size: 16px !important;">Expense:</p>
 					</div>
 					<div class="col-md-2">
+						<p class="title" style="font-size: 16px !important;">Comments:</p>
+					</div>
+					<div class="col-md-2">
 						<p class="title" style="font-size: 16px !important;">Amount:</p>
 					</div>
-					<div class="col-md-1"></div>
+					<div class="col-md-3"></div>
 				</div>
 				<div ng-controller="budget">
-					<div class="row">
-						<div class="col-md-1"></div>
+					<div class="row" ng-repeat="bitem in bitems">
+						<div class="col-md-3"></div>
 						<div class="col-md-2">
 							<div class="form-group">
-								<select name="cars" class="form-control" name="{{expense.id}}" ng-repeat="expense in expenses" required />
+								<select name="cars" class="form-control" name="{{bitem.ex}}" required />
 									<option value="Air Travel">Air Travel</option>
 									<option value="Ground Travel">Ground Travel</option>
 									<option value="Hotel">Hotel</option>
@@ -293,24 +296,33 @@
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
-								<input type="text" class="form-control" name="{{amount.id}}" ng-model="amount.val" ng-repeat="amount in amounts" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<input type="text" class="form-control" name="{{bitem.com}}"  required />
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group">
+								<input type="text" class="form-control" name="{{bitem.am}}" ng-model="bitem.val" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
-						<div class="col-md-1">
+						<div class="col-md-3"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-5"></div>
+						<div class="col-md-2">
 							<i class="fa fa-plus-circle fa-2x" style="color: blue !important;" aria-hidden="true" ng-click="addInput()"></i>
 							<i class="fa fa-minus-circle fa-2x" style="color: red !important;" aria-hidden="true" ng-click="remInput()"></i>
 						</div>
-						<div class="col-md-6"></div>
+						<div class="col-md-5"></div>
 					</div>
-					<div class="row"><div class="col-md-1"></div>
-						<div class="col-md-2">
+					<div class="row"><div class="col-md-5"></div>
+						<div class="col-md-1">
 							<p class="title" style="font-size: 16px !important;">Total:</p>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-1">
 							<p class="title" style="font-size: 16px !important;">${{ getTotal() }}</p>
 						</div>
-						<div class="col-md-1"></div>
+						<div class="col-md-5"></div>
 					</div>
 				</div>
 				<br><br>
@@ -447,28 +459,26 @@
 
 		
 		myApp.controller('budget', ['$scope', function($scope){
-			$scope.expenses = [];
-			$scope.amounts = [];
+			$scope.bitems = [];
 			$scope.addInput = function() {
-				expenses = 'expense' + ($scope.expenses.length + 1);
-				amounts = 'amount' + ($scope.amounts.length + 1);
-				$scope.expenses.push({
-					name: expenses
-				})       
-				$scope.amounts.push({
-					name: amounts,
-					id: amounts,
+				expenses = 'expense' + ($scope.bitems.length + 1);
+				com = 'comm' + ($scope.bitems.length + 1);
+				amounts = 'amount' + ($scope.bitems.length + 1);    
+				$scope.bitems.push({
+					ex: expenses,
+					com: com,
+					am: amounts,
 					val: 0
 				})       
 			}
 			$scope.remInput = function() {
-				$scope.expenses.splice($scope.expenses.length - 1, 1);
-				$scope.amounts.splice($scope.amounts.length - 1, 1);
+				$scope.bitems.splice($scope.bitems.length - 1, 1);
+				$scope.bitems.splice($scope.bitems.length - 1, 1);
 			}
 			$scope.getTotal = function(){
 				var total = 0;
-				for(var i = 0; i < $scope.amounts.length; i++){
-					total += parseFloat($scope.amounts[i]["val"]);
+				for(var i = 0; i < $scope.bitems.length; i++){
+					total += parseFloat($scope.bitems[i]["val"]);
 				}
 				return total;
 			}
