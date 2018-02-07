@@ -1,3 +1,15 @@
+<?php
+	/*Debug user validation
+	TODO: replace with actual user validation using CAS!!!*/
+	include('functions/debugvalidate.php');
+	
+	/*Get DB connection*/
+	include "functions/database.php";
+	$conn = connection();
+	
+	/*Verification functions*/
+	include "functions/verification.php";
+?>
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -38,18 +50,95 @@
 	
 		<!--BODY-->
 		<div class="container-fluid">
-			<p>List of Views(Use CAS login to limit which views are available to which users):</p>
-			<p><a href="application_builder.php">Application Builder (Faculty- CANNOT BE DEPARTMENT CHAIR)</a></p>
-			<p><a href="application_signature.php">Application Signature (Department chair- CANNOT BE SAME AS APPLICANT)</a></p>
-			<p><a href="application_confirmation.php">Application Confirmation (Dr. Metro-Roland)</a></p>
-			<p><a href="application_viewer.php">Application Viewer (Committee members & Dr. Metro-Roland)</a></p>
-			<p><a href="follow_up_report_builder.php">Follow-up Report Builder (Faculty- MUST BE SAME AS APPLICANT)</a></p>
-			<p><a href="follow_up_report_confirmation.php">Follow-up Report Confirmation (Billy)</a></p>
-			<p><a href="follow_up_report_viewer.php">Follow-up Report Viewer (Billy & Dr. Metro-Roland)</a></p>
-			<p><a href="administrator.php">Administrator(Jon)</a></p>
+			<p>Your Views:</p>
+			<?php
+				/*Initialize a counter to track number of available views to this user*/
+				$viewCounter = 0;
+			
+				/*Verify user as faculty member in order to make an application*/
+				if($position == 'faculty')
+				{ 
+					$viewCounter++;
+			?>
+					<p><a href="application_builder.php">Application Builder</a></p>
+			<?php } ?>
+				
+			<?php
+				$totalApps = getNumberOfApplicationsToSign($conn, $email);
+				if($totalApps > 0)
+				{
+					$viewCounter++;
+			?>
+					<p><a href="application_signature.php">Application Signature (<?php echo $totalApps ?> to sign)</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as Applicant whos application has been approved*/
+				if(isApplicationApproved($conn, $broncoNetID))
+				{ 
+					$viewCounter++;
+			?>
+					<p><a href="follow_up_report_builder.php">Follow-up Report Builder</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as application approver to approve applications*/
+				if(isApplicationApprover($broncoNetID, $conn))
+				{
+					$viewCounter++;
+			?>
+					<p><a href="application_confirmation.php">Application Confirmation</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as committee member or application approver to see applications*/
+				if(isCommitteeMember($broncoNetID, $conn) || isApplicationApprover($broncoNetID, $conn))
+				{
+					$viewCounter++;
+			?>
+					<p><a href="application_viewer.php">Application Viewer</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as follow-up report approver to approve(and see) follow-up reports*/
+				if(isFollowUpReportApprover($broncoNetID, $conn))
+				{
+					$viewCounter++;
+			?>
+					<p><a href="follow_up_report_confirmation.php">Follow-up Report Confirmation</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as follow-up report approver or application approver to see follow-up reports*/
+				if(isFollowUpReportApprover($broncoNetID, $conn) || isApplicationApprover($broncoNetID, $conn))
+				{
+					$viewCounter++;
+			?>
+					<p><a href="follow_up_report_viewer.php">Follow-up Report Viewer</a></p>
+			<?php } ?>
+			
+			<?php 
+				/*Verify user as administrator to give link to admin view*/
+				if(isAdministrator($broncoNetID, $conn))
+				{
+					$viewCounter++;
+			?>
+					<p><a href="administrator.php">Administrator</a></p>
+			<?php } 
+			
+				if($viewCounter == 0) //no views available to this person
+				{
+					?>
+						<p>You do not have access to any views!</p>
+					<?php
+				}
+			?>
 		</div>
 		<!--BODY-->
 	
 	</body>
 	
 </html>
+<?php
+	$conn = null; //close connection
+?>
