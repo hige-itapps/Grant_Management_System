@@ -38,255 +38,246 @@
 	
 		<!--BODY-->
 		<div class="container-fluid">
-			<form enctype="multipart/form-data" ng-controller="uploadCtrl" class="form-horizontal" id="upF" target="#">
-				<!--APPLICANT INFO-->
-				<div class="row">
-					<center>
-					<p class="title">Applicant Information:</p>
-					</center>
-				</div>
-				<div class="row">
-					<div class="col-md-1"></div>
-				<!--NAME-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
-							<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" required />
-						</div>
-					</div>
-				<!--EMAIL-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputEmail"><p class="title" style="font-size: 18px !important;">Email Address:</p></label>
-							<input type="text" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" required />
-						</div>
-					</div>
-				<!--DEPARTMENT-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputDept"><p class="title" style="font-size: 18px !important;">Department:</p></label>
-							<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Department" required />
-						</div>
-					</div>
-				<!--DEPT MAIL STOP-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputDeptM"><p class="title" style="font-size: 18px !important;">Department Mail Stop:</p></label>
-							<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Department Mail Stop" required />
-						</div>
-					</div>
-				<!--TRAVEL DATES-->
-					<div class="col-md-1">
-						<div class="form-group">
-							<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Travel From:</p></label>
-							<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required />
-						</div>
-					</div>
-					<div class="col-md-1">
-						<div class="form-group">
-							<label for="inputFrom"><p class="title" style="font-size: 18px !important;">To:</p></label>
-							<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required />
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<br><br>
-				<!--RESEARCH INFO-->
-				<div class="row">
-					<center>
-					<p class="title">Research Information:</p>
-					</center>
-				</div>
-				<div class="row">
-					<div class="col-md-1"></div>
-				<!--TITLE-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputRName"><p class="title" style="font-size: 18px !important;">Title of Research:</p></label>
-							<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title" required />
-						</div>
-					</div>
-				<!--ACTIVITY DATES-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Activity Date From:</p></label>
-							<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" required />
-						</div>
-					</div>
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputTo"><p class="title" style="font-size: 18px !important;">Activity Date To:</p></label>
-							<input type="date" class="form-control" id="inputATo" name="inputATo" required />
-						</div>
-					</div>
-				<!--DESTINATION-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputDest"><p class="title" style="font-size: 18px !important;">Destination:</p></label>
-							<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" required />
-						</div>
-					</div>
-				<!--AMOUNT REQ-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputAR"><p class="title" style="font-size: 18px !important;">Amount Requested:</p></label>
-							<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Amount Requested" onkeypress='return (event.which >= 48 && event.which <= 57) 
-							|| event.which == 8 || event.which == 46' required />
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<!--PURPOSE-->
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="form-group">
-							<label for="inputAR<p class="title" style="font-size: 18px !important;">Purpose of Travel:</p>
-						</div>
-					</div>
-					
-				</div><div class="row"><div class="col-md-1"></div>
-					<div class="col-md-1">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pr1" type="checkbox" value="Research">Research</label></p>
-						</div>
-					</div>
-					<div class="col-md-1">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pr2" type="checkbox" value="Conference">Conference</label></p>
-						</div>
-					</div>
-					<div class="col-md-1">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" value="Creative Activity">Creative Activity</label></p>
-						</div>
-					</div>
-					<div class="col-md-7">
-						<div class="form-group">
-							<input type="text" class="form-control" id="pr4" name="pr4" placeholder="Other, explain..." required />
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<!--OTHER FUNDING, PREVIOUS IEFDF APPS-->
-					<div class="col-md-1"></div>
-					<div class="col-md-8">
-						<div class="form-group">
-							<input type="text" class="form-control" id="q1" name="q1" placeholder="Have you applied or will you apply for funding from other internal or external sources?" required />
-						</div>
-					</div>
-					<div class="col-md-2">
-						<div class="form-group">
-							<input type="text" class="form-control" id="eS" name="eS" placeholder="How much?" onkeypress='return (event.which >= 48 && event.which <= 57) 
-							|| event.which == 8 || event.which == 46' required />
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<!--OTHER FUNDING, PREVIOUS IEFDF APPS-->
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="form-group">
-							<input type="text" class="form-control" id="q2" name="q2" placeholder="Have you applied for an IEFDF award previously? When?*" required />
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<div class="col-md-1"></div>
-					<div class="col-md-10">
-					<center>
-						<p class="title" style="font-size: 12px !important;">* IEFDF Recipients must wait a year before submitting a new application.</p> 
-					</center>
-					</div>
-				<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<div class="col-md-1"></div>
-					<div class="col-md-10">
-					<center>
-						<p class="title" style="font-size: 14px !important;">Please ensure to include supporting documentation: Conference letter of acceptance; invitation letter for research or creative activity, etc. in 1 PDF, using the upload button below.</p> 
-					</center>
-					</div>
-				<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-				<!--PROPOSAL SUMMARY-->
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="form-group">
-							<textarea class="form-control" id="props" name="props" placeholder="Proposal summary, MAX 150 words" rows=10 required /></textarea>
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row"><div class="col-md-1"></div>
-					<p class="title" style="font-size: 18px !important;">Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</p>
-				<div class="col-md-1"></div></div>
-				<div class="row">
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pg1" type="checkbox" value="">
-							Support for international collaborative research and creative activities, or for international research, including archival and field work.</label></p>
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pg2" type="checkbox" value="">
-							Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label></p>
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pg3" type="checkbox" value="">
-							Support for attendance at international conferences, seminars or workshops.</label></p>
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row">
-					<div class="col-md-1"></div>
-					<div class="col-md-10">
-						<div class="checkbox">
-							<p class="title" style="font-size: 14px !important;"><label><input name="pg4" type="checkbox" value="">
-							Support for scholarly international travel in order to enrich international knowledge, which will directly
-							contribute to the internationalization of the WMU curricula.</label></p>
-						</div>
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<div class="row"><div class="col-md-1"></div>
-					<p class="title" style="font-size: 18px !important;">Budget:(please separate room and board calculating per diem)</p>
-				<div class="col-md-1"></div></div>
-				<div class="row"><div class="col-md-3"></div>
-					<div class="col-md-2">
-						<p class="title" style="font-size: 16px !important;">Expense:</p>
-					</div>
-					<div class="col-md-2">
-						<p class="title" style="font-size: 16px !important;">Comments:</p>
-					</div>
-					<div class="col-md-2">
-						<p class="title" style="font-size: 16px !important;">Amount:</p>
-					</div>
-					<div class="col-md-3"></div>
-				</div>
+			<form enctype="multipart/form-data" class="form-horizontal" id="submitApp" name="submitApp" method="POST" action="db.php">
 				<div ng-controller="budget">
+					<!--APPLICANT INFO-->
+					<div class="row">
+						<center>
+						<p class="title">Applicant Information:</p>
+						</center>
+					</div>
+					<div class="row">
+						<div class="col-md-1"></div>
+					<!--NAME-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
+								<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" required />
+							</div>
+						</div>
+					<!--EMAIL-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputEmail"><p class="title" style="font-size: 18px !important;">Email Address:</p></label>
+								<input type="text" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" required />
+							</div>
+						</div>
+					<!--DEPARTMENT-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputDept"><p class="title" style="font-size: 18px !important;">Department:</p></label>
+								<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Department" required />
+							</div>
+						</div>
+					<!--DEPT MAIL STOP-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputDeptM"><p class="title" style="font-size: 18px !important;">Department Mail Stop:</p></label>
+								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Department Mail Stop" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								|| event.which == 8 || event.which == 46' required />
+							</div>
+						</div>
+					<!--TRAVEL DATES-->
+						<div class="col-md-1">
+							<div class="form-group">
+								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Travel From:</p></label>
+								<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required />
+							</div>
+						</div>
+						<div class="col-md-1">
+							<div class="form-group">
+								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">To:</p></label>
+								<input type="date" class="form-control" id="inputTTo" name="inputTTo" onchange="TDate()" required />
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<br><br>
+					<!--RESEARCH INFO-->
+					<div class="row">
+						<center>
+						<p class="title">Research Information:</p>
+						</center>
+					</div>
+					<div class="row">
+						<div class="col-md-1"></div>
+					<!--TITLE-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputRName"><p class="title" style="font-size: 18px !important;">Title of Research:</p></label>
+								<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title" required />
+							</div>
+						</div>
+					<!--ACTIVITY DATES-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Activity Date From:</p></label>
+								<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" onchange="ADateF()"  required />
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputTo"><p class="title" style="font-size: 18px !important;">Activity Date To:</p></label>
+								<input type="date" class="form-control" id="inputATo" name="inputATo" onchange="ADateT()"  required />
+							</div>
+						</div>
+					<!--DESTINATION-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputDest"><p class="title" style="font-size: 18px !important;">Destination:</p></label>
+								<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" required />
+							</div>
+						</div>
+					<!--AMOUNT REQ-->
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="inputAR"><p class="title" style="font-size: 18px !important;">Amount Requested:</p></label>
+								<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Amount Requested" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								|| event.which == 8 || event.which == 46' required />
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+					<!--PURPOSE-->
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="form-group">
+								<label for="inputAR<p class="title" style="font-size: 18px !important;">Purpose of Travel:</p>
+							</div>
+						</div>
+						
+					</div><div class="row"><div class="col-md-1"></div>
+						<div class="col-md-1">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr1" type="checkbox" value="Research">Research</label></p>
+							</div>
+						</div>
+						<div class="col-md-1">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr2" type="checkbox" value="Conference">Conference</label></p>
+							</div>
+						</div>
+						<div class="col-md-1">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" value="Creative Activity">Creative Activity</label></p>
+							</div>
+						</div>
+						<div class="col-md-5">
+							<div class="form-group">
+								<input type="text" class="form-control" id="pr4" name="pr4" placeholder="Other, explain..." />
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group">
+								<input type="text" class="form-control" id="eS" name="eS" placeholder="Other funding? How much?" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								|| event.which == 8 || event.which == 46' />
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+					<!--OTHER FUNDING, PREVIOUS IEFDF APPS-->
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="form-group">
+								<input type="text" class="form-control" id="q2" name="q2" placeholder="Have you applied for an IEFDF award previously? When?*" required />
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+					<div class="col-md-1"></div>
+						<div class="col-md-10">
+						<center>
+							<p class="title" style="font-size: 12px !important;">* IEFDF Recipients must wait a year before submitting a new application.</p> 
+						</center>
+						</div>
+					<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+					<div class="col-md-1"></div>
+						<div class="col-md-10">
+						<center>
+							<p class="title" style="font-size: 14px !important;">Please ensure to include supporting documentation: Conference letter of acceptance; invitation letter for research or creative activity, etc. in 1 PDF, using the upload button below.</p> 
+						</center>
+						</div>
+					<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+					<!--PROPOSAL SUMMARY-->
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="form-group">
+								<textarea class="form-control" id="props" name="props" placeholder="Proposal summary, MAX 150 words" rows=10 required /></textarea>
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row"><div class="col-md-1"></div>
+						<p class="title" style="font-size: 18px !important;">Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</p>
+					<div class="col-md-1"></div></div>
+					<div class="row">
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg1" type="checkbox" value="">
+								Support for international collaborative research and creative activities, or for international research, including archival and field work.</label></p>
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg2" type="checkbox" value="">
+								Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label></p>
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg3" type="checkbox" value="">
+								Support for attendance at international conferences, seminars or workshops.</label></p>
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-1"></div>
+						<div class="col-md-10">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg4" type="checkbox" value="">
+								Support for scholarly international travel in order to enrich international knowledge, which will directly
+								contribute to the internationalization of the WMU curricula.</label></p>
+							</div>
+						</div>
+						<div class="col-md-1"></div>
+					</div>
+					<div class="row"><div class="col-md-1"></div>
+						<p class="title" style="font-size: 18px !important;">Budget:(please separate room and board calculating per diem)</p>
+					<div class="col-md-1"></div></div>
+					<div class="row"><div class="col-md-3"></div>
+						<div class="col-md-2">
+							<p class="title" style="font-size: 16px !important;">Expense:</p>
+						</div>
+						<div class="col-md-2">
+							<p class="title" style="font-size: 16px !important;">Comments:</p>
+						</div>
+						<div class="col-md-2">
+							<p class="title" style="font-size: 16px !important;">Amount:</p>
+						</div>
+						<div class="col-md-3"></div>
+					</div>
 					<div class="row" ng-repeat="bitem in bitems">
 						<div class="col-md-3"></div>
 						<div class="col-md-2">
 							<div class="form-group">
-								<select name="cars" class="form-control" name="{{bitem.ex}}" required />
+								<select class="form-control" name="{{bitem.ex}}" required />
 									<option value="Air Travel">Air Travel</option>
 									<option value="Ground Travel">Ground Travel</option>
 									<option value="Hotel">Hotel</option>
@@ -324,50 +315,43 @@
 						</div>
 						<div class="col-md-5"></div>
 					</div>
-				</div>
-				<br><br>
-				<!--UPLOAD DOCS FORM-->
-				<div class="row">
-					<div class="col-md-1"></div>
-					<div class="col-md-5">
-							<label for="fD"><p class="title" style="font-size: 18px !important;">PROPOSAL NARRATIVE:</p></label><input type="file" file-model="fD" name="fD" id="fD" required accept="application/pdf" />
-					</div>
-					<div class="col-md-5">
-						<label for="sD"><p class="title" style="font-size: 18px !important;">SUPPORTING DOCUMENTS:</p></label><input type="file" file-model="sD" name="sD" id="sD" accept="application/pdf" />
-					</div>
-					<div class="col-md-1"></div>
-				</div>
-				<br><br>
-				<!--APPLICANT SIGNATURE-->
-				<div class="row">
-					<center>
-					<p class="title">Applicant E-Signature:</p>
-					</center>
-				</div>
-				<div class="row">
-					<div class="col-md-4"></div>
-				<!--NAME-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
-							<input type="text" class="form-control" id="inputASig" name="inputASig" placeholder="Enter Name" required />
+					<br><br>
+					<!--UPLOAD DOCS FORM-->
+					<div class="row">
+						<div class="col-md-1"></div>
+						<div class="col-md-5">
+								<label for="fD"><p class="title" style="font-size: 18px !important;">PROPOSAL NARRATIVE:</p></label><input type="file" name="fD" id="fD" required accept="application/pdf" />
 						</div>
-					</div>
-				<!--DATE-->
-					<div class="col-md-2">
-						<div class="form-group">
-							<label for="inputName"><p class="title" style="font-size: 18px !important;">Today's Date:</p></label>
-							<input type="date" class="form-control" id="inputASigD" name="inputASigD" required />
+						<div class="col-md-5">
+							<label for="sD"><p class="title" style="font-size: 18px !important;">SUPPORTING DOCUMENTS:</p></label><input type="file" name="sD" id="sD" accept="application/pdf" />
 						</div>
+						<div class="col-md-1"></div>
 					</div>
-					<div class="col-md-4"></div>
-				</div>
-				<div class="row">
-					<div class="col-md-5"></div>
-					<div class="col-md-2">
-						<button class="styled-button-3" id="sub" style="background-color: green !important; border-color: green !important; margin-top: 10px;" ng-click="uploadFile()">SUBMIT APPLICATION</button>
+					<br><br>
+					<!--APPLICANT SIGNATURE-->
+					<div class="row">
+						<center>
+						<p class="title">Applicant E-Signature:</p>
+						</center>
 					</div>
-					<div class="col-md-5"></div>
+					<div class="row">
+						<div class="col-md-4"></div>
+					<!--NAME-->
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
+								<input type="text" class="form-control" id="inputASig" name="inputASig" placeholder="Enter Name" required />
+							</div>
+						</div>
+						<div class="col-md-4"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-5"></div>
+						<div class="col-md-2">
+							<input type="submit" class="styled-button-3" id="sub" name="sub" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="SUBMIT APPLICATION" />
+						</div>
+						<div class="col-md-5"></div>
+					</div>
 				</div>
 				<center>
 					<?php
@@ -375,7 +359,7 @@
 						{
 							if($_GET["status"] == "success")
 							{
-								echo '<br><span class="lt" style="color: green; font-size: 22px;" id="smsg"><b>File(s) Uploaded.</b></span>';
+								echo '<br><span class="lt" style="color: green; font-size: 22px;" id="smsg"><b>Application Submitted.</b></span>';
 							}
 						}
 					?>
@@ -392,7 +376,7 @@
 		
 		var myApp = angular.module('HIGE-app', []);
 
-		myApp.directive('fileModel', ['$parse', function ($parse) {
+		/*myApp.directive('fileModel', ['$parse', function ($parse) {
 			return {
 			restrict: 'A',
 			link: function(scope, element, attrs) {
@@ -451,11 +435,11 @@
 						console.dir(fileS);
 						fileUpload.uploadFileToUrl(fileS, uploadUrl);
 					}
-					$window.location.href = 'index.php?status=success';
+					$window.location.href = 'application_builder.php?status=success';
 				}
 		   };
 
-		}]);
+		}]);*/
 
 		
 		myApp.controller('budget', ['$scope', function($scope){
@@ -491,6 +475,59 @@
 				if(document.getElementById("smsg") != null)
 					$("#smsg").remove();
 		}, 1000);
+		
+		/* AJAX */
+		/*$(document).ready(function() {
+			$('#submitApp').submit(function() {
+				var form = $('#submitApp');
+				$.ajax({
+					type: "POST",
+					url: 'db.php',
+					data: form.serialize(),
+					success: function( response ) {
+						console.log( response );
+						window.location.replace('application_builder.php?status=success');
+					},
+					error: function( response ) {
+						console.log( response );
+					}
+				});
+			});
+		});*/
+		/* FIN AJAX */
+		/*TRAVEL DATE*/
+		function TDate() {
+			var ToDate = document.getElementById("inputTTo").value;
+			var FromDate = document.getElementById("inputTFrom").value;
+
+			if (new Date(ToDate).getTime() < new Date(FromDate).getTime()) {
+				$('#inputTTo').val("");
+				return false;
+			}
+			return true;
+		}
+		/*ACTIVITY DATE*/
+		function ADateF() {
+			var ToDate = document.getElementById("inputAFrom").value;
+			var FromDate = document.getElementById("inputTFrom").value;
+
+			if (new Date(ToDate).getTime() < new Date(FromDate).getTime()) {
+				$('#inputAFrom').val("");
+				return false;
+			}
+			return true;
+		}
+		function ADateT() {
+			var ToDate = document.getElementById("inputATo").value;
+			var FromDate = document.getElementById("inputTTo").value;
+
+			if (new Date(ToDate).getTime() > new Date(FromDate).getTime()) {
+				$('#inputATo').val("");
+				return false;
+			}
+			return true;
+		}
+		/*FIN DATES*/
 	</script>
 	<!-- End Script -->
 </html>
