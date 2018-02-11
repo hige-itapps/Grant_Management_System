@@ -87,7 +87,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="application_confirmation.php">Application Confirmation</a></p>
+					<p><a href="app_list.php">Application Confirmation</a></p>
 			<?php } ?>
 			
 			<?php 

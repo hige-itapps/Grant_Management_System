@@ -59,7 +59,7 @@
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputEmail"><p class="title" style="font-size: 18px !important;">Email Address:</p></label>
-								<input type="text" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" required />
+								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" required />
 							</div>
 						</div>
 					<!--DEPARTMENT-->
@@ -163,37 +163,25 @@
 								<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" value="Creative Activity">Creative Activity</label></p>
 							</div>
 						</div>
-						<div class="col-md-5">
-							<div class="form-group">
-								<input type="text" class="form-control" id="pr4" name="pr4" placeholder="Other, explain..." />
+						<div class="col-md-1">
+							<div class="checkbox">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr4dummy" id="pr4dummy" type="checkbox" value="">Other, explain.</label></p>
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-6">
 							<div class="form-group">
-								<input type="text" class="form-control" id="eS" name="eS" placeholder="Other funding? How much?" onkeypress='return (event.which >= 48 && event.which <= 57) 
-								|| event.which == 8 || event.which == 46' />
-							</div>
-						</div>
-						<div class="col-md-1"></div>
-					</div>
-					<div class="row">
-					<!--OTHER FUNDING, PREVIOUS IEFDF APPS-->
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
-							<div class="form-group">
-								<input type="text" class="form-control" id="q2" name="q2" placeholder="Have you applied for an IEFDF award previously? When?*" required />
+								<input type="text" class="form-control" id="pr4" name="pr4" disabled="true" placeholder="Other, explain..." />
 							</div>
 						</div>
 						<div class="col-md-1"></div>
 					</div>
-					<div class="row">
-					<div class="col-md-1"></div>
+					<div class="row"><div class="col-md-1"></div>
 						<div class="col-md-10">
-						<center>
-							<p class="title" style="font-size: 12px !important;">* IEFDF Recipients must wait a year before submitting a new application.</p> 
-						</center>
+							<div class="form-group">
+								<input type="text" class="form-control" id="eS" name="eS" placeholder="Are you receiving other funding? Who is providing the funds? How much?" />
+							</div>
 						</div>
-					<div class="col-md-1"></div>
+						<div class="col-md-1"></div>
 					</div>
 					<div class="row">
 					<div class="col-md-1"></div>
@@ -287,7 +275,7 @@
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
-								<input type="text" class="form-control" name="{{bitem.com}}"  required />
+								<input type="text" class="form-control" name="{{bitem.com}}" placeholder="Explain..." required />
 							</div>
 						</div>
 						<div class="col-md-2">
@@ -463,7 +451,7 @@
 				for(var i = 0; i < $scope.bitems.length; i++){
 					total += parseFloat($scope.bitems[i]["val"]);
 				}
-				return total;
+				return (total).toFixed(2);
 			}
 		}]);
 		
@@ -528,6 +516,10 @@
 			return true;
 		}
 		/*FIN DATES*/
+		/*OTHER ACTIVITY CHECK*/
+		document.getElementById('pr4dummy').onchange = function() {
+			document.getElementById('pr4').disabled = !this.checked;
+		};
 	</script>
 	<!-- End Script -->
 </html>

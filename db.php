@@ -5,7 +5,7 @@
 	{
 		$file = $_FILES["fD"]["tmp_name"];
 		$doc = $_FILES["fD"]["name"];
-		$ftp = ftp_connect($settings["hostname"]) or die("Could not connect to $ftp_server");
+		$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
 		$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
 		ftp_pasv($ftp, true);
 		if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
@@ -24,7 +24,7 @@
 	{
 		$file = $_FILES["sD"]["tmp_name"];
 		$doc = $_FILES["sD"]["name"];
-		$ftp = ftp_connect($settings["hostname"]) or die("Could not connect to $ftp_server");
+		$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
 		$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
 		ftp_pasv($ftp, true);
 		if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
@@ -92,7 +92,7 @@
 			$conn = connection(); 
 			$sql = $conn->prepare("INSERT INTO applications VALUES (DEFAULT, :applicant, :date, :name, 
 				:dept, :dmail, :email, :rtitle, :tstart, :tend, :estart, :eend, :dest, :ar, :isr, :isc,
-				:isca, :iso, :of, :ps, :fg1, :fg2, :fg3, :fg4, :dpce, :dpcs, :apr)");
+				:isca, :iso, :of, :ps, :fg1, :fg2, :fg3, :fg4, :dpce, :dpcs, NULL)");
 			$sql->bindParam(':applicant', $dummyBNID);
 			$sql->bindParam(':date', $date);
 			$sql->bindParam(':name', $_POST["inputName"]);
@@ -119,11 +119,34 @@
 			$sql->bindParam(':fg4',$pr4);
 			$dpce = 'adw';
 			$dpcs = 'adq';
-			$dp = '1';
 			$sql->bindParam(':dpce', $dpce);
 			$sql->bindParam(':dpcs', $dpcs);
-			$sql->bindParam(':apr', $dp);
-			$sql->execute();
+			
+			
+			if ($sql->execute() === TRUE) {
+				$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
+				$sql->bindParam(':applicant', $dummyBNID);
+				$sql->execute();
+				$appID = $sql->fetchAll()[0][0];
+				$count = 1;
+				while(true) {
+					if(isset($_POST["amount" . $count])) {
+						$sql = $conn->prepare("INSERT INTO applications_budgets VALUES (DEFAULT, :appID, :con, :am, 
+							:com)");
+						$sql->bindParam(':appID', $appID);
+						$sql->bindParam(':con', $_POST["expense" . $count]);
+						$sql->bindParam(':com', $_POST["comm" . $count]);
+						$sql->bindParam(':am', $_POST["amount" . $count]);
+						$sql->execute();
+					}else{
+						break;
+					}
+					$count++;
+				}
+			} else {
+				header("Location: application_builder.php?status=failedI");
+			}
+			
 			header("Location: application_builder.php?status=success");
 		}
 		catch(Exception $e)
