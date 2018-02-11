@@ -95,6 +95,7 @@
 			
 			
 			
+			$applicant->id = $res[0][0];
 			$applicant->bnid = $res[0][1];
 			$applicant->name = $res[0][3];
 			$applicant->dateS = $res[0][2];
@@ -231,5 +232,39 @@
 			}
 		}
 	}
+	
+	/* APPROVE APPLICATION */
+	if(isset($_POST["approveA"]))
+		approveApplication(connection(), $_POST["appID"]);
+	function approveApplication($conn, $id)
+	{
+		if ($id != "") //valid email
+		{
+			/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+			$sql = $conn->prepare("UPDATE applications SET Approved = 1 WHERE ID = :id");
+			$sql->bindParam(':id', $id);
+			$sql->execute();
+			header("Location: app_list.php");
+		}
+	}
+	
+	/* DENY APPLICATION */
+	if(isset($_POST["denyA"]))
+		denyApplication(connection(), $_POST["appID"]);
+	function denyApplication($conn, $id)
+	{
+		if ($id != "") //valid email
+		{
+			/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+			$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
+			$sql->bindParam(':id', $id);
+			$sql->execute();
+			header("Location: app_list.php");
+		}
+	}
+	
+	
+	
+	
 	
 ?>
