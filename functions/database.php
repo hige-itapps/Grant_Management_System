@@ -1,19 +1,47 @@
 <?php
 	include "config.php"; //allows us to use configurations
 
+	
+	/* HOLDS INFO ABOUT APPLICANT - SELF EXPLANATORY */
+	class Applicant{
+		public $bnid;
+		public $name;
+		public $dateS;
+		public $dept;
+		public $deptM;
+		public $email;
+		public $rTitle;
+		public $tStart;
+		public $tEnd;
+		public $aStart;
+		public $aEnd;
+		public $dest;
+		public $aReq;
+		public $pr1;
+		public $pr2;
+		public $pr3;
+		public $pr4;
+		public $oF;
+		public $pS;
+		public $fg1;
+		public $fg2;
+		public $fg3;
+		public $fg4;
+		public $deptCE;
+		public $budget;
+	}
+	
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
 		function connection()
 		{
-			$configData = parseConfig('config.ini');
-			$site_url = $configData['site_url'];
-			$database_name = $configData['database_name'];
-			$database_username = $configData['database_username'];
-			$database_password = $configData['database_password'];
 			
 			try 
 			{
-				$conn = new PDO("mysql:host=" . $site_url . ";dbname=" . $database_name . ";charset=utf8", $database_username, $database_password); //connect to DB using config settings
+				$settings = parse_ini_file('config.ini');
+				//var_dump($settings);
+				$conn = new PDO("mysql:host=" . $settings["hostname"] . ";dbname=" . $settings["database_name"] . ";charset=utf8", $settings["database_username"], 
+					$settings["database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 				// set the PDO error mode to exception
 				$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				$conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
@@ -56,29 +84,89 @@
 			return $res;
 		}
 	}
-	
-	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
-	if(!function_exists('getApplications')) {
-		function getApplications($conn, $user)
+	/* Returns array of all applications */
+	if(!function_exists('getAllApplicantions')) {
+		function getAllApplicantions($conn)
 		{
-			if ($user != "") //valid username
-			{
-				/* Select only applications that this user has has submitted */
-				$sql = $conn->prepare("Select * FROM applications WHERE Applicant = :username");
-				$sql->bindParam(':username', $user);
-			}
-			else //no username
-			{
-				/* Select all applications */
-				$sql = $conn->prepare("Select * FROM applications");
-			}
-			/* run the prepared query */
+			/* Prepare & run the query */
+			$sql = $conn->prepare("Select ID, Applicant, Name, Date FROM applications WHERE Approved is NULL");
 			$sql->execute();
 			$res = $sql->fetchAll();
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
 			return $res;
+		}
+	}
+	
+	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
+	if(!function_exists('getApplications')) {
+		function getApplications($conn, $id)
+		{
+			$applicant = new Applicant();
+			if ($id != "") //valid username
+			{
+				/* Select only applications that this user has has submitted */
+				$sql = $conn->prepare("Select * FROM applications WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+			}
+			/*else //no username
+			{
+				/* Select all applications */
+				/*$sql = $conn->prepare("Select * FROM applications");
+			}*/
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll();
+			
+			
+			
+			
+			
+			$applicant->bnid = $res[0][1];
+			$applicant->name = $res[0][3];
+			$applicant->dateS = $res[0][2];
+			$applicant->dept = $res[0][4];
+			$applicant->deptM = $res[0][5];
+			$applicant->email = $res[0][6];
+			$applicant->rTitle = $res[0][7];
+			$applicant->tStart = $res[0][8];
+			$applicant->tEnd = $res[0][9];
+			$applicant->aStart = $res[0][10];
+			$applicant->aEnd = $res[0][11];
+			$applicant->dest = $res[0][12];
+			$applicant->aReq = $res[0][13];
+			$applicant->pr1 = $res[0][14];
+			$applicant->pr2 = $res[0][15];
+			$applicant->pr3 = $res[0][16];
+			$applicant->pr4 = $res[0][17];
+			$applicant->oF = $res[0][18];
+			$applicant->pS = $res[0][19];
+			$applicant->fg1 = $res[0][20];
+			$applicant->fg2 = $res[0][21];
+			$applicant->fg3 = $res[0][22];
+			$applicant->fg4 = $res[0][23];
+			$applicant->deptCE = $res[0][24];
+			
+			$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+			$sql->bindParam(':id', $id);
+			
+			/*else //no username
+			{
+				/* Select all applications */
+				/*$sql = $conn->prepare("Select * FROM applications");
+			}*/
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll();
+			$applicant->budget = $res;
+			
+			/* Close finished query and connection */
+			$sql = null;
+			
+			
+			/* return object */
+			return $applicant;
 		}
 	}
 	
