@@ -317,10 +317,11 @@
 						<div class="col-md-3"></div>
 						<center>
 						<div class="col-md-3">
+							<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
 							<input type="submit" class="styled-button-3" id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
 						</div>
 						<div class="col-md-3">
-							<input type="submit" class="styled-button-3" id="denyA" name="denyA" style="background-color: red !important; border-color: green !important; margin-top: 10px;" value="DENY APPLICATION" />
+							<input type="submit" class="styled-button-3" id="denyA" name="denyA" style="background-color: red !important; border-color: red !important; margin-top: 10px;" value="DENY APPLICATION" />
 						</div>
 						</center>
 						<div class="col-md-3"></div>
