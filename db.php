@@ -1,45 +1,8 @@
 <?php
 	ob_start();
-	$settings = parse_ini_file('functions/config.ini');
-	if(isset($_FILES["fD"]))
-	{
-		$file = $_FILES["fD"]["tmp_name"];
-		$doc = $_FILES["fD"]["name"];
-		$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
-		$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
-		ftp_pasv($ftp, true);
-		if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
-		{
-			ftp_close($ftp);
-		}else{
-			echo "Could not upload file, application NOT submitted.";
-			ftp_close($ftp);
-			//header("Location: application_builder.php?status=failedfileF");
-		}
-	}else{
-		echo "Could not upload file, application NOT submitted.";
-		//header("Location: application_builder.php?status=failedfileF");
-	}
-	if(isset($_FILES["sD"]))
-	{
-		$file = $_FILES["sD"]["tmp_name"];
-		$doc = $_FILES["sD"]["name"];
-		$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
-		$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
-		ftp_pasv($ftp, true);
-		if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
-		{
-			ftp_close($ftp);
-		}else{
-			echo "Could not upload file, application NOT submitted.";
-			ftp_close($ftp);
-			//header("Location: application_builder.php?status=failedfileS");
-		}
-	}else{
-		echo "Could not upload file, application NOT submitted.";
-		//header("Location: application_builder.php?status=failedfileS");
-	}
-	insert();
+	include('Net/SFTP.php');
+	if(isset($_POST["sub"]))
+		insert();
 	function connection()
 	{
 		try 
@@ -143,6 +106,7 @@
 					}
 					$count++;
 				}
+				uploadDocs($appID);
 			} else {
 				header("Location: application_builder.php?status=failedI");
 			}
@@ -153,5 +117,104 @@
 		{
 			echo "Error: " . $e->getMessage();
 		}
+	}
+	
+	
+	function uploadDocs($id) {
+		$settings = parse_ini_file('functions/config.ini');
+		if(isset($_FILES["fD"]))
+		{
+			if ($_FILES['fD']['size'] != 0)
+			{
+				$file = $_FILES["fD"]["tmp_name"];
+				$doc = "P" . $id . ".pdf";
+				
+				
+				$ssh = new Net_SFTP('www.codigo-tech.com');
+				if (!$ssh->login($settings["host_user"], "Default1234$")) {
+					header("Location: application_builder.php?status=failedfileFu");
+				}
+
+				echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
+				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				
+				echo $sftp->getSFTPLog();
+				
+				/*$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
+				$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
+				ftp_pasv($ftp, true);
+				if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
+				{
+					ftp_close($ftp);
+				}else{
+					echo "Could not upload file, application NOT submitted.";
+					//ftp_close($ftp);
+					header("Location: application_builder.php?status=failedfileF");
+				}*/
+			}
+		}else{
+			echo "Could not upload file, application NOT submitted.";
+			header("Location: application_builder.php?status=failedfileF");
+		}
+		if(isset($_FILES["sD"]))
+		{
+			if ($_FILES['sD']['size'] != 0)
+			{
+				$file = $_FILES["sD"]["tmp_name"];
+				$doc = "S" . $id . ".pdf";
+				
+				$ssh = new Net_SFTP('www.codigo-tech.com');
+				if (!$ssh->login($settings["host_user"], "Default1234$")) {
+					header("Location: application_builder.php?status=failedfileSu");
+				}
+
+				echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
+				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				
+				
+				echo $sftp->getSFTPLog();
+				/*$ftp = ftp_connect("codigo-tech.com") or die("Could not connect to $ftp_server");
+				$login = ftp_login($ftp, $settings["host_user"], "Default1234$");
+				ftp_pasv($ftp, true);
+				if(ftp_put($ftp, $settings["uploads_dir"] . $doc, $file, FTP_BINARY))
+				{
+					ftp_close($ftp);
+				}else{
+					echo "Could not upload file, application NOT submitted.";
+					//ftp_close($ftp);
+					header("Location: application_builder.php?status=failedfileS");
+				}*/
+			}
+		}else{
+			echo "Could not upload file, application NOT submitted.";
+			header("Location: application_builder.php?status=failedfileS");
+		}
+	}
+	
+	function listDocs($id) {
+		$settings = parse_ini_file('functions/config.ini');
+		$ssh = new Net_SFTP('www.codigo-tech.com');
+		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+			exit('Auth Failed');
+		}
+		return $ssh->nlist($settings["uploads_dir"] . $id);
+	}
+	if(isset($_GET["doc"]))
+	{
+		downloadDocs($_GET["id"], $_GET["doc"]);
+	}
+	function downloadDocs($id, $doc) {
+		$settings = parse_ini_file('functions/config.ini');
+			
+			$ssh = new Net_SFTP('www.codigo-tech.com');
+		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+			$ssh->login($settings["host_user"], "Default1234$");
+		}
+		//file_put_contents($doc, $ssh->get($settings["uploads_dir"] . $id . '/' . $doc));
+		header("Content-type:application/pdf");
+		// It will be called downloaded.pdf
+		header("Content-Disposition:attachment;filename=" . $doc);
+		readfile($settings["uploads_dir"] . $id . '/' . $doc);
+		exit('Downloaded');
 	}
 ?>
