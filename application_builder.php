@@ -1,3 +1,15 @@
+<?php
+	/*Debug user validation
+	TODO: replace with actual user validation using CAS!!!*/
+	include('functions/debugvalidate.php');
+	
+	/*Get DB connection*/
+	include "functions/database.php";
+	$conn = connection();
+	
+	/*Verification functions*/
+	include "functions/verification.php";
+?>
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -30,240 +42,249 @@
 	</head>
 	<body ng-app="HIGE-app">
 	
-		<!--HEADER-->
-		<?php
-			include 'include/header.php';
-		?>
-		<!--HEADER-->
+	<!--HEADER-->
+	<?php
+	include 'include/header.php';
+	
+	/*get initial character limits for text fields*/
+	$appCharMax = getApplicationsMaxLengths($conn);
+	$appBudgetCharMax = getApplicationsBudgetsMaxLengths($conn);
+	
+	$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
+	$maxEmail = $appCharMax[array_search('Email', array_column($appCharMax, 0))][1]; //email char limit
+	$maxDep = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
+	$maxDepEmail = $appCharMax[array_search('DepartmentChairEmail', array_column($appCharMax, 0))][1]; //dep email char limit
+	$maxTitle = $appCharMax[array_search('Title', array_column($appCharMax, 0))][1]; //title char limit
+	$maxDestination = $appCharMax[array_search('Destination', array_column($appCharMax, 0))][1]; //destination char limit
+	$maxOtherEvent = $appCharMax[array_search('IsOtherEventText', array_column($appCharMax, 0))][1]; //other event text char limit
+	$maxOtherFunding = $appCharMax[array_search('OtherFunding', array_column($appCharMax, 0))][1]; //other funding char limit
+	$maxProposalSummary = $appCharMax[array_search('ProposalSummary', array_column($appCharMax, 0))][1]; //proposal summary char limit
+	
+	$maxBudgetComment = $appBudgetCharMax[array_search('Comment', array_column($appBudgetCharMax, 0))][1]; //budget comment char limit
+	
+	/*echo "limits: name: ".$maxName.", email: ".$maxEmail.", dep: ".$maxDep.", dep email: ".$maxDepEmail.", title: ".$maxTitle.", 
+		destination: ".$maxDestination.", other event: ".$maxOtherEvent.", other funding: ".$maxOtherFunding.", proposal summary: "
+		.$maxProposalSummary.", budget comment: ".$maxBudgetComment;
+	*/
+	
+	/*Verify user as faculty member in order to make an application
+	TODO: more verification; only 1 active application per applicant, can't be dep. chair, etc.*/
+	if($position == 'faculty')
+	{
+	?>
+	<!--HEADER-->
 	
 		<!--BODY-->
 		<div class="container-fluid">
-			<form enctype="multipart/form-data" class="form-horizontal" id="submitApp" name="submitApp" method="POST" action="db.php">
+			<form enctype="multipart/form-data" class="form-horizontal" id="submitApp" name="submitApp" method="POST" action="controllers/addApplication.php">
 				<div ng-controller="budget">
 					<!--APPLICANT INFO-->
 					<div class="row">
-						<center>
-						<p class="title">Applicant Information:</p>
-						</center>
+						<h2 class="title">Applicant Information:</h2>
 					</div>
 					<div class="row">
-						<div class="col-md-1"></div>
 					<!--NAME-->
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
+								<label for="inputName">Name (up to <?php echo $maxName; ?> characters):</label>
 								<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" required />
 							</div>
 						</div>
 					<!--EMAIL-->
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="inputEmail"><p class="title" style="font-size: 18px !important;">Email Address:</p></label>
-								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" required />
+								<label for="inputEmail">Email Address (up to <?php echo $maxEmail; ?> characters):</label>
+								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required />
 							</div>
 						</div>
 					<!--DEPARTMENT-->
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="inputDept"><p class="title" style="font-size: 18px !important;">Department:</p></label>
-								<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Department" required />
+								<label for="inputDept">Department (up to <?php echo $maxDep; ?> characters):</label>
+								<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" required />
 							</div>
 						</div>
+					</div>
+					<div class="row">
 					<!--DEPT MAIL STOP-->
-						<div class="col-md-2">
+						<div class="col-md-6">
 							<div class="form-group">
-								<label for="inputDeptM"><p class="title" style="font-size: 18px !important;">Department Mail Stop:</p></label>
-								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Department Mail Stop" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<label for="inputDeptM">Department Mail Stop:</label>
+								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Enter Department Mail Stop" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
-					<!--TRAVEL DATES-->
-						<div class="col-md-1">
+					<!--DEPT CHAIR EMAIL-->
+						<div class="col-md-6">
 							<div class="form-group">
-								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Travel From:</p></label>
+								<label for="inputDeptCE">Department Chair's Email Address (up to <?php echo $maxDepEmail; ?> characters):</label>
+								<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" required />
+							</div>
+						</div>
+					</div>
+					<!--RESEARCH INFO-->
+					<div class="row">
+						<h2 class="title">Research Information:</h2>
+					</div>
+					<div class="row">
+					<!--TRAVEL DATES-->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="inputTFrom">Travel Date From:</label>
 								<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required />
 							</div>
 						</div>
-						<div class="col-md-1">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">To:</p></label>
+								<label for="inputTTo">Travel Date To:</label>
 								<input type="date" class="form-control" id="inputTTo" name="inputTTo" onchange="TDate()" required />
 							</div>
 						</div>
-						<div class="col-md-1"></div>
-					</div>
-					<br><br>
-					<!--RESEARCH INFO-->
-					<div class="row">
-						<center>
-						<p class="title">Research Information:</p>
-						</center>
-					</div>
-					<div class="row">
-						<div class="col-md-1"></div>
-					<!--TITLE-->
-						<div class="col-md-2">
-							<div class="form-group">
-								<label for="inputRName"><p class="title" style="font-size: 18px !important;">Title of Research:</p></label>
-								<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title" required />
-							</div>
-						</div>
 					<!--ACTIVITY DATES-->
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Activity Date From:</p></label>
+								<label for="inputAFrom">Activity Date From:</label>
 								<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" onchange="ADateF()"  required />
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="inputTo"><p class="title" style="font-size: 18px !important;">Activity Date To:</p></label>
+								<label for="inputATo">Activity Date To:</label>
 								<input type="date" class="form-control" id="inputATo" name="inputATo" onchange="ADateT()"  required />
 							</div>
 						</div>
-					<!--DESTINATION-->
-						<div class="col-md-2">
+					</div>
+					<div class="row">
+					<!--TITLE-->
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="inputDest"><p class="title" style="font-size: 18px !important;">Destination:</p></label>
+								<label for="inputRName">Title of Research (up to <?php echo $maxTitle; ?> characters):</label>
+								<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" required />
+							</div>
+						</div>
+					<!--DESTINATION-->
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="inputDest">Destination (up to <?php echo $maxDestination; ?> characters):</label>
 								<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" required />
 							</div>
 						</div>
 					<!--AMOUNT REQ-->
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="inputAR"><p class="title" style="font-size: 18px !important;">Amount Requested:</p></label>
-								<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Amount Requested" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<label for="inputAR">Amount Requested($):</label>
+								<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Enter Amount Requested($)" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
-					<div class="row">
 					<!--PURPOSE-->
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
-							<div class="form-group">
-								<label for="inputAR<p class="title" style="font-size: 18px !important;">Purpose of Travel:</p>
-							</div>
-						</div>
-						
-					</div><div class="row"><div class="col-md-1"></div>
-						<div class="col-md-1">
-							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr1" type="checkbox" value="Research">Research</label></p>
-							</div>
-						</div>
-						<div class="col-md-1">
-							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr2" type="checkbox" value="Conference">Conference</label></p>
-							</div>
-						</div>
-						<div class="col-md-1">
-							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" value="Creative Activity">Creative Activity</label></p>
-							</div>
-						</div>
-						<div class="col-md-1">
-							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr4dummy" id="pr4dummy" type="checkbox" value="">Other, explain.</label></p>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<input type="text" class="form-control" id="pr4" name="pr4" disabled="true" placeholder="Other, explain..." />
-							</div>
-						</div>
-						<div class="col-md-1"></div>
-					</div>
-					<div class="row"><div class="col-md-1"></div>
-						<div class="col-md-10">
-							<div class="form-group">
-								<input type="text" class="form-control" id="eS" name="eS" placeholder="Are you receiving other funding? Who is providing the funds? How much?" />
-							</div>
-						</div>
-						<div class="col-md-1"></div>
+					<div class="row">
+						<label for="purposes">Purpose of Travel:</label>
 					</div>
 					<div class="row">
-					<div class="col-md-1"></div>
-						<div class="col-md-10">
-						<center>
-							<p class="title" style="font-size: 14px !important;">Please ensure to include supporting documentation: Conference letter of acceptance; invitation letter for research or creative activity, etc. in 1 PDF, using the upload button below.</p> 
-						</center>
+						<div class="col-md-12">
+							<div class="checkbox">
+								<label><input name="purpose1" type="checkbox" value="purpose1">Research</label>
+							</div>
 						</div>
-					<div class="col-md-1"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="checkbox">
+								<label><input name="purpose2" type="checkbox" value="purpose2">Conference</label>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="checkbox">
+								<label><input name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-2">
+							<div class="checkbox">
+								<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy">Other, explain.</label>
+							</div>
+						</div>
+						<div class="col-md-10">
+							<div class="form-group">
+								<label for="purposeOtherText">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
+								<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" />
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="eS">Are you receiving other funding? Who is providing the funds? How much? (up to <?php echo $maxOtherFunding; ?> characters):</label>
+								<input type="text" class="form-control" id="eS" name="eS" placeholder="Explain here" />
+							</div>
+						</div>
 					</div>
 					<div class="row">
 					<!--PROPOSAL SUMMARY-->
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
+						<div class="col-md-12">
 							<div class="form-group">
-								<textarea class="form-control" id="props" name="props" placeholder="Proposal summary, MAX 150 words" rows=10 required /></textarea>
+								<label for="props">Proposal Summary (up to <?php echo $maxProposalSummary; ?> characters) (We recommend up to 150 words):</label>
+								<textarea class="form-control" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 required /></textarea>
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
-					<div class="row"><div class="col-md-1"></div>
-						<p class="title" style="font-size: 18px !important;">Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</p>
-					<div class="col-md-1"></div></div>
 					<div class="row">
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
+						<label for="goals">Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</label>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg1" type="checkbox" value="">
-								Support for international collaborative research and creative activities, or for international research, including archival and field work.</label></p>
+								<label><input name="goal1" type="checkbox" value="goal1">
+								Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
 					<div class="row">
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
+						<div class="col-md-12">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg2" type="checkbox" value="">
-								Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label></p>
+								<label><input name="goal2" type="checkbox" value="goal2">
+								Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
 					<div class="row">
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
+						<div class="col-md-12">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg3" type="checkbox" value="">
-								Support for attendance at international conferences, seminars or workshops.</label></p>
+								<label><input name="goal3" type="checkbox" value="goal3">
+								Support for attendance at international conferences, seminars or workshops.</label>
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
 					<div class="row">
-						<div class="col-md-1"></div>
-						<div class="col-md-10">
+						<div class="col-md-12">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg4" type="checkbox" value="">
+								<label><input name="goal4" type="checkbox" value="goal4">
 								Support for scholarly international travel in order to enrich international knowledge, which will directly
-								contribute to the internationalization of the WMU curricula.</label></p>
+								contribute to the internationalization of the WMU curricula.</label>
 							</div>
 						</div>
-						<div class="col-md-1"></div>
 					</div>
-					<div class="row"><div class="col-md-1"></div>
-						<p class="title" style="font-size: 18px !important;">Budget:(please separate room and board calculating per diem)</p>
-					<div class="col-md-1"></div></div>
-					<div class="row"><div class="col-md-3"></div>
-						<div class="col-md-2">
-							<p class="title" style="font-size: 16px !important;">Expense:</p>
+					<div class="row">
+						<h2>Budget:(please separate room and board calculating per diem)</h2>
+					</div>
+					<div class="row">
+						<div class="col-md-4">
+							<h3>Expense:</h3>
 						</div>
-						<div class="col-md-2">
-							<p class="title" style="font-size: 16px !important;">Comments:</p>
+						<div class="col-md-4">
+							<h3>Comments (up to <?php echo $maxBudgetComment; ?> characters):</h3>
 						</div>
-						<div class="col-md-2">
-							<p class="title" style="font-size: 16px !important;">Amount:</p>
+						<div class="col-md-4">
+							<h3>Amount($):</h3>
 						</div>
-						<div class="col-md-3"></div>
 					</div>
 					<div class="row" ng-repeat="bitem in bitems">
-						<div class="col-md-3"></div>
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
 								<select class="form-control" name="{{bitem.ex}}" required />
 									<option value="Air Travel">Air Travel</option>
@@ -273,65 +294,47 @@
 								</select>
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
 								<input type="text" class="form-control" name="{{bitem.com}}" placeholder="Explain..." required />
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group">
 								<input type="text" class="form-control" name="{{bitem.am}}" ng-model="bitem.val" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
-						<div class="col-md-3"></div>
+					</div>
+					<div class="row">
+						<div class="col-md-5"></div>
+						<div id="budgetButtons" class="col-md-2">
+							<p id="addBudget"><i class="fa fa-plus-circle fa-2x" aria-hidden="true" ng-click="addInput()"></i></p>
+							<p id="removeBudget"><i class="fa fa-minus-circle fa-2x" aria-hidden="true" ng-click="remInput()"></i></p>
+						</div>
+						<div class="col-md-5"></div>
 					</div>
 					<div class="row">
 						<div class="col-md-5"></div>
 						<div class="col-md-2">
-							<i class="fa fa-plus-circle fa-2x" style="color: blue !important;" aria-hidden="true" ng-click="addInput()"></i>
-							<i class="fa fa-minus-circle fa-2x" style="color: red !important;" aria-hidden="true" ng-click="remInput()"></i>
+							<h3>Total: ${{ getTotal() }}</h3>
 						</div>
 						<div class="col-md-5"></div>
 					</div>
-					<div class="row"><div class="col-md-5"></div>
-						<div class="col-md-1">
-							<p class="title" style="font-size: 16px !important;">Total:</p>
-						</div>
-						<div class="col-md-1">
-							<p class="title" style="font-size: 16px !important;">${{ getTotal() }}</p>
-						</div>
-						<div class="col-md-5"></div>
-					</div>
-					<br><br>
 					<!--UPLOAD DOCS FORM-->
 					<div class="row">
-						<div class="col-md-1"></div>
-						<div class="col-md-5">
-								<label for="fD"><p class="title" style="font-size: 18px !important;">PROPOSAL NARRATIVE:</p></label><input type="file" name="fD" id="fD" required accept="application/pdf" />
-						</div>
-						<div class="col-md-5">
-							<label for="sD"><p class="title" style="font-size: 18px !important;">SUPPORTING DOCUMENTS:</p></label><input type="file" name="sD" id="sD" accept="application/pdf" />
-						</div>
-						<div class="col-md-1"></div>
-					</div>
-					<br><br>
-					<!--APPLICANT SIGNATURE-->
-					<div class="row">
-						<center>
-						<p class="title">Applicant E-Signature:</p>
-						</center>
+							<h2>Uploads</h2> 
 					</div>
 					<div class="row">
-						<div class="col-md-4"></div>
-					<!--NAME-->
-						<div class="col-md-4">
-							<div class="form-group">
-								<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
-								<input type="text" class="form-control" id="inputASig" name="inputASig" placeholder="Enter Name" required />
-							</div>
+						<div class="col-md-6">
+								<label for="fD">PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" required/>
 						</div>
-						<div class="col-md-4"></div>
+						<div class="col-md-6">
+							<label for="sD">SUPPORTING DOCUMENTS:</label><input type="file" name="sD" id="sD"/>
+						</div>
+					</div>
+					<div class="row">
+							<h3>Please ensure to include supporting documentation: Conference letter of acceptance; invitation letter for research or creative activity, etc.</h3> 
 					</div>
 					<div class="row">
 						<div class="col-md-5"></div>
@@ -347,88 +350,29 @@
 						{
 							if($_GET["status"] == "success")
 							{
-								echo '<br><span class="lt" style="color: green; font-size: 22px;" id="smsg"><b>Application Submitted.</b></span>';
+								echo '<span class="lt" style="color: green; font-size: 22px;" id="smsg"><b>Application Submitted.</b></span>';
 							}
 						}
 					?>
 					<span id="loadSpinner" class="lt" style="visibility: hidden;">Submitting... <i class="fa fa-spinner fa-spin" style="font-size:35px !important;"></i></span>
 				</center>
-				<br><br>
 			</form>
 		<!--BODY-->
 	
+	<?php
+	}
+	else{
+	?>
+		<h1>You can not fill out a new application!</h1>
+	<?php
+	}
+	?>
 	</body>
 	
 	<!-- AngularJS Script -->
 	<script>
 		
 		var myApp = angular.module('HIGE-app', []);
-
-		/*myApp.directive('fileModel', ['$parse', function ($parse) {
-			return {
-			restrict: 'A',
-			link: function(scope, element, attrs) {
-				var model = $parse(attrs.fileModel);
-				var modelSetter = model.assign;
-
-				element.bind('change', function(){
-					scope.$apply(function(){
-						modelSetter(scope, element[0].files[0]);
-					});
-				});
-			}
-		   };
-		}]);
-
-		// We can write our own fileUpload service to reuse it in the controller
-		myApp.service('fileUpload', ['$http', function ($http) {
-			this.uploadFileToUrl = function(file, uploadUrl){
-				$("#loadSpinner").css('visibility', 'visible');
-				$("#sub").prop("disabled", true);				
-				 var fd = new FormData();
-				 fd.append('file', file);
-				 $http.post(uploadUrl, fd, {
-					 transformRequest: angular.identity,
-					 headers: {'Content-Type': undefined,'Process-Data': false}
-				 })
-				 .then(function(){
-					console.log("Success");
-					$("#sub").prop("disabled", false);
-					$("#loadSpinner").css('visibility', 'hidden');
-				 },
-				 function(){
-					 console.log("Failure");
-					$("#sub").prop("disabled", false);
-					$("#loadSpinner").css('visibility', 'hidden');
-				 });
-			 }
-		 }]);
-
-		myApp.controller('uploadCtrl', ['$window', '$scope', 'fileUpload', function($window, $scope, fileUpload){
-
-		   $scope.uploadFile = function(){
-				if($("#fD").val() != "")
-				{
-					$("#loadSpinner").css('visibility', 'visible');
-					var file = $scope.fD;
-					console.log('file is ' );
-					console.dir(file);
-
-					var uploadUrl = "upload.php";
-					fileUpload.uploadFileToUrl(file, uploadUrl);
-					if($("#sD").val() != "")
-					{
-						var fileS = $scope.sD;
-						console.log('Supporting file is ' );
-						console.dir(fileS);
-						fileUpload.uploadFileToUrl(fileS, uploadUrl);
-					}
-					$window.location.href = 'application_builder.php?status=success';
-				}
-		   };
-
-		}]);*/
-
 		
 		myApp.controller('budget', ['$scope', function($scope){
 			$scope.bitems = [];
@@ -464,24 +408,6 @@
 					$("#smsg").remove();
 		}, 1000);
 		
-		/* AJAX */
-		/*$(document).ready(function() {
-			$('#submitApp').submit(function() {
-				var form = $('#submitApp');
-				$.ajax({
-					type: "POST",
-					url: 'db.php',
-					data: form.serialize(),
-					success: function( response ) {
-						console.log( response );
-						window.location.replace('application_builder.php?status=success');
-					},
-					error: function( response ) {
-						console.log( response );
-					}
-				});
-			});
-		});*/
 		/* FIN AJAX */
 		/*TRAVEL DATE*/
 		function TDate() {
@@ -517,9 +443,13 @@
 		}
 		/*FIN DATES*/
 		/*OTHER ACTIVITY CHECK*/
-		document.getElementById('pr4dummy').onchange = function() {
-			document.getElementById('pr4').disabled = !this.checked;
+		/*activate 'other purpose' box when corresponding checkbox is checked*/
+		document.getElementById('purposeOtherDummy').onchange = function() {
+			document.getElementById('purposeOther').disabled = !this.checked;
 		};
 	</script>
 	<!-- End Script -->
 </html>
+<?php
+	$conn = null; //close connection
+?>
