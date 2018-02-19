@@ -2,12 +2,12 @@
 	width: 25%;
 	padding: 0;
 }
-p.title {
+/*p.title {
 	font-family: Arial, Helvetica, sans-serif !important;
 	font-weight: bold;
 	font-size: 22px;
 	padding: 0;
-}
+}*/
 p.lt {
 	font-family: Arial, Helvetica, sans-serif !important;
 	font-weight: bold;
@@ -27,4 +27,4 @@ p.lt {
 	height:80px;
 	cursor: pointer; 
 	cursor: hand; 
-}
+}/*Format page header*/.page-header{	margin: 0px!important; /*no extra margin on header!*/	border: none!important; /*no border*/	padding: 30px 0!important;/*use padding instead to keep background color!*/	background-color: #c48b04;/*gold background color*/	box-shadow: 0px 0px 5px rgba(0,0,0,0.8);/*slight shadow under header*/	text-align: center; /*all header text centered by default*/}/*headings*/.page-header h1, .page-header h2{	color: #fde392; /*light gold text color*/	font-weight: bold; /*bold font*/}/*sign in/out button*/#loginSignout{	margin-top: 30px; /*pad it down a bit*/	font-size: 26px; /*larger text*/	font-weight: bold; /*bold font*/}/*Format application_builder.php form*//*the form itself*/#submitApp{	margin: 0 5%; /*5% margin on left and right side*/}/*bootstrap rows*/#submitApp div.row{	margin: 10px 0; /*10px gap above and below rows*/}/*headings*/#submitApp h2, #submitApp h3{	font-weight: bold; /*make them bold*/	text-align: center;}/*input text boxes*/#submitApp input[type="text"], #submitApp input[type="email"]{	text-overflow: ellipsis; /*show '...' if text is too long for field*/}/*checkbox labels*/#submitApp div.checkbox label{	word-wrap: break-word; /*prevent them from overlapping other elements*/}/*plus and minus buttons*/#addBudget, #removeBudget{	display: inline;}#addBudget{	color: blue;}#removeBudget{	color: red;}#budgetButtons{	text-align: center;}
