@@ -1,18 +1,17 @@
 <?php
-	include "config.php"; //allows us to use configurations
-
-	include_once "applicant.php";
-	
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
 		function connection()
 		{
-			
 			try 
 			{
-				$settings = parse_ini_file('config.ini');
+				/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+				$config_url = $_SERVER['DOCUMENT_ROOT'].'/Senior Design Project/config.ini';
+				
+				
+				$settings = parse_ini_file($config_url);
 				//var_dump($settings);
-				$conn = new PDO("mysql:host=" . $settings["hostname"] . ";dbname=" . $settings["database_name"] . ";charset=utf8", $settings["database_username"], 
+				$conn = new AtomicPDO("mysql:host=" . $settings["hostname"] . ";dbname=" . $settings["database_name"] . ";charset=utf8", $settings["database_username"], 
 					$settings["database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 				// set the PDO error mode to exception
 				$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -56,18 +55,26 @@
 			return $res;
 		}
 	}
-	/* Returns array of all applications */
-	if(!function_exists('getAllApplicantions')) {
-		function getAllApplicantions($conn)
+	
+	/*Adds applicant to database IF they don't already exist. Otherwise, just ignore*/
+	if(!function_exists('insertApplicantIfNew')) {
+		function insertApplicantIfNew($conn, $newID)
 		{
 			/* Prepare & run the query */
-			$sql = $conn->prepare("Select ID, Applicant, Name, Date FROM applications WHERE Approved is NULL");
+			$sql = $conn->prepare("Select Count(*) FROM applicants WHERE BroncoNetID = :id");
+			$sql->bindParam(':id', $newID);
 			$sql->execute();
 			$res = $sql->fetchAll();
+			
+			if($res[0][0] == 0)//only triggers if user doesn't already exist
+			{
+				$sql = $conn->prepare("INSERT INTO applicants VALUES(:id)");
+				$sql->bindParam(':id', $newID);
+				$sql->execute();
+			}
+			
 			/* Close finished query and connection */
 			$sql = null;
-			/* return list */
-			return $res;
 		}
 	}
 	
@@ -75,71 +82,70 @@
 	if(!function_exists('getApplications')) {
 		function getApplications($conn, $id)
 		{
-			$applicant = new Applicant();
 			if ($id != "") //valid username
 			{
 				/* Select only applications that this user has has submitted */
 				$sql = $conn->prepare("Select * FROM applications WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 			}
-			/*else //no username
+			else //no username
 			{
 				/* Select all applications */
-				/*$sql = $conn->prepare("Select * FROM applications");
-			}*/
+				$sql = $conn->prepare("Select * FROM applications");
+			}
 			/* run the prepared query */
 			$sql->execute();
 			$res = $sql->fetchAll();
 			
+			$applicationsArray = []; //create new array of applications
 			
-			
-			
-			
-			$applicant->id = $res[0][0];
-			$applicant->bnid = $res[0][1];
-			$applicant->name = $res[0][3];
-			$applicant->dateS = $res[0][2];
-			$applicant->dept = $res[0][4];
-			$applicant->deptM = $res[0][5];
-			$applicant->email = $res[0][6];
-			$applicant->rTitle = $res[0][7];
-			$applicant->tStart = $res[0][8];
-			$applicant->tEnd = $res[0][9];
-			$applicant->aStart = $res[0][10];
-			$applicant->aEnd = $res[0][11];
-			$applicant->dest = $res[0][12];
-			$applicant->aReq = $res[0][13];
-			$applicant->pr1 = $res[0][14];
-			$applicant->pr2 = $res[0][15];
-			$applicant->pr3 = $res[0][16];
-			$applicant->pr4 = $res[0][17];
-			$applicant->oF = $res[0][18];
-			$applicant->pS = $res[0][19];
-			$applicant->fg1 = $res[0][20];
-			$applicant->fg2 = $res[0][21];
-			$applicant->fg3 = $res[0][22];
-			$applicant->fg4 = $res[0][23];
-			$applicant->deptCE = $res[0][24];
-			
-			$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
-			$sql->bindParam(':id', $id);
-			
-			/*else //no username
+			/*go through all applications, adding them to the array*/
+			foreach($res as $i)
 			{
-				/* Select all applications */
-				/*$sql = $conn->prepare("Select * FROM applications");
-			}*/
-			/* run the prepared query */
-			$sql->execute();
-			$res = $sql->fetchAll();
-			$applicant->budget = $res;
+				$application = new Application(); //initialize
+				$application->id = $res[0][0];
+				$application->bnid = $res[0][1];
+				$application->name = $res[0][3];
+				$application->dateS = $res[0][2];
+				$application->dept = $res[0][4];
+				$application->deptM = $res[0][5];
+				$application->email = $res[0][6];
+				$application->rTitle = $res[0][7];
+				$application->tStart = $res[0][8];
+				$application->tEnd = $res[0][9];
+				$application->aStart = $res[0][10];
+				$application->aEnd = $res[0][11];
+				$application->dest = $res[0][12];
+				$application->aReq = $res[0][13];
+				$application->pr1 = $res[0][14];
+				$application->pr2 = $res[0][15];
+				$application->pr3 = $res[0][16];
+				$application->pr4 = $res[0][17];
+				$application->oF = $res[0][18];
+				$application->pS = $res[0][19];
+				$application->fg1 = $res[0][20];
+				$application->fg2 = $res[0][21];
+				$application->fg3 = $res[0][22];
+				$application->fg4 = $res[0][23];
+				$application->deptCE = $res[0][24];
+				
+				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+				$sql->bindParam(':id', $application->id);
+				/* run the prepared query */
+				$sql->execute();
+				$resBudget = $sql->fetchAll();
+				
+				$application->budget = $resBudget;
+				
+				/*add application to array*/
+				$applicationsArray[$i] = $application;
+			}
 			
 			/* Close finished query and connection */
 			$sql = null;
 			
-			
-			/* return object */
-			return $applicant;
+			/* return array */
+			return $applicationsArray;
 		}
 	}
 	
@@ -202,6 +208,9 @@
 				$sql->execute();
 				$res = $sql->fetchAll();
 				
+				/* Close finished query and connection */
+				$sql = null;
+				
 				//echo 'Count: '.$res[0][0].".";
 				
 				if($res[0][0] > 0) //at least one result
@@ -226,6 +235,9 @@
 				$sql->execute();
 				$res = $sql->fetchAll();
 				
+				/* Close finished query and connection */
+				$sql = null;
+				
 				//echo 'Count: '.$res[0][0].".";
 				
 				return $res[0][0];
@@ -233,38 +245,307 @@
 		}
 	}
 	
-	/* APPROVE APPLICATION */
-	if(isset($_POST["approveA"]))
-		approveApplication(connection(), $_POST["appID"]);
-	function approveApplication($conn, $id)
-	{
-		if ($id != "") //valid email
+	/*return an array of the maximum lengths of every column in the applications table*/
+	if(!function_exists('getApplicationsMaxLengths')){
+		function getApplicationsMaxLengths($conn)
 		{
-			/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-			$sql = $conn->prepare("UPDATE applications SET Approved = 1 WHERE ID = :id");
-			$sql->bindParam(':id', $id);
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications'");
 			$sql->execute();
-			header("Location: app_list.php");
+			$res = $sql->fetchAll();
+					
+			/* Close finished query and connection */
+			$sql = null;
+			
+			return $res;
 		}
 	}
 	
-	/* DENY APPLICATION */
-	if(isset($_POST["denyA"]))
-		denyApplication(connection(), $_POST["appID"]);
-	function denyApplication($conn, $id)
-	{
-		if ($id != "") //valid email
+	/*return an array of the maximum lengths of every column in the applications_budgets table*/
+	if(!function_exists('getApplicationsBudgetsMaxLengths')){
+		function getApplicationsBudgetsMaxLengths($conn)
 		{
-			/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-			$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
-			$sql->bindParam(':id', $id);
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications_budgets'");
 			$sql->execute();
-			header("Location: app_list.php");
+			$res = $sql->fetchAll();
+					
+			/* Close finished query and connection */
+			$sql = null;
+			
+			return $res;
+		}
+	}
+	
+	/*Update an application to be approved*/
+	if(!function_exists('approveApplication')){
+		function approveApplication($conn, $id)
+		{
+			if ($id != "") //valid application id
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE applications SET Approved = 1 WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/*Update an application to be denied*/
+	if(!function_exists('denyApplication')){
+		function denyApplication($conn, $id)
+		{
+			if ($id != "") //valid application id
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/*
+	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use
+	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
+		$budgetArray[i][0] is the name of the expense
+		$budgetArray[i][1] is the comment on the expense
+		$budgetArray[i][2] is the actual cost
+	return new application ID if EVERYTHING was successful, otherwise 0
+	*/
+	if(!function_exists('insertApplication')){
+		function insertApplication($conn, $name, $email, $department, $departmentMailStop, $deptChairEmail, $travelFrom, $travelTo,
+			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
+			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $budgetArray)
+		{
+			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
+			
+			//TEMPORARY DUMMY BroncoNetID!!!! MUST REMOVE!!!
+			$tempBroncoNetID = 'jum5005';
+			
+			//First, add this user to the applicants table IF they don't already exist
+			insertApplicantIfNew($conn, $tempBroncoNetID);
+			
+			/*Server-Side validation!*/
+			$valid = true; //start valid, turn false if anything is wrong!
+			$newAppID = 0; //set this to the new application's ID if successful
+			
+			/*Sanitize everything*/
+			try
+			{
+				$name = trim(filter_var($name, FILTER_SANITIZE_STRING));
+				$email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
+				$department = trim(filter_var($department, FILTER_SANITIZE_STRING));
+				$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
+				$travelFrom = strtotime($travelFrom);
+				$travelTo = strtotime($travelTo);
+				$title = trim(filter_var($title, FILTER_SANITIZE_STRING));
+				$activityFrom = strtotime($activityFrom);
+				$activityTo = strtotime($activityTo);
+				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING));
+				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);
+				$purpose1 = filter_var($purpose1, FILTER_SANITIZE_NUMBER_INT);
+				$purpose2 = filter_var($purpose2, FILTER_SANITIZE_NUMBER_INT);
+				$purpose3 = filter_var($purpose3, FILTER_SANITIZE_NUMBER_INT);
+				$purpose4Other = trim(filter_var($purpose4Other, FILTER_SANITIZE_STRING));
+				$otherFunding = trim(filter_var($otherFunding, FILTER_SANITIZE_STRING));
+				$proposalSummary = trim(filter_var($proposalSummary, FILTER_SANITIZE_STRING));
+				$goal1 = filter_var($goal1, FILTER_SANITIZE_NUMBER_INT);
+				$goal2 = filter_var($goal2, FILTER_SANITIZE_NUMBER_INT);
+				$goal3 = filter_var($goal3, FILTER_SANITIZE_NUMBER_INT);
+				$goal4 = filter_var($goal4, FILTER_SANITIZE_NUMBER_INT);
+				$deptChairEmail = trim(filter_var($deptChairEmail, FILTER_SANITIZE_EMAIL));
+				
+				//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
+				
+				/*go through budget array*/
+				foreach($budgetArray as $i)
+				{
+					if(!empty($i))
+					{
+						//echo 'Budget array at ' . $i[0];
+						$i[0] = trim(filter_var($i[0], FILTER_SANITIZE_STRING));
+						$i[1] = trim(filter_var($i[1], FILTER_SANITIZE_STRING));
+					}
+				}
+				
+			}
+			catch(Exception $e)
+			{
+				echo "Application Sanitization Error: " . $e->getMessage();
+				$valid = false;
+			}
+			
+			/*Now validate everything that needs it*/
+			if($valid)
+			{
+				/*Make sure necessary strings aren't empty*/
+				if($name === '' || $email === '' || $department === '' || $title === '' || $proposalSummary === '' || $deptChairEmail === '')
+				{
+					echo "Application Validation Error: Empty String Given!";
+					$valid = false;
+				}
+				/*Make sure dates are acceptable*/
+				if($travelTo < $travelFrom || $activityTo < $activityFrom || $activityFrom < $travelFrom || $activityTo > $travelTo)
+				{
+					echo "Application Validation Error: Invalid Date Given!";
+					$valid = false;
+				}
+				/*Make sure emails are correct format*/
+				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
+				{
+					echo "Application Validation Error: Invalid Email Given!";
+					$valid = false;
+				}
+				
+				/*go through budget array*/
+				foreach($budgetArray as $i)
+				{
+					if(!empty($i))
+					{
+						if($i[0] === '' || $i[1] === '')
+						{
+							echo "Application Validation Error: Empty Budget String Given!: ".$i[0].",".$i[1].".";
+							$valid = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			/*Now insert new application into database*/
+			if($valid)
+			{
+				try
+				{
+					$conn->beginTransaction(); //begin atomic transaction
+					//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
+					/*Prepare the query*/
+					$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, MailStop, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
+						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail) 
+						VALUES(:applicant, :date, :name, :department, :mailstop, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
+						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail)");
+					$sql->bindParam(':applicant', $tempBroncoNetID);
+					$sql->bindParam(':date', date("Y/m/d")); //create a new date right when inserting to save current time
+					$sql->bindParam(':name', $name);
+					$sql->bindParam(':department', $department);
+					$sql->bindParam(':mailstop', $departmentMailStop);
+					$sql->bindParam(':email', $email);
+					$sql->bindParam(':title', $title);
+					$sql->bindParam(':travelstart', date("Y-m-d", $travelFrom));
+					$sql->bindParam(':travelend', date("Y-m-d", $travelTo));
+					$sql->bindParam(':eventstart', date("Y-m-d", $activityFrom));
+					$sql->bindParam(':eventend', date("Y-m-d", $activityTo));
+					$sql->bindParam(':destination', $destination);
+					$sql->bindParam(':amountrequested', $amountRequested);
+					$sql->bindParam(':isresearch', $purpose1);
+					$sql->bindParam(':isconference', $purpose2);
+					$sql->bindParam(':iscreativeactivity', $purpose3);
+					$sql->bindParam(':isothereventtext', $purpose4Other);
+					$sql->bindParam(':otherfunding', $otherFunding);
+					$sql->bindParam(':proposalsummary', $proposalSummary);
+					$sql->bindParam(':fulfillsgoal1', $goal1);
+					$sql->bindParam(':fulfillsgoal2', $goal2);
+					$sql->bindParam(':fulfillsgoal3', $goal3);
+					$sql->bindParam(':fulfillsgoal4', $goal4);
+					$sql->bindParam(':departmentchairemail', $deptChairEmail);
+					
+					if ($sql->execute() === TRUE) //query executed correctly
+					{
+						$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+						
+						/*get the application ID of the just-added application*/
+						$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
+						$sql->bindParam(':applicant', $tempBroncoNetID);
+						$sql->execute();
+						$newAppID = $sql->fetchAll()[0][0];//now we have the current ID!
+						
+						/*go through budget array*/
+						foreach($budgetArray as $i)
+						{
+							if(!empty($i))
+							{
+								$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+								$sql->bindParam(':appID', $newAppID);
+								$sql->bindParam(':name', $i[0]);
+								$sql->bindParam(':cost', $i[2]);
+								$sql->bindParam(':comment', $i[1]);
+								
+								if ($sql->execute() === TRUE) //query executed correctly
+								{
+									$conn->commit(); //commit next part of transaction
+								}
+								else //query failed
+								{
+									$conn->rollBack(); //rollBack the transaction
+									$valid = false;
+								}
+							}
+						}
+					} 
+					else //query failed
+					{
+						$valid = false;
+					}
+				}
+				catch(Exception $e)
+				{
+					echo "Error inserting application into database: " . $e->getMessage();
+					$valid = false;
+				}
+			}
+			
+			if($valid) //if successful, return new application ID
+			{
+				return $newAppID;
+			}
+			else //otherwise return 0
+			{
+				return 0;
+			}
 		}
 	}
 	
 	
 	
-	
+	/*allow for atomic transactions (to ensure one insert only occurs when another has succeeded, so that either both or neither of them succeed)
+	found at http://php.net/manual/en/pdo.begintransaction.php*/
+	if(!class_exists('AtomicPDO')){
+		class AtomicPDO extends PDO
+		{
+			protected $transactionCounter = 0;
+
+			public function beginTransaction()
+			{
+				if (!$this->transactionCounter++) {
+					return parent::beginTransaction();
+				}
+				$this->exec('SAVEPOINT trans'.$this->transactionCounter);
+				return $this->transactionCounter >= 0;
+			}
+
+			public function commit()
+			{
+				if (!--$this->transactionCounter) {
+					return parent::commit();
+				}
+				return $this->transactionCounter >= 0;
+			}
+
+			public function rollback()
+			{
+				if (--$this->transactionCounter) {
+					$this->exec('ROLLBACK TO trans'.($this->transactionCounter + 1));
+					return true;
+				}
+				return parent::rollback();
+			}
+			
+		}
+	}
 	
 ?>
