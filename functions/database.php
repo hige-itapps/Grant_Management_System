@@ -1,4 +1,6 @@
 <?php
+	include "include/application.php";
+
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
 		function connection()
@@ -6,8 +8,7 @@
 			try 
 			{
 				/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
-				$config_url = $_SERVER['DOCUMENT_ROOT'].'/Senior Design Project/config.ini';
-				
+				$config_url = $_SERVER['DOCUMENT_ROOT'].'/config.ini';
 				
 				$settings = parse_ini_file($config_url);
 				//var_dump($settings);
@@ -100,34 +101,35 @@
 			$applicationsArray = []; //create new array of applications
 			
 			/*go through all applications, adding them to the array*/
-			foreach($res as $i)
+			for($i = 0; $i < count($res); $i++)
 			{
+				//echo "i is ".$i.".";
 				$application = new Application(); //initialize
-				$application->id = $res[0][0];
-				$application->bnid = $res[0][1];
-				$application->name = $res[0][3];
-				$application->dateS = $res[0][2];
-				$application->dept = $res[0][4];
-				$application->deptM = $res[0][5];
-				$application->email = $res[0][6];
-				$application->rTitle = $res[0][7];
-				$application->tStart = $res[0][8];
-				$application->tEnd = $res[0][9];
-				$application->aStart = $res[0][10];
-				$application->aEnd = $res[0][11];
-				$application->dest = $res[0][12];
-				$application->aReq = $res[0][13];
-				$application->pr1 = $res[0][14];
-				$application->pr2 = $res[0][15];
-				$application->pr3 = $res[0][16];
-				$application->pr4 = $res[0][17];
-				$application->oF = $res[0][18];
-				$application->pS = $res[0][19];
-				$application->fg1 = $res[0][20];
-				$application->fg2 = $res[0][21];
-				$application->fg3 = $res[0][22];
-				$application->fg4 = $res[0][23];
-				$application->deptCE = $res[0][24];
+				$application->id = $res[$i][0];
+				$application->bnid = $res[$i][1];
+				$application->name = $res[$i][3];
+				$application->dateS = $res[$i][2];
+				$application->dept = $res[$i][4];
+				$application->deptM = $res[$i][5];
+				$application->email = $res[$i][6];
+				$application->rTitle = $res[$i][7];
+				$application->tStart = $res[$i][8];
+				$application->tEnd = $res[$i][9];
+				$application->aStart = $res[$i][10];
+				$application->aEnd = $res[$i][11];
+				$application->dest = $res[$i][12];
+				$application->aReq = $res[$i][13];
+				$application->pr1 = $res[$i][14];
+				$application->pr2 = $res[$i][15];
+				$application->pr3 = $res[$i][16];
+				$application->pr4 = $res[$i][17];
+				$application->oF = $res[$i][18];
+				$application->pS = $res[$i][19];
+				$application->fg1 = $res[$i][20];
+				$application->fg2 = $res[$i][21];
+				$application->fg3 = $res[$i][22];
+				$application->fg4 = $res[$i][23];
+				$application->deptCE = $res[$i][24];
 				
 				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $application->id);
