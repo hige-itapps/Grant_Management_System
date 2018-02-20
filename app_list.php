@@ -58,8 +58,8 @@
 							<?php
 								for($i = 0; $i < count($apps); $i++) {
 									echo "<tr>";
-									echo "<td><a href=application_confirmation.php?id=" . $apps[$i][0] . ">" . $apps[$i][2] . "</a></td>";
-									echo "<td>" . $apps[$i][3] . "</td>";
+									echo "<td><a href=application_confirmation.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
+									echo "<td>" . $apps[$i]->dateS . "</td>";
 									echo "</tr>";
 								}
 							?>

@@ -3,6 +3,9 @@
 	include "functions/database.php";
 	$conn = connection();
 	$app = getApplications($conn, $_GET['id']);
+	
+	/*include documents functions*/
+	include "functions/documents.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -301,14 +304,26 @@
 						<div class="col-md-5"></div>
 					</div>
 					<br><br>
-					<!--UPLOAD DOCS FORM-->
+					<!--DOCS-->
+					<?php
+						$docs = listDocs($_GET["id"]);
+						$P = "None";
+						$S = "None";
+						for($i = 0; $i < count($docs); $i++)
+						{
+							if(substr($docs[$i], 0, 1) == 'P')
+								$P = "<a href='db.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
+							if(substr($docs[$i], 0, 1) == 'S')
+								$S = "<a href='db.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
+						}
+					?>
 					<div class="row">
 						<div class="col-md-1"></div>
 						<div class="col-md-5">
-						
+							<p class="title">Proposal: <?php echo $P; ?> </p>
 						</div>
 						<div class="col-md-5">
-						
+							<p class="title">Supporting Docs:  <?php echo $S; ?> </p>
 						</div>
 						<div class="col-md-1"></div>
 					</div>
