@@ -37,7 +37,7 @@
 		<?php
 			include 'include/header.php';
 			$conn = connection();
-			$apps = getAllApplicantions($conn);
+			$apps = getApplications($conn, "");//get all applications
 		?>
 		<!--HEADER-->
 		<div class="container-fluid">
