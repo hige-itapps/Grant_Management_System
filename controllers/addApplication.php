@@ -1,15 +1,9 @@
 <?php
 	ob_start();
+	
+	set_include_path('/home/egf897jck0fu/public_html/');
 	include('../Net/SFTP.php');
 	include('../functions/database.php');
-	
-	/* APPROVE APPLICATION */
-	/*if(isset($_POST["approveA"]))
-		approveApplication(connection(), $_POST["appID"]);*/
-	
-	/* DENY APPLICATION */
-	/*if(isset($_POST["denyA"]))
-		denyApplication(connection(), $_POST["appID"]);*/
 	
 	if(isset($_POST["sub"])) //submit button to form
 	{
@@ -91,7 +85,6 @@
 				echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 				
-				echo $sftp->getSFTPLog();
 			}
 		}else{
 			echo "Could not upload file, application NOT submitted.";
@@ -115,7 +108,6 @@
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 				
 				
-				echo $sftp->getSFTPLog();
 			}
 		}else{
 			echo "Could not upload file, application NOT submitted.";
@@ -125,32 +117,5 @@
 		
 		/*everything was successful*/
 		return true;
-	}
-	
-	function listDocs($id) {
-		$settings = parse_ini_file('functions/config.ini');
-		$ssh = new Net_SFTP('www.codigo-tech.com');
-		if (!$ssh->login($settings["host_user"], "Default1234$")) {
-			exit('Auth Failed');
-		}
-		return $ssh->nlist($settings["uploads_dir"] . $id);
-	}
-	if(isset($_GET["doc"]))
-	{
-		downloadDocs($_GET["id"], $_GET["doc"]);
-	}
-	function downloadDocs($id, $doc) {
-		$settings = parse_ini_file('functions/config.ini');
-			
-			$ssh = new Net_SFTP('www.codigo-tech.com');
-		if (!$ssh->login($settings["host_user"], "Default1234$")) {
-			$ssh->login($settings["host_user"], "Default1234$");
-		}
-		//file_put_contents($doc, $ssh->get($settings["uploads_dir"] . $id . '/' . $doc));
-		header("Content-type:application/pdf");
-		// It will be called downloaded.pdf
-		header("Content-Disposition:attachment;filename=" . $doc);
-		readfile($settings["uploads_dir"] . $id . '/' . $doc);
-		exit('Downloaded');
 	}
 ?>
