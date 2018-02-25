@@ -2,7 +2,8 @@
 	/*database functions*/
 	include "functions/database.php";
 	$conn = connection();
-	$app = getApplications($conn, $_GET['id']);
+	$idA = $_GET['id'];
+	$app = getApplications($conn, $idA);
 	
 	/*include documents functions*/
 	include "functions/documents.php";
@@ -53,7 +54,7 @@
 					<!--APPLICANT INFO-->
 					<div class="row">
 						<center>
-						<h2 class="title">Applicant Information:</h2>
+						<h2 class="title">Applicant Information<? if(isSigned($conn, $idA) == 0) echo "(NOT YET SIGNED BY CHAIR)"; ?>:</h2>
 						</center>
 					</div>
 					<div class="row">
@@ -334,7 +335,7 @@
 						<center>
 						<div class="col-md-3">
 							<input type="hidden" name="appID" value="<?php echo $app[0]->id; ?>" />
-							<input type="submit" class="styled-button-3" id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
+							<input type="submit" class="styled-button-3" <? if(isSigned($conn, $idA) == 0) echo 'disabled="true" style="background-color: gray; border-color: gray; margin-top: 10px;" '; ?> id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
 						</div>
 						<div class="col-md-3">
 							<input type="submit" class="styled-button-3" id="denyA" name="denyA" style="background-color: red !important; border-color: red !important; margin-top: 10px;" value="DENY APPLICATION" />
