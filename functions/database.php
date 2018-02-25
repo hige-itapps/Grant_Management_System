@@ -82,6 +82,27 @@
 		}
 	}
 	
+	
+	/* CHECK IF APPLICATION HAS BEEN SIGNED BY CHAIR */
+	if(!function_exists('isSigned')) {
+		function isSigned($conn, $id)
+		{
+			/* Prepare & run the query */
+			$sql = $conn->prepare("Select DepartmentChairSignature FROM applications WHERE ID = :id");
+			$sql->bindParam(':id', $id);
+			$sql->execute();
+			$res = $sql->fetchAll();
+			
+			
+			/* Close finished query and connection */
+			$sql = null;
+			if(is_null($res[0][0]))
+				return 0;
+			else
+				return 1;
+			
+		}
+	}
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	if(!function_exists('getApplications')) {
 		function getApplications($conn, $id)
