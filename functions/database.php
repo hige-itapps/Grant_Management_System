@@ -1,4 +1,7 @@
 <?php
+	ob_start();
+	
+	set_include_path('/home/egf897jck0fu/public_html/');
 	include "include/application.php";
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
@@ -151,6 +154,41 @@
 		}
 	}
 	
+	
+	/* DO NOT TOUCH DO NOT CHANGE DO NOT TOUCH Returns array of ALL NEW APPLICATIONS I.E: Approved = null, DO NOT TOUCH DO NOT TOUCH DO NOT TOUCH */
+	if(!function_exists('getNewApplications')) {
+		function getNewApplications($conn)
+		{
+			/* Select only applications that have FIELD APPROVED set to null (i.e: NEW APPLICATIONS) */
+			$sql = $conn->prepare("Select ID, Name, Date FROM applications WHERE Approved IS NULL");
+			
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll();
+			
+			$application = array(); //create new array of applications
+			
+			/*go through all applications, adding them to the array*/
+			for($i = 0; $i < count($res); $i++)
+			{
+				//echo "i is ".$i.".";
+				$application[$i] = new Application(); //initialize
+				$application[$i]->id = $res[$i][0];
+				$application[$i]->name = $res[$i][1];
+				$application[$i]->dateS = $res[$i][2];
+				
+			}
+			
+			/* Close finished query and connection */
+			$sql = null;
+			
+			/* return array */
+			return $application;
+		}
+	}
+	
+	
+	
 	/* Returns array of application approvers */
 	if(!function_exists('getApplicationApprovers')) {
 		function getApplicationApprovers($conn)
@@ -290,6 +328,7 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
+				header("Location: https://codigo-tech.com/app_list.php");
 			}
 		}
 	}
@@ -307,6 +346,7 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
+				header("Location: https://codigo-tech.com/app_list.php");
 			}
 		}
 	}
@@ -549,5 +589,6 @@
 			
 		}
 	}
+	
 	
 ?>

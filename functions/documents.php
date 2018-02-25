@@ -1,4 +1,7 @@
 <?php
+	ob_start();
+	
+	set_include_path('/home/egf897jck0fu/public_html/');
 	include('Net/SFTP.php');
 
 	function listDocs($id) {
@@ -9,10 +12,10 @@
 		}
 		return $ssh->nlist($settings["uploads_dir"] . $id);
 	}
-	/*if(isset($_GET["doc"]))
+	if(isset($_GET["doc"]))
 	{
 		downloadDocs($_GET["id"], $_GET["doc"]);
-	}*/
+	}
 	function downloadDocs($id, $doc) {
 		$settings = parse_ini_file('config.ini');
 			
