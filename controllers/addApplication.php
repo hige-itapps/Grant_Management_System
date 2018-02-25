@@ -48,21 +48,40 @@
 				$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, 
 				$budgetArray);
 				
-			echo "Insert status: ".$successAppID.".";
+			echo "Insert status: ".$successAppID.".<br>";
 			if($successAppID > 0) //if insert into DB was successful, continue
 			{
-				echo "Now going to upload docs";
+				echo "Now going to upload docs<br>";
 				$successUpload = uploadDocs($successAppID); //upload the documents
 				
-				echo "Upload status: ".$successUpload.".";
+				echo "Upload status: ".$successUpload.".<br>";
 			}
+			$to = $_POST["inputDeptCE"];
+			$body = "<p>Hello - </p><p>A new HIGE Grant application has been submitted by #name of the #dept
+			department that requires his/her department chair's signature.</p>
+			<p>Please go to the HIGE website and follow the instructions to sign the application.</p>";//file_get_contents('customEmail.html');
+			$body = str_replace("#name", nl2br($_POST["inputName"]), $body);
+			$body = str_replace("#dept", nl2br($_POST["inputDept"]), $body);
+
+			$subject = "New HIGE Grant Application - Do Not Reply";
+
+			$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
+			$headers .= "Reply-To: info@codigo-tech.com \r\n";
+			$headers .= "MIME-Version: 1.0\r\n";
+			$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+			$headers .= "X-Priority: 1 (Highest)\n";
+			$headers .= "X-MSMail-Priority: High\n";
+			$headers .= "Importance: High\n";
+				
+			mail($to, $subject, $body, $headers);
+			
 		}
 		catch(Exception $e)
 		{
 			echo "Error adding application: " . $e->getMessage();
 		}
 		
-		$tempConn = null; //close connection
+		$tempConn = null; //close connection -- NOT NEEDED.
 	}
 	
 	/*Upload the documents; return true on success, false on failure*/
