@@ -6,6 +6,7 @@
 	
 	/*include documents functions*/
 	include "functions/documents.php";
+	//print_r($app);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,12 +48,12 @@
 	
 		<!--BODY-->
 		<div class="container-fluid">
-			<form class="form-horizontal" id="approvalF" name="approvalF" method="POST" action="#">
+			<form class="form-horizontal" id="approvalF" name="approvalF" method="POST" action="application_confirmation.php">
 				<div ng-controller="budget">
 					<!--APPLICANT INFO-->
 					<div class="row">
 						<center>
-						<p class="title">Applicant Information:</p>
+						<h2 class="title">Applicant Information:</h2>
 						</center>
 					</div>
 					<div class="row">
@@ -61,28 +62,28 @@
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputName"><p class="title" style="font-size: 18px !important;">Name:</p></label>
-								<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" disabled="true" value="<?php echo $app->name; ?>" required />
+								<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" disabled="true" value="<?php echo $app[0]->name; ?>" required />
 							</div>
 						</div>
 					<!--EMAIL-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputEmail"><p class="title" style="font-size: 18px !important;">Email Address:</p></label>
-								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" disabled="true" value="<?php echo $app->email; ?>" required />
+								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email" disabled="true" value="<?php echo $app[0]->email; ?>" required />
 							</div>
 						</div>
 					<!--DEPARTMENT-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputDept"><p class="title" style="font-size: 18px !important;">Department:</p></label>
-								<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Department" disabled="true" value="<?php echo $app->dept; ?>" required />
+								<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Department" disabled="true" value="<?php echo $app[0]->dept; ?>" required />
 							</div>
 						</div>
 					<!--DEPT MAIL STOP-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputDeptM"><p class="title" style="font-size: 18px !important;">Department Mail Stop:</p></label>
-								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Department Mail Stop" disabled="true" value="<?php echo $app->deptM; ?>" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Department Mail Stop" disabled="true" value="<?php echo $app[0]->deptM; ?>" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
@@ -90,13 +91,13 @@
 						<div class="col-md-1">
 							<div class="form-group">
 								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Travel From:</p></label>
-								<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" disabled="true" value="<?php echo $app->tStart; ?>" required />
+								<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" disabled="true" value="<?php echo $app[0]->tStart; ?>" required />
 							</div>
 						</div>
 						<div class="col-md-1">
 							<div class="form-group">
 								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">To:</p></label>
-								<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->tEnd; ?>" onchange="TDate()" required />
+								<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app[0]->tEnd; ?>" onchange="TDate()" required />
 							</div>
 						</div>
 						<div class="col-md-1"></div>
@@ -114,34 +115,34 @@
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputRName"><p class="title" style="font-size: 18px !important;">Title of Research:</p></label>
-								<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title" disabled="true" value="<?php echo $app->rTitle; ?>" required />
+								<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title" disabled="true" value="<?php echo $app[0]->rTitle; ?>" required />
 							</div>
 						</div>
 					<!--ACTIVITY DATES-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputFrom"><p class="title" style="font-size: 18px !important;">Activity Date From:</p></label>
-								<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" onchange="ADateF()" disabled="true" value="<?php echo $app->aStart; ?>"  required />
+								<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" onchange="ADateF()" disabled="true" value="<?php echo $app[0]->aStart; ?>"  required />
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputTo"><p class="title" style="font-size: 18px !important;">Activity Date To:</p></label>
-								<input type="date" class="form-control" id="inputATo" name="inputATo" onchange="ADateT()" disabled="true" value="<?php echo $app->aEnd; ?>"  required />
+								<input type="date" class="form-control" id="inputATo" name="inputATo" onchange="ADateT()" disabled="true" value="<?php echo $app[0]->aEnd; ?>"  required />
 							</div>
 						</div>
 					<!--DESTINATION-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputDest"><p class="title" style="font-size: 18px !important;">Destination:</p></label>
-								<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" disabled="true" value="<?php echo $app->dest; ?>" required />
+								<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" disabled="true" value="<?php echo $app[0]->dest; ?>" required />
 							</div>
 						</div>
 					<!--AMOUNT REQ-->
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="inputAR"><p class="title" style="font-size: 18px !important;">Amount Requested:</p></label>
-								<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Amount Requested" disabled="true" value="<?php echo $app->aReq; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Amount Requested" disabled="true" value="<?php echo $app[0]->aReq; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
 						</div>
@@ -159,27 +160,27 @@
 					</div><div class="row"><div class="col-md-1"></div>
 						<div class="col-md-1">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr1" type="checkbox" disabled="true" <?php if($app->pr1 == 1) echo "checked"; ?> value="Research">Research</label></p>
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr1" type="checkbox" disabled="true" <?php if($app[0]->pr1 == 1) echo "checked"; ?> value="Research">Research</label></p>
 							</div>
 						</div>
 						<div class="col-md-1">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr2" type="checkbox" disabled="true" <?php if($app->pr2 == 1) echo "checked"; ?> value="Conference">Conference</label></p>
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr2" type="checkbox" disabled="true" <?php if($app[0]->pr2 == 1) echo "checked"; ?> value="Conference">Conference</label></p>
 							</div>
 						</div>
 						<div class="col-md-1">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" disabled="true" <?php if($app->pr3 == 1) echo "checked"; ?> value="Creative Activity">Creative Activity</label></p>
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr3" type="checkbox" disabled="true" <?php if($app[0]->pr3 == 1) echo "checked"; ?> value="Creative Activity">Creative Activity</label></p>
 							</div>
 						</div>
 						<div class="col-md-1">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pr4dummy" id="pr4dummy" type="checkbox" disabled="true"<?php if($app->pr4 != "") echo "checked"; ?> value="">Other, explain.</label></p>
+								<p class="title" style="font-size: 14px !important;"><label><input name="pr4dummy" id="pr4dummy" type="checkbox" disabled="true"<?php if($app[0]->pr4 != "") echo "checked"; ?> value="">Other, explain.</label></p>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<input type="text" class="form-control" id="pr4" name="pr4" disabled="true" value="<?php echo $app->pr4; ?>" placeholder="Other, explain..." />
+								<input type="text" class="form-control" id="pr4" name="pr4" disabled="true" value="<?php echo $app[0]->pr4; ?>" placeholder="Other, explain..." />
 							</div>
 						</div>
 						<div class="col-md-1"></div>
@@ -187,7 +188,7 @@
 					<div class="row"><div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="form-group">
-								<input type="text" class="form-control" id="eS" name="eS" placeholder="Are you receiving other funding? Who is providing the funds? How much?" disabled="true" value="<?php echo $app->oF; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
+								<input type="text" class="form-control" id="eS" name="eS" placeholder="Are you receiving other funding? Who is providing the funds? How much?" disabled="true" value="<?php echo $app[0]->oF; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' />
 							</div>
 						</div>
@@ -207,7 +208,7 @@
 						<div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="form-group">
-								<textarea class="form-control" id="props" name="props" placeholder="Proposal summary, MAX 150 words" disabled="true" rows=10 required /><?php echo $app->pS; ?></textarea>
+								<textarea class="form-control" id="props" name="props" placeholder="Proposal summary, MAX 150 words" disabled="true" rows=10 required /><?php echo $app[0]->pS; ?></textarea>
 							</div>
 						</div>
 						<div class="col-md-1"></div>
@@ -219,7 +220,7 @@
 						<div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg1" type="checkbox" disabled="true" <?php if($app->fg1 == 1) echo "checked"; ?> value="">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg1" type="checkbox" disabled="true" <?php if($app[0]->fg1 == 1) echo "checked"; ?> value="">
 								Support for international collaborative research and creative activities, or for international research, including archival and field work.</label></p>
 							</div>
 						</div>
@@ -229,7 +230,7 @@
 						<div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg2" type="checkbox" disabled="true" <?php if($app->fg2 == 1) echo "checked"; ?> value="">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg2" type="checkbox" disabled="true" <?php if($app[0]->fg2 == 1) echo "checked"; ?> value="">
 								Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label></p>
 							</div>
 						</div>
@@ -239,7 +240,7 @@
 						<div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg3" type="checkbox" disabled="true" <?php if($app->fg3 == 1) echo "checked"; ?> value="">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg3" type="checkbox" disabled="true" <?php if($app[0]->fg3 == 1) echo "checked"; ?> value="">
 								Support for attendance at international conferences, seminars or workshops.</label></p>
 							</div>
 						</div>
@@ -249,7 +250,7 @@
 						<div class="col-md-1"></div>
 						<div class="col-md-10">
 							<div class="checkbox">
-								<p class="title" style="font-size: 14px !important;"><label><input name="pg4" type="checkbox" disabled="true" <?php if($app->fg4 == 1) echo "checked"; ?> value="">
+								<p class="title" style="font-size: 14px !important;"><label><input name="pg4" type="checkbox" disabled="true" <?php if($app[0]->fg4 == 1) echo "checked"; ?> value="">
 								Support for scholarly international travel in order to enrich international knowledge, which will directly
 								contribute to the internationalization of the WMU curricula.</label></p>
 							</div>
@@ -272,22 +273,22 @@
 						<div class="col-md-3"></div>
 					</div>
 					<?php
-						for($i = 0; $i < count($app->budget); $i++) {
+						for($i = 0; $i < count($app[0]->budget); $i++) {
 							echo '<div class="row">
 									<div class="col-md-3"></div>
 									<div class="col-md-2">
 										<div class="form-group">
-											<input type="text" disabled="true" class="form-control" value="' . $app->budget[$i][2] . '" />
+											<input type="text" disabled="true" class="form-control" value="' . $app[0]->budget[$i][2] . '" />
 										</div>
 									</div>
 									<div class="col-md-2">
 										<div class="form-group">
-											<input type="text" disabled="true" class="form-control" value="' . $app->budget[$i][4] . '" />
+											<input type="text" disabled="true" class="form-control" value="' . $app[0]->budget[$i][4] . '" />
 										</div>
 									</div>
 									<div class="col-md-2">
 										<div class="form-group">
-											<input type="text" disabled="true" class="form-control" value="' . $app->budget[$i][3] . '" />
+											<input type="text" disabled="true" class="form-control" value="' . $app[0]->budget[$i][3] . '" />
 										</div>
 									</div>
 									<div class="col-md-3"></div>
@@ -299,7 +300,7 @@
 							<p class="title" style="font-size: 16px !important;">Total:</p>
 						</div>
 						<div class="col-md-1">
-							<p class="title" style="font-size: 16px !important;"><?php $sum = 0; for($i = 0; $i < count($app->budget); $i++) $sum += $app->budget[$i][3]; echo $sum; ?></p>
+							<p class="title" style="font-size: 16px !important;"><?php $sum = 0; for($i = 0; $i < count($app[0]->budget); $i++) $sum += $app[0]->budget[$i][3]; echo $sum; ?></p>
 						</div>
 						<div class="col-md-5"></div>
 					</div>
@@ -312,9 +313,9 @@
 						for($i = 0; $i < count($docs); $i++)
 						{
 							if(substr($docs[$i], 0, 1) == 'P')
-								$P = "<a href='db.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
+								$P = "<a href='functions/documents.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
 							if(substr($docs[$i], 0, 1) == 'S')
-								$S = "<a href='db.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
+								$S = "<a href='functions/documents.php?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>";
 						}
 					?>
 					<div class="row">
@@ -332,7 +333,7 @@
 						<div class="col-md-3"></div>
 						<center>
 						<div class="col-md-3">
-							<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
+							<input type="hidden" name="appID" value="<?php echo $app[0]->id; ?>" />
 							<input type="submit" class="styled-button-3" id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
 						</div>
 						<div class="col-md-3">
@@ -342,10 +343,17 @@
 						<div class="col-md-3"></div>
 					</div>
 				</div>
+				<?php
+			
+					//DO NOT TOUCH.
+					if(isset($_POST["approveA"]))
+						approveApplication($conn, $_POST["appID"]);
+					if(isset($_POST["denyA"]))
+						denyApplication($conn, $_POST["appID"]);
+				?>
 			</form>
 			<br><br>
 		</div>
 		<!--BODY-->
-		
 	</body>
 </html>

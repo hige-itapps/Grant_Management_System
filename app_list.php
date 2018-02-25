@@ -1,4 +1,7 @@
 <?php
+	ob_start();
+	
+	set_include_path('/home/egf897jck0fu/public_html/');
 	include "functions/database.php";
 ?>
 <!DOCTYPE html>
@@ -37,12 +40,13 @@
 		<?php
 			include 'include/header.php';
 			$conn = connection();
-			$apps = getApplications($conn, "");//get all applications
+			$apps = getNewApplications($conn);//get all applications
+			//print_r($apps);
 		?>
 		<!--HEADER-->
 		<div class="container-fluid">
 			<div class="row">
-				<center><p class="title">Pending Applications</p></center>
+				<center><h2 class="title">Pending Applications</h2></center>
 			</div>
 			<div class="row">
 				<div class="col-md-3"></div>
@@ -56,12 +60,15 @@
 						</thead>
 						<tbody>
 							<?php
-								for($i = 0; $i < count($apps); $i++) {
-									echo "<tr>";
-									echo "<td><a href=application_confirmation.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
-									echo "<td>" . $apps[$i]->dateS . "</td>";
-									echo "</tr>";
-								}
+								if(count($apps) == 0)
+									echo "<tr><td align='center' colspan='3'><h3 class='title'>NO PENDING APPLICATIONS.</h3></td></tr>";
+								else
+									for($i = 0; $i < count($apps); $i++) {
+										echo "<tr>";
+										echo "<td><a href=application_confirmation.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
+										echo "<td>" . $apps[$i]->dateS . "</td>";
+										echo "</tr>";
+									}
 							?>
 						</tbody>
 					</table>
