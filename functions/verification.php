@@ -122,4 +122,32 @@
 		}
 	}
 	
+	/* Returns true if the given email == the deptChairEmail for a given app ID, or false otherwise */
+	if(!function_exists('isUserAllowedToSignApplication')){
+		function isUserAllowedToSignApplication($conn, $email, $appID)
+		{
+			$is = false; //initialize boolean to false
+			
+			if ($email != "" && $appID != "") //valid email & ID
+			{
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql->bindParam(':dEmail', $email);
+				$sql->bindParam(':appID', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				if($res[0][0] > 0)//this is the correct user to sign
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+	
 ?>

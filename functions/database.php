@@ -116,6 +116,7 @@
 			$application->fg3 = $res[0][22];
 			$application->fg4 = $res[0][23];
 			$application->deptCE = $res[0][24];
+			$application->deptCS = $res[0][25];
 			
 			$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 			$sql->bindParam(':id', $application->id);
@@ -130,6 +131,78 @@
 			
 			/* return application */
 			return $application;
+		}
+	}
+	
+	/* Returns array of all applications that still need to be signed by a specific user(via email address)
+	Note: don't include ones that have already been signed, and ones that have the same email as the submitter
+	(you shouldn't be able to sign your own application)
+	*/
+	if(!function_exists('getApplicationsToSign')) {
+		function getApplicationsToSign($conn, $email)
+		{
+			if ($email != "") //valid email
+			{
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql->bindParam(':dEmail', $email);
+				
+				/* run the prepared query */
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				$applicationsArray = []; //create new array of applications
+				
+				/*go through all applications, adding them to the array*/
+				for($i = 0; $i < count($res); $i++)
+				{
+					//echo "i is ".$i.".";
+					$application = new Application(); //initialize
+					$application->id = $res[$i][0];
+					$application->bnid = $res[$i][1];
+					$application->name = $res[$i][3];
+					$application->dateS = $res[$i][2];
+					$application->dept = $res[$i][4];
+					$application->deptM = $res[$i][5];
+					$application->email = $res[$i][6];
+					$application->rTitle = $res[$i][7];
+					$application->tStart = $res[$i][8];
+					$application->tEnd = $res[$i][9];
+					$application->aStart = $res[$i][10];
+					$application->aEnd = $res[$i][11];
+					$application->dest = $res[$i][12];
+					$application->aReq = $res[$i][13];
+					$application->pr1 = $res[$i][14];
+					$application->pr2 = $res[$i][15];
+					$application->pr3 = $res[$i][16];
+					$application->pr4 = $res[$i][17];
+					$application->oF = $res[$i][18];
+					$application->pS = $res[$i][19];
+					$application->fg1 = $res[$i][20];
+					$application->fg2 = $res[$i][21];
+					$application->fg3 = $res[$i][22];
+					$application->fg4 = $res[$i][23];
+					$application->deptCE = $res[$i][24];
+					$application->deptCS = $res[0][25];
+					
+					$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+					$sql->bindParam(':id', $application->id);
+					/* run the prepared query */
+					$sql->execute();
+					$resBudget = $sql->fetchAll();
+					
+					$application->budget = $resBudget;
+					
+					/*add application to array*/
+					$applicationsArray[$i] = $application;
+				}
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				/* return array */
+				return $applicationsArray;
+			}
 		}
 	}
 	
@@ -186,6 +259,7 @@
 				$application->fg3 = $res[$i][22];
 				$application->fg4 = $res[$i][23];
 				$application->deptCE = $res[$i][24];
+				$application->deptCS = $res[0][25];
 				
 				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $application->id);
@@ -258,6 +332,7 @@
 				$application->fg3 = $res[$i][22];
 				$application->fg4 = $res[$i][23];
 				$application->deptCE = $res[$i][24];
+				$application->deptCS = $res[0][25];
 				
 				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $application->id);
@@ -354,7 +429,7 @@
 		}
 	}
 	
-	/* Returns true if applicant's application has been signed, or false otherwise */
+	/* Returns 1 if applicant's application has been signed, or 0 otherwise */
 	if(!function_exists('isApplicationSigned')){
 		function isApplicationSigned($conn, $appID)
 		{
@@ -447,7 +522,7 @@
 			if ($email != "") //valid email
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
 				$sql->bindParam(':dEmail', $email);
 				$sql->execute();
 				$res = $sql->fetchAll();
@@ -525,6 +600,25 @@
 			}
 		}
 	}
+	
+	/*Update an application to be signed*/
+	if(!function_exists('signApplication')){
+		function signApplication($conn, $id, $signature)
+		{
+			if ($id != "" && $signature != "") //valid application id & sig
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE applications SET DepartmentChairSignature = :sig WHERE ID = :id");
+				$sql->bindParam(':sig', $signature);
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
 	
 	/*
 	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use
