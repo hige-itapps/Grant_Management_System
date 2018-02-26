@@ -76,7 +76,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="application_signature.php">Application Signature (<?php echo $totalApps ?> to sign)</a></p>
+					<p><a href="app_sig_list.php">Application Signature (<?php echo $totalApps ?> to sign)</a></p>
 			<?php 
 				}
 			

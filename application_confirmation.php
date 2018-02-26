@@ -342,6 +342,18 @@
 					</div>
 					<br><br>
 					<div class="row">
+					<!--DEPARTMENT CHAIR SIGNATURE-->
+						<div class="col-md-3"></div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="inputDept">Department Chair Signature:</label>
+								<input type="text" class="form-control" id="inputDeptCS" name="inputDeptCS" placeholder="Department Chair Signature Here" disabled="true" value="<?php echo $app->deptCS; ?>"/>
+							</div>
+						</div>
+						<div class="col-md-3"></div>
+					</div>
+					<br><br>
+					<div class="row">
 						<div class="col-md-3"></div>
 						<center>
 						<div class="col-md-3">
