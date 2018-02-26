@@ -1,5 +1,5 @@
 <?php
-	include $_SERVER['DOCUMENT_ROOT']."/Senior Design Project/include/application.php";
+	include $_SERVER['DOCUMENT_ROOT']."/include/application.php";
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
@@ -8,7 +8,7 @@
 			try 
 			{
 				/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
-				$config_url = $_SERVER['DOCUMENT_ROOT'].'/Senior Design Project/config.ini';
+				$config_url = $_SERVER['DOCUMENT_ROOT'].'/config.ini';
 				
 				$settings = parse_ini_file($config_url);
 				//var_dump($settings);
@@ -335,6 +335,35 @@
 			{
 				/* Select only applications that this user has has submitted */
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Approved = true");
+				$sql->bindParam(':id', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				if($res[0][0] > 0) //at least one result
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+	
+	/* Returns true if applicant's application has been signed, or false otherwise */
+	if(!function_exists('isApplicationSigned')){
+		function isApplicationSigned($conn, $appID)
+		{
+			$is = false;
+			
+			if ($appID != "") //valid Id
+			{
+				/* Select only applications that this user has has submitted that have a signature */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND DepartmentChairSignature IS NOT NULL");
 				$sql->bindParam(':id', $appID);
 				$sql->execute();
 				$res = $sql->fetchAll();
