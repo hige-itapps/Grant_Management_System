@@ -2,7 +2,9 @@
 	ob_start();
 	
 	set_include_path('/home/egf897jck0fu/public_html/');
+	/*get database connection*/
 	include "functions/database.php";
+	$conn = connection();
 	
 	/*Debug user validation*/
 	include "include/debugAuthentication.php";
@@ -48,9 +50,7 @@
 			
 			if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
 			{
-				$conn = connection();
 				$apps = getPendingApplications($conn, "");//get all pending applications
-				$conn = null; //close connection
 		?>
 		<!--HEADER-->
 		<div class="container-fluid">
@@ -92,7 +92,9 @@
 				<h1>You are not allowed to view applications!</h1>
 			<?php
 			}
-	?>
 		?>
 	</body>
 </html>
+<?php
+	$conn = null; //close connection
+?>
