@@ -1,8 +1,5 @@
 <?php
-	ob_start();
-	
-	set_include_path('/home/egf897jck0fu/public_html/');
-	include "include/application.php";
+	include $_SERVER['DOCUMENT_ROOT']."/Senior Design Project/include/application.php";
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
@@ -11,7 +8,7 @@
 			try 
 			{
 				/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
-				$config_url = $_SERVER['DOCUMENT_ROOT'].'/config.ini';
+				$config_url = $_SERVER['DOCUMENT_ROOT'].'/Senior Design Project/config.ini';
 				
 				$settings = parse_ini_file($config_url);
 				//var_dump($settings);
@@ -82,36 +79,143 @@
 		}
 	}
 	
-	
-	/* CHECK IF APPLICATION HAS BEEN SIGNED BY CHAIR */
-	if(!function_exists('isSigned')) {
-		function isSigned($conn, $id)
+	/*Returns a single application for a specified application ID*/
+	if(!function_exists('getApplication')) {
+		function getApplication($conn, $appID)
 		{
-			/* Prepare & run the query */
-			$sql = $conn->prepare("Select DepartmentChairSignature FROM applications WHERE ID = :id");
-			$sql->bindParam(':id', $id);
+			$sql = $conn->prepare("Select * FROM applications WHERE ID = :appID");
+			$sql->bindParam(':appID', $appID);
+			/* run the prepared query */
 			$sql->execute();
 			$res = $sql->fetchAll();
 			
+			/*create application object*/
+			$application = new Application();
+			$application->id = $res[0][0];
+			$application->bnid = $res[0][1];
+			$application->name = $res[0][3];
+			$application->dateS = $res[0][2];
+			$application->dept = $res[0][4];
+			$application->deptM = $res[0][5];
+			$application->email = $res[0][6];
+			$application->rTitle = $res[0][7];
+			$application->tStart = $res[0][8];
+			$application->tEnd = $res[0][9];
+			$application->aStart = $res[0][10];
+			$application->aEnd = $res[0][11];
+			$application->dest = $res[0][12];
+			$application->aReq = $res[0][13];
+			$application->pr1 = $res[0][14];
+			$application->pr2 = $res[0][15];
+			$application->pr3 = $res[0][16];
+			$application->pr4 = $res[0][17];
+			$application->oF = $res[0][18];
+			$application->pS = $res[0][19];
+			$application->fg1 = $res[0][20];
+			$application->fg2 = $res[0][21];
+			$application->fg3 = $res[0][22];
+			$application->fg4 = $res[0][23];
+			$application->deptCE = $res[0][24];
+			
+			$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+			$sql->bindParam(':id', $application->id);
+			/* run the prepared query */
+			$sql->execute();
+			$resBudget = $sql->fetchAll();
+			
+			$application->budget = $resBudget;
 			
 			/* Close finished query and connection */
 			$sql = null;
-			if(is_null($res[0][0]))
-				return 0;
-			else
-				return 1;
 			
+			/* return application */
+			return $application;
 		}
 	}
+	
+	/* Returns array of all applications that still need to be approved or denied for a specific user, 
+	or ALL users if no ID is provided*/
+	if(!function_exists('getPendingApplications')) {
+		function getPendingApplications($conn, $bNetID)
+		{
+			if ($bNetID != "") //valid username
+			{
+				/* Select only pending applications that this user has has submitted */
+				$sql = $conn->prepare("Select * FROM applications WHERE Approved IS NULL AND Applicant = :bNetID");
+				$sql->bindParam(':bNetID', $bNetID);
+			}
+			else //no username
+			{
+				/* Select all pending applications */
+				$sql = $conn->prepare("Select * FROM applications WHERE Approved IS NULL");
+			}
+			
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll();
+			
+			$applicationsArray = []; //create new array of applications
+			
+			/*go through all applications, adding them to the array*/
+			for($i = 0; $i < count($res); $i++)
+			{
+				//echo "i is ".$i.".";
+				$application = new Application(); //initialize
+				$application->id = $res[$i][0];
+				$application->bnid = $res[$i][1];
+				$application->name = $res[$i][3];
+				$application->dateS = $res[$i][2];
+				$application->dept = $res[$i][4];
+				$application->deptM = $res[$i][5];
+				$application->email = $res[$i][6];
+				$application->rTitle = $res[$i][7];
+				$application->tStart = $res[$i][8];
+				$application->tEnd = $res[$i][9];
+				$application->aStart = $res[$i][10];
+				$application->aEnd = $res[$i][11];
+				$application->dest = $res[$i][12];
+				$application->aReq = $res[$i][13];
+				$application->pr1 = $res[$i][14];
+				$application->pr2 = $res[$i][15];
+				$application->pr3 = $res[$i][16];
+				$application->pr4 = $res[$i][17];
+				$application->oF = $res[$i][18];
+				$application->pS = $res[$i][19];
+				$application->fg1 = $res[$i][20];
+				$application->fg2 = $res[$i][21];
+				$application->fg3 = $res[$i][22];
+				$application->fg4 = $res[$i][23];
+				$application->deptCE = $res[$i][24];
+				
+				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+				$sql->bindParam(':id', $application->id);
+				/* run the prepared query */
+				$sql->execute();
+				$resBudget = $sql->fetchAll();
+				
+				$application->budget = $resBudget;
+				
+				/*add application to array*/
+				$applicationsArray[$i] = $application;
+			}
+			
+			/* Close finished query and connection */
+			$sql = null;
+			
+			/* return array */
+			return $applicationsArray;
+		}
+	}
+	
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	if(!function_exists('getApplications')) {
-		function getApplications($conn, $id)
+		function getApplications($conn, $bNetID)
 		{
-			if ($id != "") //valid username
+			if ($bNetID != "") //valid username
 			{
 				/* Select only applications that this user has has submitted */
-				$sql = $conn->prepare("Select * FROM applications WHERE ID = :id");
-				$sql->bindParam(':id', $id);
+				$sql = $conn->prepare("Select * FROM applications WHERE Applicant = :bNetID");
+				$sql->bindParam(':bNetID', $bNetID);
 			}
 			else //no username
 			{
@@ -175,41 +279,6 @@
 		}
 	}
 	
-	
-	/* DO NOT TOUCH DO NOT CHANGE DO NOT TOUCH Returns array of ALL NEW APPLICATIONS I.E: Approved = null, DO NOT TOUCH DO NOT TOUCH DO NOT TOUCH */
-	if(!function_exists('getNewApplications')) {
-		function getNewApplications($conn)
-		{
-			/* Select only applications that have FIELD APPROVED set to null (i.e: NEW APPLICATIONS) */
-			$sql = $conn->prepare("Select ID, Name, Date FROM applications WHERE Approved IS NULL");
-			
-			/* run the prepared query */
-			$sql->execute();
-			$res = $sql->fetchAll();
-			
-			$application = array(); //create new array of applications
-			
-			/*go through all applications, adding them to the array*/
-			for($i = 0; $i < count($res); $i++)
-			{
-				//echo "i is ".$i.".";
-				$application[$i] = new Application(); //initialize
-				$application[$i]->id = $res[$i][0];
-				$application[$i]->name = $res[$i][1];
-				$application[$i]->dateS = $res[$i][2];
-				
-			}
-			
-			/* Close finished query and connection */
-			$sql = null;
-			
-			/* return array */
-			return $application;
-		}
-	}
-	
-	
-	
 	/* Returns array of application approvers */
 	if(!function_exists('getApplicationApprovers')) {
 		function getApplicationApprovers($conn)
@@ -255,17 +324,76 @@
 		}
 	}
 	
-	/* Returns true if applicant's application has been approved, or false otherwise */
+	/* Returns true if applicant's application has been approved, or false otherwise 
+	TODO: make this only work for applications that do not also have an approved follow-up report!*/
 	if(!function_exists('isApplicationApproved')){
-		function isApplicationApproved($conn, $user)
+		function isApplicationApproved($conn, $appID)
 		{
 			$is = false;
 			
-			if ($user != "") //valid username
+			if ($appID != "") //valid Id
 			{
 				/* Select only applications that this user has has submitted */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Applicant = :username AND Approved = true");
-				$sql->bindParam(':username', $user);
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Approved = true");
+				$sql->bindParam(':id', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				if($res[0][0] > 0) //at least one result
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+	
+	/* Returns true if this applicant has a pending application, or false otherwise */
+	if(!function_exists('hasPendingApplication')){
+		function hasPendingApplication($conn, $bNetID)
+		{
+			$is = false;
+			
+			if ($bNetID != "") //valid username
+			{
+				/* Select only pending applications that this user has has submitted */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Approved IS NULL AND Applicant = :bNetID");
+				$sql->bindParam(':bNetID', $bNetID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				if($res[0][0] > 0) //at least one result
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+	
+	/* Returns true if this applicant has an approved application from up to a year ago */
+	if(!function_exists('hasApprovedApplicationWithinPastYear')){
+		function hasApprovedApplicationWithinPastYear($conn, $bNetID)
+		{
+			$is = false;
+			
+			if ($bNetID != "") //valid username
+			{
+				/* Select only approved applications that this user has has submitted within the past year*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Date >= DATE_SUB(NOW(),INTERVAL 1 YEAR) AND Applicant = :bNetID AND Approved = true");
+				$sql->bindParam(':bNetID', $bNetID);
 				$sql->execute();
 				$res = $sql->fetchAll();
 				
@@ -349,7 +477,6 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
-				header("Location: https://codigo-tech.com/app_list.php");
 			}
 		}
 	}
@@ -367,7 +494,6 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
-				header("Location: https://codigo-tech.com/app_list.php");
 			}
 		}
 	}
@@ -610,6 +736,5 @@
 			
 		}
 	}
-	
 	
 ?>
