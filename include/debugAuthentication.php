@@ -10,6 +10,18 @@
 		$_SESSION['email'] = $_POST["inputEmail"];
 		//echo "User saved with session vars ".$_SESSION['broncoNetID'].", ".$_SESSION['position'].", and ".$_SESSION['email'].".";
 	}
+	
+	/*If POST data contains a logout request, logout the user by destroying session!*/
+	if(isset($_POST["logoutUser"]))
+	{
+		// remove all session variables
+		session_unset(); 
+		// destroy the session 
+		session_destroy(); 
+		// reload page to enforce login system to start
+		header("Refresh:0");
+		exit(); //make sure the remaining part of the page doesn't load!
+	}
 
 	/*Force user to login with session if any important session variables aren't set*/
 	if (!isset($_SESSION['broncoNetID']) || !isset($_SESSION['position']) || !isset($_SESSION['email']))
