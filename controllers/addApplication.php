@@ -4,6 +4,7 @@
 	set_include_path('/home/egf897jck0fu/public_html/');
 	include('../Net/SFTP.php');
 	include('../functions/database.php');
+	include('../functions/documents.php');
 	
 	if(isset($_POST["sub"])) //submit button to form
 	{
@@ -49,31 +50,49 @@
 				$budgetArray);
 				
 			echo "Insert status: ".$successAppID.".<br>";
+			
+			$successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
+			
 			if($successAppID > 0) //if insert into DB was successful, continue
 			{
-				echo "Now going to upload docs<br>";
+				echo "Uploading docs...<br>";
 				$successUpload = uploadDocs($successAppID); //upload the documents
 				
 				echo "Upload status: ".$successUpload.".<br>";
 			}
-			$to = $_POST["inputDeptCE"];
-			$body = "<p>Hello - </p><p>A new HIGE Grant application has been submitted by #name of the #dept
-			department that requires his/her department chair's signature.</p>
-			<p>Please go to the HIGE website and follow the instructions to sign the application.</p>";//file_get_contents('customEmail.html');
-			$body = str_replace("#name", nl2br($_POST["inputName"]), $body);
-			$body = str_replace("#dept", nl2br($_POST["inputDept"]), $body);
+			else
+			{
+				echo "ERROR: could not insert application, app status: ".$successAppID."!";
+			}
+			
+			if($successUpload > 0) //upload was successful
+			{
+				$to = $_POST["inputDeptCE"];
+				$body = "<p>Hello - </p><p>A new HIGE Grant application has been submitted by #name of the #dept
+				department that requires his/her department chair's signature.</p>
+				<p>Please go to the HIGE website and follow the instructions to sign the application.</p>";//file_get_contents('customEmail.html');
+				$body = str_replace("#name", nl2br($_POST["inputName"]), $body);
+				$body = str_replace("#dept", nl2br($_POST["inputDept"]), $body);
 
-			$subject = "New HIGE Grant Application - Do Not Reply";
+				$subject = "New HIGE Grant Application - Do Not Reply";
 
-			$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
-			$headers .= "Reply-To: info@codigo-tech.com \r\n";
-			$headers .= "MIME-Version: 1.0\r\n";
-			$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-			$headers .= "X-Priority: 1 (Highest)\n";
-			$headers .= "X-MSMail-Priority: High\n";
-			$headers .= "Importance: High\n";
+				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
+				$headers .= "Reply-To: info@codigo-tech.com \r\n";
+				$headers .= "MIME-Version: 1.0\r\n";
+				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+				$headers .= "X-Priority: 1 (Highest)\n";
+				$headers .= "X-MSMail-Priority: High\n";
+				$headers .= "Importance: High\n";
+					
+				mail($to, $subject, $body, $headers);
 				
-			mail($to, $subject, $body, $headers);
+				//redirect back to homepage
+				header('/');
+			}
+			else
+			{
+				echo "ERROR: could not upload application documents, upload status: ".$successUpload."!";
+			}
 			
 		}
 		catch(Exception $e)
@@ -82,59 +101,5 @@
 		}
 		
 		$tempConn = null; //close connection -- NOT NEEDED.
-	}
-	
-	/*Upload the documents; return true on success, false on failure*/
-	function uploadDocs($id) {
-		$settings = parse_ini_file('../config.ini');
-		if(isset($_FILES["fD"]))
-		{
-			if ($_FILES['fD']['size'] != 0)
-			{
-				$file = $_FILES["fD"]["tmp_name"];
-				$doc = "P" . $id . ".pdf";
-				
-				
-				$ssh = new Net_SFTP('www.codigo-tech.com');
-				if (!$ssh->login($settings["host_user"], "Default1234$")) {
-					//header("Location: application_builder.php?status=failedfileFu");
-					return false;
-				}
-
-				echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
-				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
-				
-			}
-		}else{
-			echo "Could not upload file, application NOT submitted.";
-			//header("Location: application_builder.php?status=failedfileF");
-			return false;
-		}
-		if(isset($_FILES["sD"]))
-		{
-			if ($_FILES['sD']['size'] != 0)
-			{
-				$file = $_FILES["sD"]["tmp_name"];
-				$doc = "S" . $id . ".pdf";
-				
-				$ssh = new Net_SFTP('www.codigo-tech.com');
-				if (!$ssh->login($settings["host_user"], "Default1234$")) {
-					//header("Location: application_builder.php?status=failedfileSu");
-					return false;
-				}
-
-				echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
-				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
-				
-				
-			}
-		}else{
-			echo "Could not upload file, application NOT submitted.";
-			//header("Location: application_builder.php?status=failedfileS");
-			return false;
-		}
-		
-		/*everything was successful*/
-		return true;
 	}
 ?>
