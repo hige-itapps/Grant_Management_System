@@ -1,7 +1,6 @@
 <?php
-	/*Debug user validation
-	TODO: replace with actual user validation using CAS!!!*/
-	include('functions/debugvalidate.php');
+	/*Debug user validation*/
+	include "include/debugAuthentication.php";
 	
 	/*Get DB connection*/
 	include "functions/database.php";
@@ -67,9 +66,8 @@
 		.$maxProposalSummary.", budget comment: ".$maxBudgetComment;
 	*/
 	
-	/*Verify user as faculty member in order to make an application
-	TODO: more verification; only 1 active application per applicant, can't be dep. chair, etc.*/
-	if($position == 'faculty')
+	/*Verify that user is allowed to make an application*/
+	if(isUserAllowedToCreateApplication($conn, $_SESSION['broncoNetID'], $_SESSION['position']))
 	{
 	?>
 	<!--HEADER-->
@@ -94,7 +92,7 @@
 						<div class="col-md-4">
 							<div class="form-group">
 								<label for="inputEmail">Email Address (up to <?php echo $maxEmail; ?> characters):</label>
-								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required />
+								<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required value="<?php echo $_SESSION['email'] ?>"/>
 							</div>
 						</div>
 					<!--DEPARTMENT-->
@@ -109,7 +107,7 @@
 					<!--DEPT MAIL STOP-->
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="inputDeptM">Department Mail Stop:</label>
+								<label for="inputDeptM">Department Mail Stop (4 digits):</label>
 								<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Enter Department Mail Stop" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) 
 								|| event.which == 8 || event.which == 46' required />
 							</div>
@@ -357,6 +355,7 @@
 					<span id="loadSpinner" class="lt" style="visibility: hidden;">Submitting... <i class="fa fa-spinner fa-spin" style="font-size:35px !important;"></i></span>
 				</center>
 			</form>
+		</div>
 		<!--BODY-->
 	
 	<?php

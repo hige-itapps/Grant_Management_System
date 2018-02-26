@@ -3,6 +3,9 @@
 	
 	set_include_path('/home/egf897jck0fu/public_html/');
 	include "functions/database.php";
+	
+	/*Debug user validation*/
+	include "include/debugAuthentication.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,9 +42,12 @@
 		<!--HEADER-->
 		<?php
 			include 'include/header.php';
-			$conn = connection();
-			$apps = getNewApplications($conn);//get all applications
-			//print_r($apps);
+			
+			if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
+			{
+				$conn = connection();
+				$apps = getPendingApplications($conn, "")//get all pending applications
+				$conn = null; //close connection
 		?>
 		<!--HEADER-->
 		<div class="container-fluid">
@@ -76,6 +82,14 @@
 				<div class="col-md-3"></div>
 			</div>
 		</div>
-		
+		<?php
+			}
+			else{
+			?>
+				<h1>You are not allowed to view applications!</h1>
+			<?php
+			}
+	?>
+		?>
 	</body>
 </html>

@@ -1,7 +1,6 @@
 <?php
-	/*Debug user validation
-	TODO: replace with actual user validation using CAS!!!*/
-	include('functions/debugvalidate.php');
+	/*Debug user validation*/
+	include "include/debugAuthentication.php";
 	
 	/*Get DB connection*/
 	include "functions/database.php";
@@ -55,81 +54,82 @@
 				/*Initialize a counter to track number of available views to this user*/
 				$viewCounter = 0;
 			
-				/*Verify user as faculty member in order to make an application*/
-				if($position == 'faculty')
+				/*Make sure user is allowed to make an application*/
+				if(isUserAllowedToCreateApplication($conn, $_SESSION['broncoNetID'], $_SESSION['position']))
 				{ 
 					$viewCounter++;
 			?>
 					<p><a href="application_builder.php">Application Builder</a></p>
-			<?php } ?>
+			<?php 
+				}
 				
+				/*Let the user know they've got a pending application (if they do)*/
+				if(hasPendingApplication($conn, $_SESSION['broncoNetID']))
+				{
+			?>
+					<p><a href="#">Your application is pending</a><p>
 			<?php
-				$totalApps = getNumberOfApplicationsToSign($conn, $email);
+				}
+				/*get number of applications this user needs to sign*/
+				$totalApps = getNumberOfApplicationsToSign($conn, $_SESSION['email']);
 				if($totalApps > 0)
 				{
 					$viewCounter++;
 			?>
 					<p><a href="application_signature.php">Application Signature (<?php echo $totalApps ?> to sign)</a></p>
-			<?php } ?>
-			
 			<?php 
+				}
+			
 				/*Verify user as Applicant whos application has been approved*/
-				if(isApplicationApproved($conn, $broncoNetID))
+				if(isApplicationApproved($conn, $_SESSION['broncoNetID']))
 				{ 
 					$viewCounter++;
 			?>
 					<p><a href="follow_up_report_builder.php">Follow-up Report Builder</a></p>
-			<?php } ?>
-			
 			<?php 
-				/*Verify user as application approver to approve applications*/
-				if(isApplicationApprover($broncoNetID, $conn))
+				}
+				
+				/*Verify that user is allowed to freely see applications*/
+				if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_list.php">Application Confirmation</a></p>
-			<?php } ?>
-			
+					<p><a href="app_list.php">Application List</a></p>
 			<?php 
-				/*Verify user as committee member or application approver to see applications*/
-				if(isCommitteeMember($broncoNetID, $conn) || isApplicationApprover($broncoNetID, $conn))
-				{
-					$viewCounter++;
-			?>
-					<p><a href="application_viewer.php">Application Viewer</a></p>
-			<?php } ?>
-			
-			<?php 
-				/*Verify user as follow-up report approver to approve(and see) follow-up reports*/
-				if(isFollowUpReportApprover($broncoNetID, $conn))
+				}
+				
+				/*Verify user as follow-up report approver to approve follow-up reports*/
+				if(isFollowUpReportApprover($conn, $_SESSION['broncoNetID']))
 				{
 					$viewCounter++;
 			?>
 					<p><a href="follow_up_report_confirmation.php">Follow-up Report Confirmation</a></p>
-			<?php } ?>
-			
 			<?php 
-				/*Verify user as follow-up report approver or application approver to see follow-up reports*/
-				if(isFollowUpReportApprover($broncoNetID, $conn) || isApplicationApprover($broncoNetID, $conn))
+				}
+				
+				/*Verify that user is allowed to freely see follow-up reports*/
+				if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
 				{
 					$viewCounter++;
 			?>
 					<p><a href="follow_up_report_viewer.php">Follow-up Report Viewer</a></p>
-			<?php } ?>
-			
 			<?php 
+				}
+				
 				/*Verify user as administrator to give link to admin view*/
-				if(isAdministrator($broncoNetID, $conn))
+				if(isAdministrator($conn, $_SESSION['broncoNetID']))
 				{
 					$viewCounter++;
 			?>
 					<p><a href="administrator.php">Administrator</a></p>
-			<?php } 
+			<?php 
+				} 
 			
 				if($viewCounter == 0) //no views available to this person
 				{
 					?>
-						<p>You do not have access to any views!</p>
+						<p>You do not have access to any views! You must sign in as a faculty member or staff to use this application.</p>
+						<p>Note: IEFDF recipients must wait at least a year between applications.</p>
 					<?php
 				}
 			?>
