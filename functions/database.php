@@ -536,17 +536,14 @@
 	return new application ID if EVERYTHING was successful, otherwise 0
 	*/
 	if(!function_exists('insertApplication')){
-		function insertApplication($conn, $name, $email, $department, $departmentMailStop, $deptChairEmail, $travelFrom, $travelTo,
+		function insertApplication($conn, $broncoNetID, $name, $email, $department, $departmentMailStop, $deptChairEmail, $travelFrom, $travelTo,
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $budgetArray)
 		{
 			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 			
-			//TEMPORARY DUMMY BroncoNetID!!!! MUST REMOVE!!!
-			$tempBroncoNetID = 'jum5005';
-			
 			//First, add this user to the applicants table IF they don't already exist
-			insertApplicantIfNew($conn, $tempBroncoNetID);
+			insertApplicantIfNew($conn, $broncoNetID);
 			
 			/*Server-Side validation!*/
 			$valid = true; //start valid, turn false if anything is wrong!
