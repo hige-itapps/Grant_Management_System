@@ -28,6 +28,7 @@
 			public $fg3;
 			public $fg4;
 			public $deptCE;
+			public $deptCS;
 			public $budget;
 		}
 	}
