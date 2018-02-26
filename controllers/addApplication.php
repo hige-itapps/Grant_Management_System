@@ -99,7 +99,7 @@
 					mail($to, $subject, $body, $headers);
 					
 					//redirect back to homepage
-					header('/');
+					header('Location: /');
 				}
 				else
 				{
