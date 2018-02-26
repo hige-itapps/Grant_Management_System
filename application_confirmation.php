@@ -9,6 +9,9 @@
 	include "functions/database.php";
 	$conn = connection();
 	
+	/*Verification functions*/
+	include "functions/verification.php";
+	
 	if(isApplicationApprover($conn, $_SESSION['broncoNetID']))
 	{
 		$app = getApplication($conn, $_GET['id']);
@@ -82,7 +85,7 @@
 				<div ng-controller="budget">
 					<!--APPLICANT INFO-->
 					<div class="row">
-						<h2 class="title">Applicant Information<? if(isSigned($conn, $idA) == 0) echo "(NOT YET SIGNED BY CHAIR)"; ?>:</h2>
+						<h2 class="title">Applicant Information<? if(isApplicationSigned($conn, $idA) == 0) echo "(NOT YET SIGNED BY CHAIR)"; ?>:</h2>
 					</div>
 					<div class="row">
 					<!--NAME-->
@@ -343,7 +346,7 @@
 						<center>
 						<div class="col-md-3">
 							<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
-							<input type="submit" class="styled-button-3" <? if(isSigned($conn, $idA) == 0) echo 'disabled="true" style="background-color: gray; border-color: gray; margin-top: 10px;" '; ?> id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
+							<input type="submit" class="styled-button-3" <? if(isApplicationSigned($conn, $idA) == 0) echo 'disabled="true" style="background-color: gray; border-color: gray; margin-top: 10px;" '; ?> id="approveA" name="approveA" style="background-color: green !important; border-color: green !important; margin-top: 10px;" value="APPROVE APPLICATION" />
 						</div>
 						<div class="col-md-3">
 							<input type="submit" class="styled-button-3" id="denyA" name="denyA" style="background-color: red !important; border-color: red !important; margin-top: 10px;" value="DENY APPLICATION" />
