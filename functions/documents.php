@@ -50,6 +50,10 @@
 				{
 					echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
 				}
+				catch (Exception $e) 
+				{
+					echo 'Upload exception: ',  $e->getMessage(), "\n";
+				}
 				
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 				
@@ -74,6 +78,10 @@
 				try
 				{
 					echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
+				}
+				catch (Exception $e) 
+				{
+					echo 'Upload exception: ',  $e->getMessage(), "\n";
 				}
 				
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
