@@ -17,7 +17,7 @@
 	/*Verify that user is allowed to make an application*/
 	if(isUserAllowedToCreateApplication($conn, $_SESSION['broncoNetID'], $_SESSION['position']))
 	{
-		echo "User is allowed to create an application!";
+		//echo "User is allowed to create an application!";
 		
 		if(isset($_POST["sub"])) //submit button to form
 		{
@@ -51,6 +51,7 @@
 				if(isset($_POST["goal3"])){$pg3 = 1;}
 				if(isset($_POST["goal4"])){$pg4 = 1;}
 				
+				//echo "current broncoNetID: ".$_SESSION['broncoNetID'];
 				
 				/*Insert data into database - receive the new application id if success, or 0 if failure*/
 				/*parameters: DB connection, name, email, department, dep. mail stop, dep. chair email, travel from, travel to, activity from, activity to, title, destination, amount requested,
@@ -60,20 +61,20 @@
 					$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, 
 					$budgetArray);
 					
-				echo "Insert status: ".$successAppID.".<br>";
+				echo "<br>Insert status: ".$successAppID.".<br>";
 				
 				$successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
 				
 				if($successAppID > 0) //if insert into DB was successful, continue
 				{
-					echo "Uploading docs...<br>";
+					echo "<br>Uploading docs...<br>";
 					$successUpload = uploadDocs($successAppID); //upload the documents
 					
-					echo "Upload status: ".$successUpload.".<br>";
+					echo "<br>Upload status: ".$successUpload.".<br>";
 				}
 				else
 				{
-					echo "ERROR: could not insert application, app status: ".$successAppID."!";
+					echo "<br>ERROR: could not insert application, app status: ".$successAppID."!<br>";
 				}
 				
 				if($successUpload > 0) //upload was successful
@@ -102,7 +103,7 @@
 				}
 				else
 				{
-					echo "ERROR: could not upload application documents, upload status: ".$successUpload."!";
+					echo "<br>ERROR: could not upload application documents, upload status: ".$successUpload."!<br>";
 				}
 				
 			}
