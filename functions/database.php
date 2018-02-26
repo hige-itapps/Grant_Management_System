@@ -358,7 +358,6 @@
 	if(!function_exists('isApplicationSigned')){
 		function isApplicationSigned($conn, $appID)
 		{
-			$is = false;
 			
 			if ($appID != "") //valid Id
 			{
@@ -373,13 +372,13 @@
 				
 				//echo 'Count: '.$res[0][0].".";
 				
-				if($res[0][0] > 0) //at least one result
-				{
-					$is = true;
+				if($res[0][0] > 0){ //at least one result
+					return 1;
+				}else{
+					return 0;
 				}
-			}
-			
-			return $is;
+			}else
+				return 0;
 		}
 	}
 	
