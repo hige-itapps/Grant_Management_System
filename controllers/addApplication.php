@@ -4,7 +4,12 @@
 	set_include_path('/home/egf897jck0fu/public_html/');
 	//include('../Net/SFTP.php');
 	include('../functions/database.php');
+	$conn = connection(); //connect to database
+	
 	include('../functions/documents.php');
+	
+	/*Debug user validation*/
+	include "include/debugAuthentication.php";
 	
 	/*Verification functions*/
 	include "functions/verification.php";
@@ -12,11 +17,10 @@
 	/*Verify that user is allowed to make an application*/
 	if(isUserAllowedToCreateApplication($conn, $_SESSION['broncoNetID'], $_SESSION['position']))
 	{
+		echo "User is allowed to create an application!";
 		
 		if(isset($_POST["sub"])) //submit button to form
 		{
-			$tempConn = connection(); //connect to database
-			
 			try
 			{
 				/*Set budgetArray*/
@@ -51,7 +55,7 @@
 				/*Insert data into database - receive the new application id if success, or 0 if failure*/
 				/*parameters: DB connection, name, email, department, dep. mail stop, dep. chair email, travel from, travel to, activity from, activity to, title, destination, amount requested,
 				purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, budgetArray*/
-				$successAppID = insertApplication($tempConn, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptM"], $_POST["inputDeptCE"], 
+				$successAppID = insertApplication($conn, $_SESSION['broncoNetID'], $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptM"], $_POST["inputDeptCE"], 
 					$_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], $_POST["inputRName"], $_POST["inputDest"], $_POST["inputAR"], 
 					$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, 
 					$budgetArray);
@@ -106,8 +110,8 @@
 			{
 				echo "Error adding application: " . $e->getMessage();
 			}
-			
-			$tempConn = null; //close connection -- NOT NEEDED.
 		}
 	}
+	
+	$conn = null; //close connection -- NOT NEEDED.
 ?>
