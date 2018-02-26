@@ -6,6 +6,9 @@
 	
 	/*Debug user validation*/
 	include "include/debugAuthentication.php";
+	
+	/*Verification functions*/
+	include "functions/verification.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
