@@ -325,10 +325,10 @@
 					</div>
 					<div class="row">
 						<div class="col-md-6">
-								<label for="fD">PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" required/>
+								<label for="fD">PROPOSAL NARRATIVE:</label><input type="file" accept="application/pdf" name="fD" id="fD" required/>
 						</div>
 						<div class="col-md-6">
-							<label for="sD">SUPPORTING DOCUMENTS:</label><input type="file" name="sD" id="sD"/>
+							<label for="sD">SUPPORTING DOCUMENTS:</label><input type="file" accept="application/pdf" name="sD" id="sD"/>
 						</div>
 					</div>
 					<div class="row">
