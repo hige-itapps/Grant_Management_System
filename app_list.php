@@ -46,7 +46,7 @@
 			if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
 			{
 				$conn = connection();
-				$apps = getPendingApplications($conn, "")//get all pending applications
+				$apps = getPendingApplications($conn, "");//get all pending applications
 				$conn = null; //close connection
 		?>
 		<!--HEADER-->
