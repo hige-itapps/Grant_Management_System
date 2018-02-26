@@ -644,7 +644,7 @@
 						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail) 
 						VALUES(:applicant, :date, :name, :department, :mailstop, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
 						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail)");
-					$sql->bindParam(':applicant', $tempBroncoNetID);
+					$sql->bindParam(':applicant', $broncoNetID);
 					$sql->bindParam(':date', date("Y/m/d")); //create a new date right when inserting to save current time
 					$sql->bindParam(':name', $name);
 					$sql->bindParam(':department', $department);
@@ -675,7 +675,7 @@
 						
 						/*get the application ID of the just-added application*/
 						$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
-						$sql->bindParam(':applicant', $tempBroncoNetID);
+						$sql->bindParam(':applicant', $broncoNetID);
 						$sql->execute();
 						$newAppID = $sql->fetchAll()[0][0];//now we have the current ID!
 						
