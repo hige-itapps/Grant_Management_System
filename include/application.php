@@ -34,6 +34,7 @@
 			public $status;	//						(BOOLEAN)
 			public $awarded; //						(DECIMAL)
 			
+			/*Constructor(for everything except budget); just pass in the application array received from the database call (SELECT * FROM applications ...)*/
 			public function __construct($appInfo) {
 				$this->id = $appInfo[0]; 
 				$this->bnid = $appInfo[1];
@@ -63,6 +64,18 @@
 				$this->deptCS = $appInfo[25];
 				$this->status = $appInfo[26];
 				$this->awarded = $appInfo[27];
+			}
+			
+			/*Return a text representation of the status boolean*/
+			public function getStatus(){
+				$currentStatus = "Pending";
+				//echo "Real Status: ".$this->status.".";
+				if(isset($this->status))
+				{
+					if($this->status == 0){$currentStatus = "Denied";}
+					if($this->status == 1){$currentStatus = "Approved";}
+				}
+				return $currentStatus;
 			}
 		}
 	}
