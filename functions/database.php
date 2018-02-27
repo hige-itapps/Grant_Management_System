@@ -399,6 +399,76 @@
 		}
 	}
 	
+	/* Add an admin to the administrators table */
+	if(!function_exists('addAdmin')){
+		function addAdmin($conn, $broncoNetID, $name)
+		{
+			if ($broncoNetID != "" && $name != "") //valid params
+			{
+				/* Prepare & run the query */
+				$sql = $conn->prepare("INSERT INTO administrators(BroncoNetID, Name) VALUES(:id, :name)");
+				$sql->bindParam(':id', $broncoNetID);
+				$sql->bindParam(':name', $name);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/* Add a committee member to the committee table */
+	if(!function_exists('addCommittee')){
+		function addCommittee($conn, $broncoNetID, $name)
+		{
+			if ($broncoNetID != "" && $name != "") //valid params
+			{
+				/* Prepare & run the query */
+				$sql = $conn->prepare("INSERT INTO committee(BroncoNetID, Name) VALUES(:id, :name)");
+				$sql->bindParam(':id', $broncoNetID);
+				$sql->bindParam(':name', $name);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/* Add a follow-up approver to the follow_up_approval table */
+	if(!function_exists('addFollowUpApprover')){
+		function addFollowUpApprover($conn, $broncoNetID, $name)
+		{
+			if ($broncoNetID != "" && $name != "") //valid params
+			{
+				/* Prepare & run the query */
+				$sql = $conn->prepare("INSERT INTO follow_up_approval(BroncoNetID, Name) VALUES(:id, :name)");
+				$sql->bindParam(':id', $broncoNetID);
+				$sql->bindParam(':name', $name);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/* Add an application approver to the application_approval table */
+	if(!function_exists('addApplicationApprover')){
+		function addApplicationApprover($conn, $broncoNetID, $name)
+		{
+			if ($broncoNetID != "" && $name != "") //valid params
+			{
+				/* Prepare & run the query */
+				$sql = $conn->prepare("INSERT INTO application_approval(BroncoNetID, Name) VALUES(:id, :name)");
+				$sql->bindParam(':id', $broncoNetID);
+				$sql->bindParam(':name', $name);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	
+	
 	/* Returns true if applicant's application has been approved, or false otherwise 
 	TODO: make this only work for applications that do not also have an approved follow-up report!*/
 	if(!function_exists('isApplicationApproved')){
