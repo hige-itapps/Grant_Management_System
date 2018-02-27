@@ -66,17 +66,29 @@
 				/*Let the user know they've got a pending application (if they do)*/
 				if(hasPendingApplication($conn, $_SESSION['broncoNetID']))
 				{
+					$viewCounter++;
 			?>
-					<p><a href="#">Your application is pending</a><p>
+					<p>Your application is pending!<p>
+					<p><b>Note: IEFDF recipients must wait at least a year between applications.</b></p>
 			<?php
 				}
+				
+				/* Let user see the apps they've submitted, if they have at least 1 */
+				$totalPrevApps = getApplications($conn, $_SESSION['broncoNetID']);
+				if(count($totalPrevApps) > 0)
+				{
+			?>
+				<p><a href="app_prev_list.php">View Previous Applications (<?php echo count($totalPrevApps) ?> total)</a></p>
+			<?php
+				}
+				
 				/*get number of applications this user needs to sign*/
-				$totalApps = getNumberOfApplicationsToSign($conn, $_SESSION['email']);
-				if($totalApps > 0)
+				$totalSignApps = getNumberOfApplicationsToSign($conn, $_SESSION['email']);
+				if($totalSignApps > 0)
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_sig_list.php">Application Signature (<?php echo $totalApps ?> to sign)</a></p>
+					<p><a href="app_sig_list.php">Application Signature (<?php echo $totalSignApps ?> to sign)</a></p>
 			<?php 
 				}
 			
@@ -129,7 +141,6 @@
 				{
 					?>
 						<p>You do not have access to any views! You must sign in as a faculty member or staff to use this application.</p>
-						<p>Note: IEFDF recipients must wait at least a year between applications.</p>
 					<?php
 				}
 			?>
