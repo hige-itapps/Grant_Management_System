@@ -288,6 +288,8 @@
 									<option value="Air Travel">Air Travel</option>
 									<option value="Ground Travel">Ground Travel</option>
 									<option value="Hotel">Hotel</option>
+									<option value="Registration Fee">Registration Fee</option>
+									<option value="Per Diem">Per Diem</option>
 									<option value="Other">Other</option>
 								</select>
 							</div>
