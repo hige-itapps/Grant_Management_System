@@ -57,11 +57,11 @@
 							<!--Position-->
 								<div class="form-group">
 									<label for="positionFaculty">Faculty</label>
-									<input type="radio" id="positionFaculty" name="inputPosition" value="faculty" required>
+									<input type="radio" id="positionFaculty" name="inputPosition" value="faculty" required checked><br>
 									<label for="positionStaff">Staff</label>
-									<input type="radio" id="positionStaff" name="inputPosition" value="staff">
+									<input type="radio" id="positionStaff" name="inputPosition" value="staff"><br>
 									<label for="positionStudent">Student</label>
-									<input type="radio" id="positionStudent" name="inputPosition" value="student">
+									<input type="radio" id="positionStudent" name="inputPosition" value="student"><br>
 								</div>
 							</div>
 							<div class="row">
