@@ -150,4 +150,32 @@
 		}
 	}
 	
+	/*returns true if the user owns this application, or false if they don't*/
+	if(!function_exists('doesUserOwnApplication')){
+		function doesUserOwnApplication($conn, $broncoNetID, $appID)
+		{
+			$is = false; //initialize boolean to false
+			
+			if ($broncoNetID != "" && $appID != "") //valid broncoNetID & appID
+			{
+				/* Only count applications with the right ID that this user has submitted */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND Applicant = :bNetID");
+				$sql->bindParam(':appID', $appID);
+				$sql->bindParam(':bNetID', $broncoNetID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				if($res[0][0] > 0)//this is the correct user to sign
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+	
 ?>
