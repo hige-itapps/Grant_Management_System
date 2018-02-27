@@ -78,7 +78,7 @@
 										echo "<tr>";
 										echo "<td>" . $apps[$i]->dateS . "</td>";
 										echo "<td><a href=application_viewer.php?id=" . $apps[$i]->id . ">" . $apps[$i]->rTitle . "</a></td>";
-										echo "<td>---STATUS HERE---</td>";
+										echo "<td>" . $apps[$i]->getStatus() . "</td>";
 										echo "</tr>";
 									}
 							?>
