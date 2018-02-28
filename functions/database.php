@@ -687,7 +687,7 @@
 				$activityFrom = strtotime($activityFrom);
 				$activityTo = strtotime($activityTo);
 				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING));
-				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);
+				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
 				$purpose1 = filter_var($purpose1, FILTER_SANITIZE_NUMBER_INT);
 				$purpose2 = filter_var($purpose2, FILTER_SANITIZE_NUMBER_INT);
 				$purpose3 = filter_var($purpose3, FILTER_SANITIZE_NUMBER_INT);
@@ -849,6 +849,101 @@
 			}
 		}
 	}
+	
+	
+	
+	/*
+	Insert a follow-up-report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use.
+	Fields: DB connection, application ID, travel start & end dates, activity start & end dates, project summary, and total award spent
+	return 1 if insert is successful, 0 otherwise
+	*/
+	if(!function_exists('insertFollowUpReport')){
+		function insertFollowUpReport($conn, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
+		{
+			/*Server-Side validation!*/
+			$valid = true; //start valid, turn false if anything is wrong!
+			
+			/*Sanitize everything*/
+			try
+			{
+				$travelFrom = strtotime($travelFrom);
+				$travelTo = strtotime($travelTo);
+				$activityFrom = strtotime($activityFrom);
+				$activityTo = strtotime($activityTo);
+				$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING));
+				//$totalAwardSpent = filter_var($totalAwardSpent, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
+				
+				//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
+			}
+			catch(Exception $e)
+			{
+				echo "Follow-Up Report Sanitization Error: " . $e->getMessage();
+				$valid = false;
+			}
+			
+			/*Now validate everything that needs it*/
+			if($valid)
+			{
+				/*Make sure necessary strings aren't empty*/
+				if($projectSummary === '')
+				{
+					echo "Follow-Up Report Validation Error: Empty String Given!";
+					$valid = false;
+				}
+				/*Make sure dates are acceptable*/
+				if($travelTo < $travelFrom || $activityTo < $activityFrom || $activityFrom < $travelFrom || $activityTo > $travelTo)
+				{
+					echo "Follow-Up Report Validation Error: Invalid Date Given!";
+					$valid = false;
+				}
+			}
+			
+			/*Now insert new follow-up report into database*/
+			if($valid)
+			{
+				try
+				{
+					$conn->beginTransaction(); //begin atomic transaction
+					//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
+					/*Prepare the query*/
+					$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date) 
+						VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date)");
+					$sql->bindParam(':applicationid', $appID);
+					$sql->bindParam(':travelstart', date("Y-m-d", $travelFrom));
+					$sql->bindParam(':travelend', date("Y-m-d", $travelTo));
+					$sql->bindParam(':eventstart', date("Y-m-d", $activityFrom));
+					$sql->bindParam(':eventend', date("Y-m-d", $activityTo));
+					$sql->bindParam(':projectsummary', $projectSummary);
+					$sql->bindParam(':totalawardspent', $totalAwardSpent);
+					$sql->bindParam(':date', date("Y/m/d")); //create a new date right when inserting to save current time
+					
+					if ($sql->execute() === TRUE) //query executed correctly
+					{
+						$conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
+					} 
+					else //query failed
+					{
+						$valid = false;
+					}
+				}
+				catch(Exception $e)
+				{
+					echo "Error inserting follow-up report into database: " . $e->getMessage();
+					$valid = false;
+				}
+			}
+			
+			if($valid) //if successful, return 1
+			{
+				return 1;
+			}
+			else //otherwise return 0
+			{
+				return 0;
+			}
+		}
+	}
+	
 	
 	
 	
