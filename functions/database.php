@@ -652,6 +652,42 @@
 	}
 	
 	
+	
+	/*Update a follow-up-report to be approved (need application's ID)*/
+	if(!function_exists('approveFollowUpReport')){
+		function approveFollowUpReport($conn, $id)
+		{
+			if ($id != "") //valid report ID
+			{
+				/*Update any follow-up-report with the given id*/
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ApplicationID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	/*Remove a follow-up report (useful if some information is incorrect) (need application's ID)*/
+	if(!function_exists('removeFollowUpReport')){
+		function removeFollowUpReport($conn, $id)
+		{
+			if ($id != "") //valid report ID
+			{
+				/* Prepare & run the query */
+				$sql = $conn->prepare("DELETE FROM follow_up_reports WHERE ApplicationID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+			}
+		}
+	}
+	
+	
+	
 	/*
 	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use
 	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
