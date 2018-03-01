@@ -42,7 +42,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	
 	</head>
-	<body>
+	<body ng-app="HIGE-app">
 	
 		<!--HEADER-->
 		<?php
@@ -53,11 +53,29 @@
 				$apps = getPendingApplications($conn, "");//get all pending applications
 		?>
 		<!--HEADER-->
-		<div class="container-fluid">
+		<div class="container-fluid" ng-controller="listCtrl">
 			<div class="row">
 				<center><h2 class="title">Pending Applications</h2></center>
 			</div>
 			<div class="row">
+				<div class="col-md-3"></div>
+			<!--Filter first date-->
+				<div class="col-md-3">
+					<div class="form-group">
+						<label for="filterDateFrom">Filter date from:</label>
+						<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" value="{{oldDate}}" />
+					</div>
+				</div>
+			<!--Filter last date-->
+				<div class="col-md-3">
+					<div class="form-group">
+						<label for="filterDateTo">Filter date up to:</label>
+						<input type="date" ng-model="filterTo" class="form-control" id="filterDateTo" name="filterDateTo" value="{{curDate}}" />
+					</div>
+				</div>
+				<div class="col-md-3"></div>
+			</div>
+			<div class="row" />
 				<div class="col-md-3"></div>
 				<div class="col-md-6">
 					<table class="table">
@@ -69,7 +87,8 @@
 						</thead>
 						<tbody>
 							<?php
-								if(count($apps) == 0)
+								//echo "how many apps: ".count($apps).".";
+								/*if(count($apps) == 0)
 									echo "<tr><td align='center' colspan='3'><h3 class='title'>NO PENDING APPLICATIONS.</h3></td></tr>";
 								else
 									for($i = 0; $i < count($apps); $i++) {
@@ -77,8 +96,13 @@
 										echo "<td><a href=application_confirmation.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
 										echo "<td>" . $apps[$i]->dateS . "</td>";
 										echo "</tr>";
-									}
+									}*/
 							?>
+							<!--<tr ng-repeat="x in applications | filter: {'dateS': '2018-02-25'}">-->
+							<tr ng-repeat="x in applications | dateFilter:filterFrom:filterTo">
+								<td><a href="application_confirmation.php?id={{ x.id }}">{{ x.name }}</a></td>
+								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -94,6 +118,46 @@
 			}
 		?>
 	</body>
+	
+	<!-- AngularJS Script -->
+	<script>
+		var myApp = angular.module('HIGE-app', []);
+		
+		var currentDate = new Date(); //get current date
+		var olderDate = new Date(); olderDate.setMonth(olderDate.getMonth() - 6); //get date from 6 months ago
+		
+		/*Controller to set date inputs and list*/
+		myApp.controller('listCtrl', function($scope, $filter) {
+			$scope.applications = <?php echo json_encode($apps) ?>;
+			$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
+			$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
+		});
+		
+		myApp.filter("dateFilter", function() {
+			//alert("running date filter");
+			return function(items, dateFrom, dateTo) {
+				var result = [];  
+				/*alert("First date: " + new Date(items[0].dateS));
+				alert("Date from: " + dateFrom);
+				alert("Date to: " + dateTo);*/
+				
+				var testFrom = dateFrom;
+				if(dateFrom == null){testFrom = olderDate;}
+				var testTo = dateTo;
+				if(dateTo == null){testTo = currentDate;}
+				
+				for (var i=0; i<items.length; i++){
+					var dateSub = new Date(items[i].dateS);
+					if (dateSub >= testFrom && dateSub <= testTo)  {
+						result.push(items[i]);
+					}
+				}
+				
+				return result;
+			};
+		});
+	</script>
+	<!-- End Script -->
 </html>
 <?php
 	$conn = null; //close connection
