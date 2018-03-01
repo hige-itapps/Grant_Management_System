@@ -147,7 +147,7 @@
 			</div>
 			
 			<!--Add Admin-->
-			<input type="button" id="addAdmin" value="Add">
+			<input type="button" id="addAdmin" value="Add Admin">
 			<div id="addAdminContent" style="display:none"> 
 				<div class="row">
 					<div class="col-md-5">
@@ -248,7 +248,7 @@
 			</div>
 			
 			<!--Add approver-->			
-			<input type="button" id="addApprover" value="Add">
+			<input type="button" id="addApprover" value="Add Approver">
 			<div id="addApproverContent" style="display:none"> 
 				<div class="row">
 					<div class="col-md-5">
@@ -297,7 +297,7 @@
 			</div>
 			
 			<!--Add committee member-->			
-			<input type="button" id="addCommittee" value="Add">
+			<input type="button" id="addCommittee" value="Add Committee Member">
 			<div id="addCommitteeContent" style="display:none"> 
 				<div class="row">
 					<div class="col-md-5">
@@ -345,7 +345,7 @@
 			</div>
 			
 			<!--Add follow-up member-->
-			<input type="button" id="addFollowup" value="Add">
+			<input type="button" id="addFollowup" value="Add Follow-Up Approver">
 			<div id="addFollowupContent" style="display:none"> 
 				<div class="row">
 					<div class="col-md-5">
