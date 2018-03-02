@@ -29,7 +29,7 @@
 			
 			// output headers so that the file is downloaded rather than displayed
 			header('Content-type: text/csv');
-			header('Content-Disposition: attachment; filename="demo.csv"');
+			header('Content-Disposition: attachment; filename="ApplicationSummarySheet.csv"');
 			 
 			// do not cache the file
 			header('Pragma: no-cache');
