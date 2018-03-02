@@ -101,12 +101,20 @@
 			<?php 
 				}
 				
+				/*Verify that user is allowed to approve applications in order to access pending ones*/
+				if(isApplicationApprover($conn, $_SESSION['broncoNetID']))
+				{
+			?>
+					<p><a href="app_list.php">Pending Applications</a></p>
+			<?php
+				}
+				
 				/*Verify that user is allowed to freely see applications*/
 				if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_list.php">Application List</a></p>
+					<p><a href="app_all_list.php">Application List</a></p>
 			<?php 
 				}
 				
