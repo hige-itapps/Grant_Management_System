@@ -11,6 +11,45 @@
 	
 	if(isAdministrator($conn, $_SESSION['broncoNetID'])) {
 		
+		if(isset($_GET["downloadApplications"])){
+			
+			$res = getApplications($conn, '');
+			
+			$list = [];
+			for($i = 0; $i < count($res); $i++){
+				$application = $res[$i];
+				if($application instanceof Applicaion) echo 'is an application...';
+				array_push($list, array($application->id,$application->name,$application->dept,$application->getPurpose(),$application->dest,
+										$application->rTitle,$application->tStart,$application->tEnd,$application->aStart,$application->aEnd,
+										$application->getTotalBudget(),$application->aReq,' ',' '));
+			}
+			
+			// output headers so that the file is downloaded rather than displayed
+			header('Content-type: text/csv');
+			header('Content-Disposition: attachment; filename="demo.csv"');
+			 
+			// do not cache the file
+			header('Pragma: no-cache');
+			header('Expires: 0');
+			 
+			// create a file pointer connected to the output stream
+			$file = fopen('php://output', 'w');
+			 
+			// send the column headers
+			fputcsv($file, array('Application Number', 'Name', 'Department', 'Purpose', 'Destination',
+								'Title', 'Travel Date Start', 'Travel Date End', 'Project Date Start', 'Project Date End',
+								'Total Budget', 'Requested Reward',	'Amount Awarded', 'Comments'));
+			
+			foreach($list as $line) {
+			//foreach($res as $line) {
+				fputcsv($file, $line);
+			}
+			
+			fclose($file);
+			$sql = null;
+			exit;	
+		}
+		
 		if(isset($_GET["addAdminID"]) && isset($_GET["addAdminName"])) {
 			addAdmin($conn, $_GET["addAdminID"], $_GET["addAdminName"]);
 		}
@@ -105,27 +144,32 @@
 		<!--HEADER-->
 	
 		<!--BODY-->
-		<div class="container-fluid">
+		<div class="container-fluid" id="adminPage">
 			
-			<center>
-				<p class="title">Administrator View</p>
-			</center>
-		
-			<?php
-				/*get all database content*/
-				$administrators = getAdministrators($conn);
-				$applicants = getApplicants($conn);
-				$applications = getApplications($conn, "");
-				$applicationApprovers = getApplicationApprovers($conn);
-				$committee = getCommittee($conn);
-				$followUpReportApprovers = getFollowUpReportApprovers($conn);
-			?>
 			
-			<!--Admin Table-->
-			<div ng-app="myApp" ng-controller="adminCtrl">
-				<p class="title">Administrators:</p>
-				<div class="row">
-					<div class="col-md-5">
+			<div class="row">
+				<div class="col-md-3"></div>
+				<div class="col-md-6">
+					<h1>Administrator View</h1>
+					
+				
+					<?php
+						/*get all database content*/
+						$administrators = getAdministrators($conn);
+						$applicants = getApplicants($conn);
+						$applications = getApplications($conn, "");
+						foreach($applications as $curApp)
+						{
+							$curApp->statusText = $curApp->getStatus();
+						}
+						$applicationApprovers = getApplicationApprovers($conn);
+						$committee = getCommittee($conn);
+						$followUpReportApprovers = getFollowUpReportApprovers($conn);
+					?>
+					
+					<!--Admin Table-->
+					<div ng-app="myApp" ng-controller="adminCtrl">
+						<h2>Administrators:</h2>
 						<table class="table table-bordered table-sm">
 							<thead>
 								<tr>
@@ -138,43 +182,174 @@
 								<tr ng-repeat="x in admins">
 									<td>{{ x.BroncoNetID }}</td>
 									<td>{{ x.Name }}</td>
-									<td><a href="?removeAdminID={{x.BroncoNetID}}">REMOVE</a></td> 
+									<td><a class="btn btn-danger" href="?removeAdminID={{x.BroncoNetID}}">REMOVE</a></td> 
 								</tr>
 							</tbody>
 						</table>
 					</div>
-				</div>
-			</div>
-			
-			<!--Add Admin-->
-			<input type="button" id="addAdmin" value="Add Admin">
-			<div id="addAdminContent" style="display:none"> 
-				<div class="row">
-					<div class="col-md-5">
-						<form class="form-inline" action="/administrator.php" method="GET"> 
-							<div class="form-group">
-								<label for="broncoNetID">BroncoNetID:</label>
-								<input type="text" id="addAdminID" name="addAdminID">
+					
+					<!--Add Admin-->
+					<input type="button" class="btn btn-primary" id="addAdmin" value="Add Admin">
+					<div id="addAdminContent" style="display:none"> 
+						<div class="row">
+							<div class="col-md-5">
+								<form class="form-inline" action="/administrator.php" method="GET"> 
+									<div class="form-group">
+										<label for="addAdminID">BroncoNetID:</label>
+										<input type="text" id="addAdminID" name="addAdminID">
+									</div>
+									<div class="form-group">
+										<label for="addAdminName">Name:</label>
+										<input type="text" id="addAdminName" name="addAdminName">
+									</div>
+									<button type="submit" class="btn btn-success">Submit</button>
+								</form>
 							</div>
-							<div class="form-group">
-								<label for="Name">Name:</label>
-								<input type="text" id="addAdminName" name="addAdminName">
-							</div>
-							<button type="submit" class="btn btn-default">Submit</button>
-						</form>
+						</div>	
 					</div>
-				</div>	
-			</div>
-		
-			
-			<br />
-			<br />
-			
-			<!--Applicant Names Table, should not edit this table at all as Administrator-->
-			<div ng-app="myApp" ng-controller="applicantCtrl">
-				<p class="title">Applicants:</p>
-				<div class="row">
-					<div class="col-md-5">
+				
+					
+					<br />
+					<br />
+					
+					<!--Add or remove application approvers-->
+					<div ng-app="myApp" ng-controller="applicationApproverCtrl">
+						<h2>Application Approvers:</h2>
+						<table class="table table-bordered table-sm">
+						<thead>
+							<tr>
+								<th>BroncoNetID</th>
+								<th>Name</th>
+								<th> </th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="x in applicationApprovers">
+								<td>{{ x.BroncoNetID }}</td>
+								<td>{{ x.Name }}</td>
+								<td><a class="btn btn-danger" href="?removeApproverID={{x.BroncoNetID}}">REMOVE</a></td> 
+							</tr>
+						</tbody>
+						</table>
+					</div>
+					
+					<!--Add approver-->			
+					<input type="button" class="btn btn-primary" id="addApprover" value="Add Approver">
+					<div id="addApproverContent" style="display:none"> 
+						<div class="row">
+							<div class="col-md-5">
+								<form class="form-inline" action="/administrator.php" method="GET"> 
+									<div class="form-group">
+										<label for="addApproverID">BroncoNetID:</label>
+										<input type="text" id="addApproverID" name="addApproverID">
+									</div>
+									<div class="form-group">
+										<label for="addApproverName">Name:</label>
+										<input type="text" id="addApproverName" name="addApproverName">
+									</div>
+									<button type="submit" class="btn btn-success">Submit</button>
+								</form>
+							</div>
+						</div>	
+					</div>
+					
+					<br />
+					<br />
+					
+					
+					<!--Committee table-->
+					<div ng-app="myApp" ng-controller="committeeCtrl">
+						<h2>Committee Members:</h2>
+						<table class="table table-bordered table-sm">
+						<thead>
+							<tr>
+								<th>BroncoNetID</th>
+								<th>Name</th>
+								<th> </th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="x in committee">
+								<td>{{ x.BroncoNetID }}</td>
+								<td>{{ x.Name }}</td>
+								<td><a class="btn btn-danger" href="?removeCommitteeID={{x.BroncoNetID}}">REMOVE</a></td> 
+							</tr>
+						</tbody>
+						</table>
+					</div>
+					
+					<!--Add committee member-->			
+					<input type="button" class="btn btn-primary" id="addCommittee" value="Add Committee Member">
+					<div id="addCommitteeContent" style="display:none"> 
+						<div class="row">
+							<div class="col-md-5">
+								<form class="form-inline" action="/administrator.php" method="GET"> 
+									<div class="form-group">
+										<label for="addCommitteeID">BroncoNetID:</label>
+										<input type="text" id="addCommitteeID" name="addCommitteeID">
+									</div>
+									<div class="form-group">
+										<label for="addCommitteeName">Name:</label>
+										<input type="text" id="addCommitteeName" name="addCommitteeName">
+									</div>
+									<button type="submit" class="btn btn-success">Submit</button>
+								</form>
+							</div>
+						</div>	
+					</div>
+					
+					<br />
+					<br />
+					
+					<!--Follow-Up Report Approvers-->
+					<div ng-app="myApp" ng-controller="followUpReportApproverCtrl">
+						<h2>Follow-Up Report Approvers:</h2>
+						<table class="table table-bordered table-sm">
+						<thead>
+							<tr>
+								<th>BroncoNetID</th>
+								<th>Name</th>
+								<th> </th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="x in followUpReportApprovers">
+								<td>{{ x.BroncoNetID }}</td>
+								<td>{{ x.Name }}</td>
+								<td><a class="btn btn-danger" href="?removeFollowupID={{x.BroncoNetID}}">REMOVE</a></td> 
+							</tr>
+						</tbody>
+						</table>
+					</div>
+					
+					<!--Add follow-up member-->
+					<input type="button" class="btn btn-primary" id="addFollowup" value="Add Follow-Up Approver">
+					<div id="addFollowupContent" style="display:none"> 
+						<div class="row">
+							<div class="col-md-5">
+								<form class="form-inline" action="/administrator.php" method="GET"> 
+									<div class="form-group">
+										<label for="addFollowupID">BroncoNetID:</label>
+										<input type="text" id="addFollowupID" name="addFollowupID">
+									</div>
+									<div class="form-group">
+										<label for="addFollowupName">Name:</label>
+										<input type="text" id="addFollowupName" name="addFollowupName">
+									</div>
+									<button type="submit" class="btn btn-success">Submit</button>
+								</form>
+							</div>
+						</div>	
+					</div>
+					
+					<br />
+					<br />
+					
+					<button id="applicantTableButton" data-toggle="collapse" class="btn btn-info" data-target="#applicantTable">Show Applicants</button>
+					
+					<!--Applicant Names Table, should not edit this table at all as Administrator-->
+					<div ng-app="myApp" id="applicantTable" class="collapse" ng-controller="applicantCtrl">
+						<h2>Applicants:</h2>
 						<table class="table table-bordered table-sm">
 						<thead>
 							<tr>
@@ -188,184 +363,71 @@
 						</tbody>
 						</table>
 					</div>
-				</div>
-			</div>
-			<br />
-			<br />
-			
-			<!-- applications -->
-			<div ng-app="myApp" ng-controller="applicationCtrl">
-				<p class="title">Applications:</p>
-				<div class="row">
-					<div class="col-md-5">
+					<br />
+					<br />
+					
+					<button id="applicationTableButton" data-toggle="collapse" class="btn btn-info" data-target="#applicationTable">Show Applications</button>
+					
+					<!-- applications -->
+					<div ng-app="myApp" id="applicationTable" class="collapse" ng-controller="applicationCtrl">
+						<h2>Applications:</h2>
+						<div class="row">
+						<!--Filter first date-->
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="filterDateFrom">Filter date after:</label>
+									<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" value="{{oldDate}}" />
+								</div>
+							</div>
+						<!--Filter last date-->
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="filterDateTo">Filter date up to:</label>
+									<input type="date" ng-model="filterTo" class="form-control" id="filterDateTo" name="filterDateTo" value="{{curDate}}" />
+								</div>
+							</div>
+						<!--Filter status-->
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="filterStatus">Filter by status:</label><br>
+									<select ng-model="filterStatus" id="filterStatus" name="filterStatus">
+										<option value=""></option>
+										<option value="Approved">Approved</option>
+										<option value="Pending">Pending</option>
+										<option value="Denied">Denied</option>
+									</select>
+								</div>
+							</div>
+						</div>
 						<table class="table table-bordered table-sm">
 						<thead>
 							<tr>
 								<th>ID</th>
-								<th>Applicant</th>
+								<th>Name</th>
+								<th>Title</th>
 								<th>Date Submitted</th>
-								<th> </th>
+								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="x in applications">
+							<tr ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus}">
 								<td>{{ x.id }}</td>
 								<td>{{ x.name }}</td>
-								<td>{{ x.dateS }}</td>
-								<td><a href="../application_admin.php?id={{ x.id }}">VIEW</a></td> 
+								<td><a href="application_admin.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+								<td class="{{x.statusText}}">{{ x.statusText }}</td>
 							</tr>
 						</tbody>
 						</table>
 					</div>
+					<br />
+					<br />
+					
+					<a id="applicationSummaryDownload" class="btn btn-success" href="?downloadApplications=1">Download Application Summary Sheet</a><br>
+				
 				</div>
+				<div class="col-md-3"></div>
 			</div>
-			<br />
-			<br />
-			
-			<!--Add or remove application approvers-->
-			<div ng-app="myApp" ng-controller="applicationApproverCtrl">
-				<p class="title">Application Approvers:</p>
-				<div class="row">
-					<div class="col-md-5">
-						<table class="table table-bordered table-sm">
-						<thead>
-							<tr>
-								<th>BroncoNetID</th>
-								<th>Name</th>
-								<th> </th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="x in applicationApprovers">
-								<td>{{ x.BroncoNetID }}</td>
-								<td>{{ x.Name }}</td>
-								<td><a href="?removeApproverID={{x.BroncoNetID}}">REMOVE</a></td> 
-							</tr>
-						</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-			
-			<!--Add approver-->			
-			<input type="button" id="addApprover" value="Add Approver">
-			<div id="addApproverContent" style="display:none"> 
-				<div class="row">
-					<div class="col-md-5">
-						<form class="form-inline" action="/administrator.php" method="GET"> 
-							<div class="form-group">
-								<label for="broncoNetID">BroncoNetID:</label>
-								<input type="text" id="addApproverID" name="addApproverID">
-							</div>
-							<div class="form-group">
-								<label for="Name">Name:</label>
-								<input type="text" id="addApproverName" name="addApproverName">
-							</div>
-							<button type="submit" class="btn btn-default">Submit</button>
-						</form>
-					</div>
-				</div>	
-			</div>
-			
-			<br />
-			<br />
-			
-			
-			<!--Committee table-->
-			<div ng-app="myApp" ng-controller="committeeCtrl">
-				<p class="title">Committee Members:</p>
-				<div class="row">
-					<div class="col-md-5">
-						<table class="table table-bordered table-sm">
-						<thead>
-							<tr>
-								<th>BroncoNetID</th>
-								<th>Name</th>
-								<th> </th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="x in committee">
-								<td>{{ x.BroncoNetID }}</td>
-								<td>{{ x.Name }}</td>
-								<td><a href="?removeCommitteeID={{x.BroncoNetID}}">REMOVE</a></td> 
-							</tr>
-						</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-			
-			<!--Add committee member-->			
-			<input type="button" id="addCommittee" value="Add Committee Member">
-			<div id="addCommitteeContent" style="display:none"> 
-				<div class="row">
-					<div class="col-md-5">
-						<form class="form-inline" action="/administrator.php" method="GET"> 
-							<div class="form-group">
-								<label for="broncoNetID">BroncoNetID:</label>
-								<input type="text" id="addCommitteeID" name="addCommitteeID">
-							</div>
-							<div class="form-group">
-								<label for="Name">Name:</label>
-								<input type="text" id="addCommitteeName" name="addCommitteeName">
-							</div>
-							<button type="submit" class="btn btn-default">Submit</button>
-						</form>
-					</div>
-				</div>	
-			</div>
-			
-			<br />
-			<br />
-			
-			<!--Follow-Up Report Approvers-->
-			<div ng-app="myApp" ng-controller="followUpReportApproverCtrl">
-				<p class="title">Follow-Up Report Approvers:</p>
-				<div class="row">
-					<div class="col-md-5">
-						<table class="table table-bordered table-sm">
-						<thead>
-							<tr>
-								<th>BroncoNetID</th>
-								<th>Name</th>
-								<th> </th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="x in followUpReportApprovers">
-								<td>{{ x.BroncoNetID }}</td>
-								<td>{{ x.Name }}</td>
-								<td><a href="?removeFollowupID={{x.BroncoNetID}}">REMOVE</a></td> 
-							</tr>
-						</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-			
-			<!--Add follow-up member-->
-			<input type="button" id="addFollowup" value="Add Follow-Up Approver">
-			<div id="addFollowupContent" style="display:none"> 
-				<div class="row">
-					<div class="col-md-5">
-						<form class="form-inline" action="/administrator.php" method="GET"> 
-							<div class="form-group">
-								<label for="broncoNetID">BroncoNetID:</label>
-								<input type="text" id="addFollowupID" name="addFollowupID">
-							</div>
-							<div class="form-group">
-								<label for="Name">Name:</label>
-								<input type="text" id="addFollowupName" name="addFollowupName">
-							</div>
-							<button type="submit" class="btn btn-default">Submit</button>
-						</form>
-					</div>
-				</div>	
-			</div>
-			
-			<br />
-			<br />
 			
 		</div>
 		<!--BODY-->
@@ -417,6 +479,9 @@
 	<script>
 		var myApp = angular.module('HIGE-app', []);
 		
+		var currentDate = new Date(); //get current date
+		var olderDate = new Date(); olderDate.setMonth(olderDate.getMonth() - 6); //get date from 6 months ago
+		
 		/*Controller to output administrators*/
 		myApp.controller('adminCtrl', function($scope, $http) {
 			$scope.admins = <?php echo json_encode($administrators) ?>;
@@ -428,8 +493,10 @@
 		});
 		
 		/*Controller to output applications*/
-		myApp.controller('applicationCtrl', function($scope, $http) {
+		myApp.controller('applicationCtrl', function($scope, $filter) {
 			$scope.applications = <?php echo json_encode($applications) ?>;
+			$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
+			$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
 		});
 		
 		/*Controller to output application approvers*/
@@ -445,6 +512,31 @@
 		/*Controller to output follow-up report approvers*/
 		myApp.controller('followUpReportApproverCtrl', function($scope, $http) {
 			$scope.followUpReportApprovers = <?php echo json_encode($followUpReportApprovers) ?>;
+		});
+		
+		/*Custom filter used to filter within a date range*/
+		myApp.filter("dateFilter", function() {
+			//alert("running date filter");
+			return function(items, dateFrom, dateTo) {
+				var result = [];  
+				/*alert("First date: " + new Date(items[0].dateS));
+				alert("Date from: " + dateFrom);
+				alert("Date to: " + dateTo);*/
+				
+				var testFrom = dateFrom;
+				if(dateFrom == null){testFrom = olderDate;}
+				var testTo = dateTo;
+				if(dateTo == null){testTo = currentDate;}
+				
+				for (var i=0; i<items.length; i++){
+					var dateSub = new Date(items[i].dateS);
+					if (dateSub >= testFrom && dateSub <= testTo)  {
+						result.push(items[i]);
+					}
+				}
+				
+				return result;
+			};
 		});
 	</script>
 	<!-- End Script -->
