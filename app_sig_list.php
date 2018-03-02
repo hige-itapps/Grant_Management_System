@@ -42,7 +42,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	
 	</head>
-	<body>
+	<body ng-app="HIGE-app">
 	
 		<!--HEADER-->
 		<?php
@@ -53,11 +53,15 @@
 			if($totalApps > 0)
 			{
 				$apps = getApplicationsToSign($conn, $_SESSION['email']);//get all applications to sign
+				foreach($apps as $curApp)
+				{
+					$curApp->statusText = $curApp->getStatus();
+				}
 		?>
 		<!--HEADER-->
-		<div class="container-fluid">
+		<div class="container-fluid" ng-controller="listCtrl">
 			<div class="row">
-				<center><h2 class="title">Pending Applications</h2></center>
+				<center><h2 class="title">Previous Applications</h2></center>
 			</div>
 			<div class="row">
 				<div class="col-md-3"></div>
@@ -66,21 +70,16 @@
 						<thead>
 							<tr>
 								<th>Name</th>
+								<th>Title</th>
 								<th>Date Submitted</th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php
-								if(count($apps) == 0)
-									echo "<tr><td align='center' colspan='3'><h3 class='title'>NO PENDING APPLICATIONS.</h3></td></tr>";
-								else
-									for($i = 0; $i < count($apps); $i++) {
-										echo "<tr>";
-										echo "<td><a href=application_signature.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
-										echo "<td>" . $apps[$i]->dateS . "</td>";
-										echo "</tr>";
-									}
-							?>
+							<tr ng-repeat="x in applications">
+								<td>{{ x.name }}</td>
+								<td><a href="application_signature.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -96,6 +95,17 @@
 			}
 		?>
 	</body>
+	
+	<!-- AngularJS Script -->
+	<script>
+		var myApp = angular.module('HIGE-app', []);
+		
+		/*Controller to set date inputs and list*/
+		myApp.controller('listCtrl', function($scope, $filter) {
+			$scope.applications = <?php echo json_encode($apps) ?>;
+		});
+	</script>
+	<!-- End Script -->
 </html>
 <?php
 	$conn = null; //close connection

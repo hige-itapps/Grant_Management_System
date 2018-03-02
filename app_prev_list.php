@@ -42,7 +42,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	
 	</head>
-	<body>
+	<body ng-app="HIGE-app">
 	
 		<!--HEADER-->
 		<?php
@@ -50,11 +50,15 @@
 			
 			/*get number of applications this user has submitted. If they have none, they shouldn't have access to this page*/
 			$apps = getApplications($conn, $_SESSION['broncoNetID']);
+			foreach($apps as $curApp)
+			{
+				$curApp->statusText = $curApp->getStatus();
+			}
 			if(count($apps) > 0)
 			{
 		?>
 		<!--HEADER-->
-		<div class="container-fluid">
+		<div class="container-fluid" ng-controller="listCtrl">
 			<div class="row">
 				<center><h2 class="title">Previous Applications</h2></center>
 			</div>
@@ -64,24 +68,17 @@
 					<table class="table">
 						<thead>
 							<tr>
-								<th>Date Submitted</th>
 								<th>Title</th>
+								<th>Date Submitted</th>
 								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php
-								if(count($apps) == 0)
-									echo "<tr><td align='center' colspan='3'><h3 class='title'>NO PREVIOUS APPLICATIONS.</h3></td></tr>";
-								else
-									for($i = 0; $i < count($apps); $i++) {
-										echo "<tr>";
-										echo "<td>" . $apps[$i]->dateS . "</td>";
-										echo "<td><a href=application_viewer.php?id=" . $apps[$i]->id . ">" . $apps[$i]->rTitle . "</a></td>";
-										echo "<td>" . $apps[$i]->getStatus() . "</td>";
-										echo "</tr>";
-									}
-							?>
+							<tr ng-repeat="x in applications">
+								<td><a href="application_viewer.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+								<td class="{{x.statusText}}">{{ x.statusText }}</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -97,6 +94,17 @@
 			}
 		?>
 	</body>
+	
+	<!-- AngularJS Script -->
+	<script>
+		var myApp = angular.module('HIGE-app', []);
+		
+		/*Controller to set date inputs and list*/
+		myApp.controller('listCtrl', function($scope, $filter) {
+			$scope.applications = <?php echo json_encode($apps) ?>;
+		});
+	</script>
+	<!-- End Script -->
 </html>
 <?php
 	$conn = null; //close connection
