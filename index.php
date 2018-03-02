@@ -50,6 +50,7 @@
 		<!--BODY-->
 		<div class="container-fluid">
 			<p>Your Views:</p>
+				<p><a href="application_example.php">EXAMPLE SHARED APPLICATION</a></p>
 			<?php
 				/*Initialize a counter to track number of available views to this user*/
 				$viewCounter = 0;
