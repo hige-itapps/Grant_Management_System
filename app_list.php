@@ -11,6 +11,48 @@
 	
 	/*Verification functions*/
 	include "functions/verification.php";
+	
+	if(isApplicationApprover($conn, $_SESSION['broncoNetID']))
+	{
+		if(isset($_GET["downloadApplications"])){
+			
+			$res = getPendingApplications($conn, '');
+			
+			$list = [];
+			for($i = 0; $i < count($res); $i++){
+				$application = $res[$i];
+				if($application instanceof Applicaion) echo 'is an application...';
+				array_push($list, array($application->id,$application->name,$application->dept,$application->getPurpose(),$application->dest,
+										$application->rTitle,$application->tStart,$application->tEnd,$application->aStart,$application->aEnd,
+										$application->getTotalBudget(),$application->aReq,' ',' '));
+			}
+			
+			// output headers so that the file is downloaded rather than displayed
+			header('Content-type: text/csv');
+			header('Content-Disposition: attachment; filename="demo.csv"');
+			 
+			// do not cache the file
+			header('Pragma: no-cache');
+			header('Expires: 0');
+			 
+			// create a file pointer connected to the output stream
+			$file = fopen('php://output', 'w');
+			 
+			// send the column headers
+			fputcsv($file, array('Application Number', 'Name', 'Department', 'Purpose', 'Destination',
+								'Title', 'Travel Date Start', 'Travel Date End', 'Project Date Start', 'Project Date End',
+								'Total Budget', 'Requested Reward',	'Amount Awarded', 'Comments'));
+			
+			foreach($list as $line) {
+			//foreach($res as $line) {
+				fputcsv($file, $line);
+			}
+			
+			fclose($file);
+			$sql = null;
+			exit;	
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,7 +90,7 @@
 		<?php
 			include 'include/header.php';
 			
-			if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
+			if(isApplicationApprover($conn, $_SESSION['broncoNetID']))
 			{
 				$apps = getPendingApplications($conn, "");//get all pending applications
 		?>
@@ -62,7 +104,7 @@
 			<!--Filter first date-->
 				<div class="col-md-3">
 					<div class="form-group">
-						<label for="filterDateFrom">Filter date from:</label>
+						<label for="filterDateFrom">Filter date after:</label>
 						<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" value="{{oldDate}}" />
 					</div>
 				</div>
@@ -75,32 +117,23 @@
 				</div>
 				<div class="col-md-3"></div>
 			</div>
-			<div class="row" />
+			<div class="row">
 				<div class="col-md-3"></div>
 				<div class="col-md-6">
 					<table class="table">
 						<thead>
 							<tr>
+								<th>ID</th>
 								<th>Name</th>
+								<th>Title</th>
 								<th>Date Submitted</th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php
-								//echo "how many apps: ".count($apps).".";
-								/*if(count($apps) == 0)
-									echo "<tr><td align='center' colspan='3'><h3 class='title'>NO PENDING APPLICATIONS.</h3></td></tr>";
-								else
-									for($i = 0; $i < count($apps); $i++) {
-										echo "<tr>";
-										echo "<td><a href=application_confirmation.php?id=" . $apps[$i]->id . ">" . $apps[$i]->name . "</a></td>";
-										echo "<td>" . $apps[$i]->dateS . "</td>";
-										echo "</tr>";
-									}*/
-							?>
-							<!--<tr ng-repeat="x in applications | filter: {'dateS': '2018-02-25'}">-->
 							<tr ng-repeat="x in applications | dateFilter:filterFrom:filterTo">
-								<td><a href="application_confirmation.php?id={{ x.id }}">{{ x.name }}</a></td>
+								<td>{{ x.id }}</td>
+								<td>{{ x.name }}</td>
+								<td><a href="application_confirmation.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 							</tr>
 						</tbody>
@@ -108,6 +141,9 @@
 				</div>
 				<div class="col-md-3"></div>
 			</div>
+			
+			<center><a id="applicationSummaryDownload" class="btn btn-success" href="?downloadApplications=1">Download Application Summary Sheet</a><br></center>
+			
 		</div>
 		<?php
 			}
