@@ -59,7 +59,7 @@
 		<!--HEADER-->
 		<div class="container-fluid" ng-controller="listCtrl">
 			<div class="row">
-				<center><h2 class="title">Pending Applications</h2></center>
+				<center><h2 class="title">All Applications</h2></center>
 			</div>
 			<div class="row">
 				<div class="col-md-3"></div>
