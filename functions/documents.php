@@ -29,23 +29,38 @@
 		readfile($settings["uploads_dir"] . $id . '/' . $doc);
 		exit('Downloaded');
 	}
-	
+	/*
+	function reArrayFiles($file)
+	{
+		$file_ary = array();
+		$file_count = count($file['name']);
+		$file_key = array_keys($file);
+	   
+		for($i=0;$i<$file_count;$i++)
+		{
+			foreach($file_key as $val)
+			{
+				$file_ary[$i][$val] = $file[$val][$i];
+			}
+		}
+		return $file_ary;
+	}
+	*/
 	/*Upload the documents; return true on success, false on failure*/
 	function uploadDocs($id) {
 		$settings = parse_ini_file('config.ini');
+		$ssh = new Net_SFTP('www.codigo-tech.com');
+		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+			//header("Location: application_builder.php?status=failedfileSu");
+			return false;
+		}
 		if(isset($_FILES["fD"]))
 		{
 			if ($_FILES['fD']['size'] != 0)
 			{
 				$file = $_FILES["fD"]["tmp_name"];
-				$doc = "P" . $id . ".pdf";
+				$doc = "P" . $id . "-" . $_FILES["fD"]["name"];
 				
-				
-				$ssh = new Net_SFTP('www.codigo-tech.com');
-				if (!$ssh->login($settings["host_user"], "Default1234$")) {
-					//header("Location: application_builder.php?status=failedfileFu");
-					return false;
-				}
 				try
 				{
 					echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
@@ -63,37 +78,17 @@
 			//header("Location: application_builder.php?status=failedfileF");
 			return false;
 		}
-		if(isset($_FILES["sD"]))
+		$fsD = $_FILES["sD"];
+		if(!empty($fsD))
 		{
-			if ($_FILES['sD']['size'] != 0)
+			for($i = 0; $i < count($fsD["name"]); $i++)
 			{
-				$file = $_FILES["sD"]["tmp_name"];
-				$doc = "S" . $id . ".pdf";
-				
-				$ssh = new Net_SFTP('www.codigo-tech.com');
-				if (!$ssh->login($settings["host_user"], "Default1234$")) {
-					//header("Location: application_builder.php?status=failedfileSu");
-					return false;
-				}
-				try
-				{
-					echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
-				}
-				catch (Exception $e) 
-				{
-					echo 'Upload exception: ',  $e->getMessage(), "\n";
-				}
+				$file = $fsD["tmp_name"][$i];
+				$doc = "S" . $id . "-" . $fsD["name"][$i];
 				
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
-				
-				
 			}
-		}else{
-			echo "Could not upload file, application NOT submitted.";
-			//header("Location: application_builder.php?status=failedfileS");
-			return false;
 		}
-		
 		/*everything was successful*/
 		return true;
 	}

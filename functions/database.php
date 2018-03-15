@@ -1,4 +1,5 @@
 <?php
+	ob_start();
 	include $_SERVER['DOCUMENT_ROOT']."/include/application.php";
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
@@ -601,24 +602,40 @@
 	
 	/*Update an application to be approved*/
 	if(!function_exists('approveApplication')){
-		function approveApplication($conn, $id)
+		function approveApplication($conn, $id, $email, $eb, $amount)
 		{
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 1 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Approved = 1, AmountAwarded = :aw WHERE ID = :id");
+				$sql->bindParam(':aw', $amount);
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
+				
+				$to = $email;
+				$body = $eb;
+
+				$subject = "Your HIGE Grant Application has been Approved - Do Not Reply";
+
+				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
+				$headers .= "Reply-To: info@codigo-tech.com \r\n";
+				$headers .= "MIME-Version: 1.0\r\n";
+				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+				$headers .= "X-Priority: 1 (Highest)\n";
+				$headers .= "X-MSMail-Priority: High\n";
+				$headers .= "Importance: High\n";
+					
+				mail($to, $subject, $body, $headers);
 			}
 		}
 	}
 	
 	/*Update an application to be denied*/
 	if(!function_exists('denyApplication')){
-		function denyApplication($conn, $id)
+		function denyApplication($conn, $id, $email, $eb)
 		{
 			if ($id != "") //valid application id
 			{
@@ -629,6 +646,53 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
+				
+				$to = $email;
+				$body = $eb;
+
+				$subject = "Your HIGE Grant Application has been Denied - Do Not Reply";
+
+				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
+				$headers .= "Reply-To: info@codigo-tech.com \r\n";
+				$headers .= "MIME-Version: 1.0\r\n";
+				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+				$headers .= "X-Priority: 1 (Highest)\n";
+				$headers .= "X-MSMail-Priority: High\n";
+				$headers .= "Importance: High\n";
+					
+				mail($to, $subject, $body, $headers);
+			}
+		}
+	}
+	
+	
+	/*Update an application to be put on hold*/
+	if(!function_exists('holdApplication')){
+		function holdApplication($conn, $id, $email, $eb)
+		{
+			if ($id != "") //valid application id
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE applications SET OnHold = 1 WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				/* Close finished query and connection */
+				$sql = null;
+				
+				$to = $email;
+				$body = $eb;
+
+				$subject = "Your HIGE Grant Application needs your Attention - Do Not Reply";
+
+				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
+				$headers .= "Reply-To: info@codigo-tech.com \r\n";
+				$headers .= "MIME-Version: 1.0\r\n";
+				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+				$headers .= "X-Priority: 1 (Highest)\n";
+				$headers .= "X-MSMail-Priority: High\n";
+				$headers .= "Importance: High\n";
+					
+				mail($to, $subject, $body, $headers);
 			}
 		}
 	}
@@ -759,6 +823,12 @@
 			/*Now validate everything that needs it*/
 			if($valid)
 			{
+				list($em, $domain) = explode('@', $deptChairEmail);
+
+				if (!strstr(strtolower($domain), "wmich")) {
+					header('Location: ../application.php?error=email');
+					$valid = false;
+				}
 				/*Make sure necessary strings aren't empty*/
 				if($name === '' || $email === '' || $department === '' || $title === '' || $proposalSummary === '' || $deptChairEmail === '')
 				{
@@ -768,7 +838,7 @@
 				/*Make sure dates are acceptable*/
 				if($travelTo < $travelFrom || $activityTo < $activityFrom || $activityFrom < $travelFrom || $activityTo > $travelTo)
 				{
-					echo "Application Validation Error: Invalid Date Given!";
+					header('Location: ../application.php?error=dates');
 					$valid = false;
 				}
 				/*Make sure emails are correct format*/
