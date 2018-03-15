@@ -133,7 +133,7 @@
 							<tr ng-repeat="x in applications | dateFilter:filterFrom:filterTo">
 								<td>{{ x.id }}</td>
 								<td>{{ x.name }}</td>
-								<td><a href="application_confirmation.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 							</tr>
 						</tbody>
