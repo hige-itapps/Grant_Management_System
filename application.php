@@ -76,6 +76,11 @@
 	
 	$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
 	
+	/*User is trying to download a document*/
+	if(isset($_GET["doc"]))
+	{
+		downloadDocs($_GET["id"], $_GET["doc"]);
+	}
 	/*Get all user permissions. THESE ARE TREATED AS IF THEY ARE MUTUALLY EXCLUSIVE; ONLY ONE CAN BE TRUE!
 	For everything besides application creation, the app ID MUST BE SET*/
 	if(isset($_GET["id"]))
@@ -119,7 +124,7 @@
 		$permissionSet = $isCreating; //will set to true if user is 
 	}
 	
-	
+	$idA = $_GET["id"];
 	
 	
 	/*Verify that user is allowed to render application*/
@@ -152,20 +157,20 @@
 			/*User wants to approve this application*/
 			if(isset($_POST["approveA"]))
 			{
-				approveApplication($conn, $_GET["id"], $_POST["inputEmail"], $_POST["finalE"], $_POST["aAw"]);
+				approveApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"], $_POST["aAw"]);
 				header('Location: app_list.php'); //redirect to app_list
 			}
 			
 			/*User wants to deny this application*/
 			if(isset($_POST["denyA"]))
 			{
-				denyApplication($conn, $_GET["id"], $_POST["inputEmail"], $_POST["finalE"]);
+				denyApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
 				header('Location: app_list.php'); //redirect to app_list
 			}
 			/*User wants to HOLD this application*/
 			if(isset($_POST["holdA"]))
 			{
-				holdApplication($conn, $_GET["id"], $_POST["inputEmail"], $_POST["finalE"]);
+				holdApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
 				header('Location: app_list.php'); //redirect to app_list
 			}
 			
@@ -176,17 +181,20 @@
 				header('Location: index.php'); //redirect to homepage
 			}
 		}
-		
 	?>
 	<!--HEADER-->
 	
 		<!--BODY-->
 		<div class="container-fluid">
 		
-			<?php if(!$isCreating){ //form for a new application?>
-				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
-			<?php }else{ //form for an existing application?>
+			<!--<?php /*if(!$isCreating){*/ ?>
+				
+			--><?php /*}*/ if($isReviewing){ //form for updating an application?>
+				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="functions/documents.php">
+			<?php }else if($isCreating){ //form for a new application?>
 				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="controllers/addApplication.php">
+			<?php }else{ //default form?>
+				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
 			<?php } ?>
 			
 				<div ng-controller="appCtrl">
@@ -681,7 +689,7 @@
 					<div class="row">
 						<div class="col-md-6">
 							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants?>
-								<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" accept="application/pdf" name="fD" id="fD"/>
+								<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD"/>
 							<?php } //for viewing uploaded documents; ANYONE can?>
 							<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) foreach($P as $ip) echo $ip . " "; else echo "none"; ?> </p>
 						</div>
@@ -689,7 +697,7 @@
 						
 						<div class="col-md-6">
 							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants?>
-								<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" accept="application/pdf" name="sD[]" id="sD" multiple />
+								<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" multiple />
 							<?php } //for viewing uploaded documents; ANYONE can?>
 							<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) foreach($S as $is) echo $is . " "; else echo "none"; ?> </p>
 						</div>
@@ -749,7 +757,9 @@
 					<?php } ?>
 					<br><br>
 					
-					
+					<?php if($isReviewing || $isAdmin){ //show submit application button if creating?>
+						<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
+					<?php } ?>	
 					
 					<div class="row">
 						<div class="col-md-2"></div>
@@ -759,15 +769,25 @@
 								<input type="submit" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
 							<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin?>
 								<input type="submit" class="btn btn-success" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
+								<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
+								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+								<?php } else { ?>
 								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+								<?php } ?>
 								<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
 							<?php }else if($isChair){ //show sign button if dep chair?>
 								<input type="submit" class="btn btn-success" id="signApp" name="signApp" value="SIGN APPLICATION" />
 							<?php }else if($isApprover){ //show approve, hold, and deny buttons if approver?>
+								<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
+								<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+								<?php } else { ?>
 								<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+								<?php } ?>
 								<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
 								<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
-							<?php } ?>
+							<?php }else if($isReviewing){ ?>
+								<input type="submit" class="btn btn-primary" id="uploadDocs" name="uploadDocs" value="Upload More Documents" />
+							<? } ?>
 						</div>
 						<div class="col-md-2">
 							<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
