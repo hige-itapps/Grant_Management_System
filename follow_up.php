@@ -446,15 +446,13 @@
 							<?php if($isCreating){ //show submit application button if creating ?>
 								<input type="submit" class="btn btn-success" id="submitApp" name="submitApp" value="Submit Follow-Up Report" />
 							<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
-								<input type="submit" class="btn btn-success" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
+								<input type="submit" class="btn btn-success" id="updateApp" name="updateApp" value="UPDATE FOLLOW-UP REPORT" />
 								<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" disabled="true" />
 								<?php } else { ?>
-								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
 								<?php } ?>
-								<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
-							<?php }else if($isChair){ //show sign button if dep chair ?>
-								<input type="submit" class="btn btn-success" id="signApp" name="signApp" value="SIGN APPLICATION" />
+								<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
 							<?php }else if($isFUApprover){ //show approve, hold, and deny buttons if approver ?>
 								<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
 								<!--<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />-->
