@@ -1,6 +1,6 @@
 <?php
-	ob_start();
 	include $_SERVER['DOCUMENT_ROOT']."/include/application.php";
+	include_once $_SERVER['DOCUMENT_ROOT']."/controllers/customEmail.php";
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
@@ -109,6 +109,27 @@
 		}
 	}
 	
+	/*Returns a single application for a specified application ID*/
+	if(!function_exists('getFUReport')) {
+		function getFUReport($conn, $appID)
+		{
+			$sql = $conn->prepare("Select * FROM follow_up_reports WHERE ApplicationID = :appID");
+			$sql->bindParam(':appID', $appID);
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll();
+			
+			/*create application object*/
+			$FUReport = new FUReport($res[0]);
+			
+			
+			/* Close finished query and connection */
+			$sql = null;
+			
+			/* return FUReport object */
+			return $FUReport;
+		}
+	}
 	/* Returns array of all applications that still need to be signed by a specific user(via email address)
 	Note: don't include ones that have already been signed, and ones that have the same email as the submitter
 	(you shouldn't be able to sign your own application)
@@ -519,6 +540,34 @@
 		}
 	}
 	
+	/* Returns true if this applicant has a follow up r already created, or false otherwise */
+	if(!function_exists('hasFUReport')){
+		function hasFUReport($conn, $appID)
+		{
+			$is = false;
+			
+			if ($appID != "") //valid username
+			{
+				/* Select only pending applications that this user has has submitted */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM follow_up_reports WHERE ApplicationID = :appID");
+				$sql->bindParam(':appID', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				if($res[0][0] > 0) //at least one result
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
 	/* Returns true if this applicant has an approved application from up to a year ago */
 	if(!function_exists('hasApprovedApplicationWithinPastYear')){
 		function hasApprovedApplicationWithinPastYear($conn, $bNetID)
@@ -614,53 +663,46 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
+				approvalEmail($email, $eb);
 				
-				$to = $email;
-				$body = $eb;
-
-				$subject = "Your HIGE Grant Application has been Approved - Do Not Reply";
-
-				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
-				$headers .= "Reply-To: info@codigo-tech.com \r\n";
-				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-				$headers .= "X-Priority: 1 (Highest)\n";
-				$headers .= "X-MSMail-Priority: High\n";
-				$headers .= "Importance: High\n";
-					
-				mail($to, $subject, $body, $headers);
 			}
 		}
 	}
 	
-	/*Update an application to be denied*/
-	if(!function_exists('denyApplication')){
-		function denyApplication($conn, $id, $email, $eb)
+	
+	/*Update a FU Report to be approved*/
+	if(!function_exists('approveFU')){
+		function approveFU($conn, $id, $email, $eb)
 		{
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
+				approvalEmail($email, $eb);
 				
-				$to = $email;
-				$body = $eb;
-
-				$subject = "Your HIGE Grant Application has been Denied - Do Not Reply";
-
-				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
-				$headers .= "Reply-To: info@codigo-tech.com \r\n";
-				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-				$headers .= "X-Priority: 1 (Highest)\n";
-				$headers .= "X-MSMail-Priority: High\n";
-				$headers .= "Importance: High\n";
-					
-				mail($to, $subject, $body, $headers);
+			}
+		}
+	}
+	
+	/*Update a FU Report to be denied*/
+	if(!function_exists('denyFU')){
+		function denyFU($conn, $id, $email, $eb)
+		{
+			if ($id != "") //valid application id
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				denialEmail($email, $eb);
 			}
 		}
 	}
@@ -678,21 +720,8 @@
 				$sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				onHoldEmail($email, $eb);
 				
-				$to = $email;
-				$body = $eb;
-
-				$subject = "Your HIGE Grant Application needs your Attention - Do Not Reply";
-
-				$headers = "From: HIGE <donotreply@codigo-tech.com> \r\n";
-				$headers .= "Reply-To: info@codigo-tech.com \r\n";
-				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-				$headers .= "X-Priority: 1 (Highest)\n";
-				$headers .= "X-MSMail-Priority: High\n";
-				$headers .= "Importance: High\n";
-					
-				mail($to, $subject, $body, $headers);
 			}
 		}
 	}
@@ -1041,7 +1070,7 @@
 			
 			if($valid) //if successful, return 1
 			{
-				return 1;
+				return $appID;
 			}
 			else //otherwise return 0
 			{
