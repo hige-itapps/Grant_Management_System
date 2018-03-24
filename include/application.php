@@ -1,6 +1,29 @@
 <?php
 
 
+/* HOLDS INFO ABOUT A FU REPORT - SELF EXPLANATORY */
+	if(!class_exists('FUReport')){
+		class FUReport{
+			public $tStart;	//travel start 			(DATE)
+			public $tEnd;	//travel end 			(DATE)
+			public $aStart;	//event start 			(DATE)
+			public $aEnd;	//event end 			(DATE)
+			public $pS;		//project summary 		(STRING)
+			public $awardedS; //						(DECIMAL)
+			
+			/*Constructor(for everything except budget); just pass in the application array received from the database call (SELECT * FROM applications ...)*/
+			public function __construct($appInfo) {
+				$this->tStart = $appInfo[1];
+				$this->tEnd = $appInfo[2];
+				$this->aStart = $appInfo[3];
+				$this->aEnd = $appInfo[4];
+				$this->pS = $appInfo[5];
+				$this->awardedS = $appInfo[6];
+			}
+
+		}
+	}
+
 	/* HOLDS INFO ABOUT AN APPLICATION - SELF EXPLANATORY */
 	if(!class_exists('Application')){
 		class Application{
