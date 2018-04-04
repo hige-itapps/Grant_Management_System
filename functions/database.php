@@ -1,6 +1,7 @@
 <?php
-	include $_SERVER['DOCUMENT_ROOT']."/include/application.php";
-	include_once $_SERVER['DOCUMENT_ROOT']."/controllers/customEmail.php";
+	include_once(dirname(__FILE__) . "/../include/classDefinitions.php");
+	include_once(dirname(__FILE__) . "/../controllers/customEmail.php");
+	include_once('verification.php');
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
@@ -9,9 +10,10 @@
 			try 
 			{
 				/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
-				$config_url = $_SERVER['DOCUMENT_ROOT'].'/config.ini';
-				
+				$config_url = dirname(__FILE__).'/../config.ini';
+
 				$settings = parse_ini_file($config_url);
+				
 				//var_dump($settings);
 				$conn = new AtomicPDO("mysql:host=" . $settings["hostname"] . ";dbname=" . $settings["database_name"] . ";charset=utf8", $settings["database_username"], 
 					$settings["database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
@@ -109,7 +111,7 @@
 		}
 	}
 	
-	/*Returns a single application for a specified application ID*/
+	/*Returns a single follow up report for a specified application ID*/
 	if(!function_exists('getFUReport')) {
 		function getFUReport($conn, $appID)
 		{
@@ -568,8 +570,8 @@
 			return $is;
 		}
 	}
-	/* Returns true if this applicant has an approved application from up to a year ago */
-	if(!function_exists('hasApprovedApplicationWithinPastYear')){
+	/* Returns true if this applicant has an approved application from up to a year ago -- OUTDATED!*/
+	/*if(!function_exists('hasApprovedApplicationWithinPastYear')){
 		function hasApprovedApplicationWithinPastYear($conn, $bNetID)
 		{
 			$is = false;
@@ -577,13 +579,13 @@
 			if ($bNetID != "") //valid username
 			{
 				/* Select only approved applications that this user has has submitted within the past year*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Date >= DATE_SUB(NOW(),INTERVAL 1 YEAR) AND Applicant = :bNetID AND Approved = true");
+				/*$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Date >= DATE_SUB(NOW(),INTERVAL 1 YEAR) AND Applicant = :bNetID AND Approved = true");
 				$sql->bindParam(':bNetID', $bNetID);
 				$sql->execute();
 				$res = $sql->fetchAll();
 				
 				/* Close finished query and connection */
-				$sql = null;
+				/*$sql = null;
 				
 				//echo 'Count: '.$res[0][0].".";
 				
@@ -594,6 +596,47 @@
 			}
 			
 			return $is;
+		}
+	}*/
+	
+	/*Get the most recently approved application of a user- return null if none*/
+	if(!function_exists('getMostRecentApprovedApplication')){
+		function getMostRecentApprovedApplication($conn, $bNetID)
+		{
+			$mostRecent = null;
+			
+			if ($bNetID != "") //valid username
+			{
+				/* Select the most recent from this applicant */
+				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :bNetID ORDER BY Date DESC LIMIT 1");
+				$sql->bindParam(':bNetID', $bNetID);
+				
+					/* run the prepared query */
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				if($res != null)
+				{
+					//echo "i is ".$i.".";
+					$mostRecent = new Application($res[0]); //initialize
+					
+					$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+					$sql->bindParam(':id', $mostRecent->id);
+					/* run the prepared query */
+					$sql->execute();
+					$resBudget = $sql->fetchAll();
+					
+					$mostRecent->budget = $resBudget;
+				}
+				
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				/* return value */
+				return $mostRecent;
+			}
+			
 		}
 	}
 	
@@ -782,7 +825,7 @@
 	
 	
 	/*
-	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use
+	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one
 	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
 		$budgetArray[i][0] is the name of the expense
 		$budgetArray[i][1] is the comment on the expense
@@ -790,14 +833,18 @@
 	return new application ID if EVERYTHING was successful, otherwise 0
 	*/
 	if(!function_exists('insertApplication')){
-		function insertApplication($conn, $broncoNetID, $name, $email, $department, $departmentMailStop, $deptChairEmail, $travelFrom, $travelTo,
+		function insertApplication($conn, $updating, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
-			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $budgetArray)
+			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
 			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 			
-			//First, add this user to the applicants table IF they don't already exist
-			insertApplicantIfNew($conn, $broncoNetID);
+			if(!$updating)
+			{
+				//First, add this user to the applicants table IF they don't already exist
+				insertApplicantIfNew($conn, $broncoNetID);
+			}
+			
 			
 			/*Server-Side validation!*/
 			$valid = true; //start valid, turn false if anything is wrong!
@@ -809,7 +856,7 @@
 				$name = trim(filter_var($name, FILTER_SANITIZE_STRING));
 				$email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
 				$department = trim(filter_var($department, FILTER_SANITIZE_STRING));
-				$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
+				//$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
 				$travelFrom = strtotime($travelFrom);
 				$travelTo = strtotime($travelTo);
 				$title = trim(filter_var($title, FILTER_SANITIZE_STRING));
@@ -828,6 +875,7 @@
 				$goal3 = filter_var($goal3, FILTER_SANITIZE_NUMBER_INT);
 				$goal4 = filter_var($goal4, FILTER_SANITIZE_NUMBER_INT);
 				$deptChairEmail = trim(filter_var($deptChairEmail, FILTER_SANITIZE_EMAIL));
+				$nextCycle = filter_var($nextCycle, FILTER_SANITIZE_NUMBER_INT);
 				
 				//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 				
@@ -861,7 +909,7 @@
 				/*Make sure necessary strings aren't empty*/
 				if($name === '' || $email === '' || $department === '' || $title === '' || $proposalSummary === '' || $deptChairEmail === '')
 				{
-					echo "Application Validation Error: Empty String Given!";
+					header('Location: ../application.php?error=emptystring');
 					$valid = false;
 				}
 				/*Make sure dates are acceptable*/
@@ -873,8 +921,25 @@
 				/*Make sure emails are correct format*/
 				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
 				{
-					echo "Application Validation Error: Invalid Email Given!";
+					header('Location: ../application.php?error=emailformat');
 					$valid = false;
+				}
+				/*Make sure cycle is allowed*/
+				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+				if($lastApprovedApp != null) //if a previous application exists
+				{
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+					
+					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+					
+					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
+
+					if(!$lastApproved) 
+					{
+						header('Location: ../application.php?error=cycle');
+						$valid = false;
+					}
 				}
 				
 				/*go through budget array*/
@@ -884,7 +949,7 @@
 					{
 						if($i[0] === '' || $i[1] === '')
 						{
-							echo "Application Validation Error: Empty Budget String Given!: ".$i[0].",".$i[1].".";
+							header('Location: ../application.php?error=emptystring');
 							$valid = false;
 							break;
 						}
@@ -897,24 +962,31 @@
 			{
 				try
 				{
+					//Get dates
+					$curDate = date("Y/m/d");
+					$travelFromDate = date("Y-m-d", $travelFrom);
+					$travelToDate = date("Y-m-d", $travelTo);
+					$activityFromDate = date("Y-m-d", $activityFrom);
+					$activityToDate = date("Y-m-d", $activityTo);
+					
 					$conn->beginTransaction(); //begin atomic transaction
 					//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
 					/*Prepare the query*/
-					$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, MailStop, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
-						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail) 
-						VALUES(:applicant, :date, :name, :department, :mailstop, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
-						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail)");
+					$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
+						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle) 
+						VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
+						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle)");
 					$sql->bindParam(':applicant', $broncoNetID);
-					$sql->bindParam(':date', date("Y/m/d")); //create a new date right when inserting to save current time
+					$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
 					$sql->bindParam(':name', $name);
 					$sql->bindParam(':department', $department);
-					$sql->bindParam(':mailstop', $departmentMailStop);
+					//$sql->bindParam(':mailstop', $departmentMailStop);
 					$sql->bindParam(':email', $email);
 					$sql->bindParam(':title', $title);
-					$sql->bindParam(':travelstart', date("Y-m-d", $travelFrom));
-					$sql->bindParam(':travelend', date("Y-m-d", $travelTo));
-					$sql->bindParam(':eventstart', date("Y-m-d", $activityFrom));
-					$sql->bindParam(':eventend', date("Y-m-d", $activityTo));
+					$sql->bindParam(':travelstart', $travelFromDate);
+					$sql->bindParam(':travelend', $travelToDate);
+					$sql->bindParam(':eventstart', $activityFromDate);
+					$sql->bindParam(':eventend', $activityToDate);
 					$sql->bindParam(':destination', $destination);
 					$sql->bindParam(':amountrequested', $amountRequested);
 					$sql->bindParam(':isresearch', $purpose1);
@@ -928,6 +1000,7 @@
 					$sql->bindParam(':fulfillsgoal3', $goal3);
 					$sql->bindParam(':fulfillsgoal4', $goal4);
 					$sql->bindParam(':departmentchairemail', $deptChairEmail);
+					$sql->bindParam(':nextcycle', $nextCycle);
 					
 					if ($sql->execute() === TRUE) //query executed correctly
 					{

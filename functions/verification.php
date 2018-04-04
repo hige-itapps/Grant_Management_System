@@ -11,8 +11,7 @@
 			foreach($adminList as $i) //loop through admins
 			{
 				$newID = $i[0];
-				//echo 'admin: '.$newID.' compare to input '.$broncoNetID.'.';
-				if($newID == $broncoNetID)
+				if(strcmp($newID, $broncoNetID) == 0)
 				{
 					$is = true;
 					break; //no need to continue loop
@@ -86,15 +85,47 @@
 	Rules:
 	1. Must be faculty
 	2. Must not have a pending application
-	3. Must not have received funding within the past year*/
+	3. Must not have received funding within the past year
+	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {
-		function isUserAllowedToCreateApplication($conn, $broncoNetID, $position)
+		function isUserAllowedToCreateApplication($conn, $broncoNetID, $positions, $nextCycle)
 		{
-			/*echo "User ".$broncoNetID.", ".$position."; Has no pending application? ".(!hasPendingApplication($conn, $broncoNetID) ? 'true' : 'false').". 
-			Has no approved application within past year? ".(!hasApprovedApplicationWithinPastYear($conn, $broncoNetID) ? 'true' : 'false').". 
-			Is faculty? ".($position === 'faculty' ? 'true' : 'false').". ";*/
+			$check = false;
+			//check all positions to see if any are 'Faculty' or 'Staff'!
+			if (is_array($positions)) {
+				foreach ($positions as $position) {
+					if ($position === 'Faculty' || $position === 'faculty' 
+						|| $position === 'Staff' || $position === 'staff'
+						|| $position === 'Provisional Employee' || $position === 'Student') {
+						$check = true;
+					}
+				}	
+			} else {
+				if ($positions === 'Faculty' || $positions === 'faculty'
+					|| $positions === 'Staff' || $positions === 'staff'
+					|| $positions === 'Provisional Employee' || $position === 'Student') {
+						$check = true;
+					}
+			}
 			
-			if($position === 'faculty' && !hasPendingApplication($conn, $broncoNetID) && !hasApprovedApplicationWithinPastYear($conn, $broncoNetID))
+			$lastApproved = false; //set to true if last approved application was long enough ago
+			$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+			
+			if($lastApprovedApp != null) //if a previous application exists
+			{
+				$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+				$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+				
+				$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+				
+				$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+			}
+			else //no previous application
+			{
+				$lastApproved = true;
+			}
+			
+			if($check && !hasPendingApplication($conn, $broncoNetID) && $lastApproved)
 			{
 				return true;
 			}
@@ -111,7 +142,7 @@
 		function isUserAllowedToSeeApplications($conn, $broncoNetID)
 		{
 				
-			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID))
+			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID))
 			{
 				return true;
 			}
@@ -175,6 +206,81 @@
 			}
 			
 			return $is;
+		}
+	}
+	
+	/*Return true if 2 cycle strings are far enough apart to be valid (for creating a new application). The old cycle should come first, followed by the new cycle*/
+	if(!function_exists('areCyclesFarEnoughApart')){
+		function areCyclesFarEnoughApart($firstCycle, $secondCycle)
+		{
+			$farEnoughApart = false;
+			
+			//parse $firstCycle to get Spring/Fall and Year
+			$firstCycleParts = explode(" ", $firstCycle); //[0] holds Spring/Fall, [1] holds Year
+				
+			//parse $secondCycle to get Spring/Fall and Year
+			$secondCycleParts = explode(" ", $secondCycle); //[0] holds Spring/Fall, [1] holds Year
+							
+			//RULES: If applying in Spring, must wait for cur cycle + 3 full cycles. If applying in Fall, must wait for cur cycle + 2 full cycles
+			//This can be simplified by just checking the years between application cycles. If years difference >1, then they are far enough apart
+			
+			$yearsBetween = (int)$secondCycleParts[1] - (int)$firstCycleParts[0];//get years between cycles
+			
+			if($yearsBetween > 1) {$farEnoughApart = true;}
+			return $farEnoughApart;
+		}
+	}
+	
+	/*Find the cycle of a given application; */
+	if(!function_exists('getCycleName')){
+		function getCycleName($date, $nextCycle, $showDueDate)
+		{
+			//$date = DateTime::createFromFormat('Y/m/d', $dateString);
+			$dateYear = $date->format("Y");
+			$springDate = DateTime::createFromFormat('m-d', '04-01');
+			$fallDate = DateTime::createFromFormat('m-d', '11-01');
+			$dueSpring = ''; //strings that will contain due date if requested
+			$dueFall = '';
+			
+			if($showDueDate)
+			{
+				$dueSpring = ', due Apr. 1';
+				$dueFall = ', due Nov. 1';
+			}
+			
+			if($date->format('md') > $springDate->format('md') && $date->format('md') <= $fallDate->format('md')) //current date within fall cycle
+			{
+				if(!$nextCycle) //current Fall Cycle
+				{
+					return 'Fall '.$dateYear.$dueFall;
+				}
+				else //next Spring Cycle
+				{
+					return 'Spring '.($dateYear+1).$dueSpring;
+				}
+			}
+			else if($date->format('md') <= $springDate->format('md')) //current date within spring cycle
+			{
+				if(!$nextCycle)//current Spring Cycle
+				{
+					return 'Spring '.$dateYear.$dueSpring;
+				}
+				else //next Fall Cycles
+				{
+					return 'Fall '.$dateYear.$dueFall;
+				}
+			}
+			else //current date within NEXT spring cycle
+			{
+				if(!$nextCycle)//current Spring Cycle
+				{
+					return 'Spring '.($dateYear+1).$dueSpring;
+				}
+				else //next Fall Cycles
+				{
+					return 'Fall '.($dateYear+1).$dueFall;
+				}
+			}
 		}
 	}
 	

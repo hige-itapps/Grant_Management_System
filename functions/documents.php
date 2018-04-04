@@ -1,8 +1,7 @@
 <?php
 	ob_start();
 	
-	set_include_path('/home/egf897jck0fu/public_html/');
-	include('Net/SFTP.php');
+	include_once(dirname(__FILE__) . "/../Net/SFTP.php");
 	
 	
 	if(isset($_POST["uploadDocs"]) || isset($_POST["uploadDocsF"]))
