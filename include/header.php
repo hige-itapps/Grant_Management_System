@@ -1,5 +1,4 @@
 <?php
-/* header to be included in every page on the site */
 ?>
 
 <div class="page-header container-fluid">
@@ -12,7 +11,7 @@
 		<div class="col-md-4"> 
 		</div>
 		<div class="col-md-4">
-			<form id="logoutForm" method="post" action="#">
+			<form id="logoutForm" method="post" action="?logout=">
 				<input type="hidden" name="logoutUser" value="logout" /> 
 				<input type="submit" class="btn btn-info" id="logoutSub" name="logoutSub" value="Logout" />
 			</form>
