@@ -1,13 +1,13 @@
 <?php
 	ob_start();
 	
-	set_include_path('/home/egf897jck0fu/public_html/');
+	/*Debug user validation*/
+	//include "include/debugAuthentication.php";
+	include "include/CAS_login.php";
+
 	/*get database connection*/
 	include "functions/database.php";
 	$conn = connection();
-	
-	/*Debug user validation*/
-	include "include/debugAuthentication.php";
 	
 	/*Verification functions*/
 	include "functions/verification.php";
@@ -48,13 +48,22 @@
 		<?php
 			include 'include/header.php';
 			
-			if(isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']))
+			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))
 			{
 				$apps = getApplications($conn, "");//get all applications
+				$appCycles = []; //array to hold all app cycles as strings
+				
 				foreach($apps as $curApp)
 				{
 					$curApp->statusText = $curApp->getStatus();
+					//echo $curApp->dateS;
+					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateS), $curApp->nextCycle, false);
+					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
+						$appCycles[] = $curApp->cycle;
+					}
 				}
+				
+				$appCycles = array_reverse($appCycles); //reverse cycles so that the newest ones are first
 		?>
 		<!--HEADER-->
 		<div class="container-fluid" ng-controller="listCtrl">
@@ -62,19 +71,28 @@
 				<center><h2 class="title">All Applications</h2></center>
 			</div>
 			<div class="row">
-				<div class="col-md-3"></div>
+				<div class="col-md-2"></div>
+			<!--Filter cycle-->
+				<div class="col-md-2">
+					<div class="form-group">
+						<label for="filterCycle">Filter by cycle:</label><br>
+						<select ng-options="item as item for item in appCycles track by item" ng-model="filterCycle" id="filterCycle" name="filterCycle">
+							<option value="">All</option>
+						</select>
+					</div>
+				</div>
 			<!--Filter first date-->
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterDateFrom">Filter date after:</label>
-						<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" value="{{oldDate}}" />
+						<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" />
 					</div>
 				</div>
 			<!--Filter last date-->
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterDateTo">Filter date up to:</label>
-						<input type="date" ng-model="filterTo" class="form-control" id="filterDateTo" name="filterDateTo" value="{{curDate}}" />
+						<input type="date" ng-model="filterTo" class="form-control" id="filterDateTo" name="filterDateTo" />
 					</div>
 				</div>
 			<!--Filter status-->
@@ -86,36 +104,54 @@
 							<option value="Approved">Approved</option>
 							<option value="Pending">Pending</option>
 							<option value="Denied">Denied</option>
+							<option value="Hold">Hold</option>
 						</select>
 					</div>
 				</div>
-				<div class="col-md-3"></div>
+				<div class="col-md-2"></div>
 			</div>
 			<div class="row">
-				<div class="col-md-3"></div>
-				<div class="col-md-6">
+				<div class="col-md-2"></div>
+				<div class="col-md-8">
 					<table class="table">
 						<thead>
 							<tr>
 								<th>ID</th>
 								<th>Name</th>
 								<th>Title</th>
+								<th>Cycle</th>
 								<th>Date Submitted</th>
 								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus}">
+							<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus, cycle: filterCycle}">
 								<td>{{ x.id }}</td>
 								<td>{{ x.name }}</td>
-								<td><a href="application_review.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td>{{ x.cycle }}</td>
+								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+								<td class="{{x.statusText}}">{{ x.statusText }}</td>
+							</tr>
+							<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus}">
+								<td>{{ x.id }}</td>
+								<td>{{ x.name }}</td>
+								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+								<td>{{ x.cycle }}</td>
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 								<td class="{{x.statusText}}">{{ x.statusText }}</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-				<div class="col-md-3"></div>
+				<div class="col-md-2"></div>
+			</div>
+			<div class="row">
+				<div class="col-md-5"></div>
+				<div class="col-md-2">
+					<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
+				</div>
+				<div class="col-md-5"></div>
 			</div>
 		</div>
 		<?php
@@ -132,14 +168,15 @@
 	<script>
 		var myApp = angular.module('HIGE-app', []);
 		
-		var currentDate = new Date(); //get current date
-		var olderDate = new Date(); olderDate.setMonth(olderDate.getMonth() - 6); //get date from 6 months ago
+		//var currentDate = new Date(); //get current date
+		//var olderDate = new Date(); olderDate.setMonth(olderDate.getMonth() - 6); //get date from 6 months ago
 		
 		/*Controller to set date inputs and list*/
 		myApp.controller('listCtrl', function($scope, $filter) {
 			$scope.applications = <?php echo json_encode($apps) ?>;
-			$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
-			$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
+			$scope.appCycles = <?php echo json_encode($appCycles) ?>;
+			//$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
+			//$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
 		});
 		
 		/*Custom filter used to filter within a date range*/
@@ -151,16 +188,17 @@
 				alert("Date from: " + dateFrom);
 				alert("Date to: " + dateTo);*/
 				
-				var testFrom = dateFrom;
+				/*var testFrom = dateFrom;
 				if(dateFrom == null){testFrom = olderDate;}
 				var testTo = dateTo;
-				if(dateTo == null){testTo = currentDate;}
+				if(dateTo == null){testTo = currentDate;}*/
 				
 				for (var i=0; i<items.length; i++){
 					var dateSub = new Date(items[i].dateS);
-					if (dateSub >= testFrom && dateSub <= testTo)  {
-						result.push(items[i]);
-					}
+					if(dateFrom == null && dateTo == null)		{result.push(items[i]);} //if neither filter date is defined
+					else if(dateFrom != null && dateTo != null)	{if (dateSub >= dateFrom && dateSub <= dateTo){result.push(items[i]);}} //if both filter dates are defined
+					else if(dateFrom != null) 					{if (dateSub >= dateFrom){result.push(items[i]);}} //if only from date is defined
+					else if(dateTo != null)						{if (dateSub <= dateTo){result.push(items[i]);}} //if only date to is defined
 				}
 				
 				return result;

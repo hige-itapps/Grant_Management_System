@@ -1,6 +1,7 @@
 <?php
 	/*Debug user validation*/
-	include "include/debugAuthentication.php";
+	//include "include/debugAuthentication.php";
+	include "include/CAS_login.php";
 	
 	/*Get DB connection*/
 	include "functions/database.php";
@@ -87,27 +88,27 @@
 	if(isset($_GET["id"]))
 	{
 		//admin check
-		$isAdmin = isAdministrator($conn, $_SESSION['broncoNetID']); //admin is viewing page; can edit stuff
+		$isAdmin = isAdministrator($conn, $CASbroncoNetId); //admin is viewing page; can edit stuff
 		$permissionSet = $isAdmin;
 		
 		//isFollowUpReportApprover
 		if(!$permissionSet)
 		{
-			$isFUApprover = isFollowUpReportApprover($conn, $_SESSION['broncoNetID']); //application approver(director) can write notes, choose awarded amount, and generate email text
+			$isFUApprover = isFollowUpReportApprover($conn, $$CASbroncoNetId); //application approver(director) can write notes, choose awarded amount, and generate email text
 			$permissionSet = $isFUApprover;
 		}
 		
 		//committee member check
 		if(!$permissionSet)
 		{
-			$isCommittee = isUserAllowedToSeeApplications($conn, $_SESSION['broncoNetID']); //committee member; can only view!
+			$isCommittee = isUserAllowedToSeeApplications($conn, $$CASbroncoNetId); //committee member; can only view!
 			$permissionSet = $isCommittee;
 		}
 		
 		//applicant reviewing check
 		if(!$permissionSet)
 		{
-			$isReviewing = doesUserOwnApplication($conn, $_SESSION['broncoNetID'], $_GET['id']) && hasFUReport($conn, $_GET["id"]); //applicant is reviewing their application
+			$isReviewing = doesUserOwnApplication($conn, $$CASbroncoNetId, $_GET['id']) && hasFUReport($conn, $_GET["id"]); //applicant is reviewing their application
 			$permissionSet = $isReviewing;
 		}
 	}
@@ -215,7 +216,7 @@
 							<div class="form-group">
 								<?php if(/*$isCreating || */$isAdmin){ //for creating or updating applications ?>
 									<label for="inputEmail">Email Address (up to <?php echo $maxEmail; ?> characters):</label>
-									<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required <?php if($isAdmin){echo 'value="'.$app->email.'"';}else{echo 'value="'.$_SESSION['email'].'"';}?> />
+									<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required <?php if($isAdmin){echo 'value="'.$app->email.'"';}else{echo 'value="'.$CASemail.'"';}?> />
 								<?php }else{ //for viewing applications ?>
 									<label for="inputEmail">Email Address:</label>
 									<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" disabled="true" value="<?php echo $app->email; ?>"/>
@@ -447,11 +448,7 @@
 								<input type="submit" class="btn btn-success" id="submitApp" name="submitApp" value="Submit Follow-Up Report" />
 							<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
 								<input type="submit" class="btn btn-success" id="updateApp" name="updateApp" value="UPDATE FOLLOW-UP REPORT" />
-								<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" disabled="true" />
-								<?php } else { ?>
 								<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
-								<?php } ?>
 								<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
 							<?php }else if($isFUApprover){ //show approve, hold, and deny buttons if approver ?>
 								<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
@@ -462,7 +459,7 @@
 							<?php } ?>
 						</div>
 						<div class="col-md-2">
-							<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
+							<a href="index.php" onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" class="btn btn-info">LEAVE PAGE</a>
 						</div>
 						<div class="col-md-2"></div>
 					</div>
