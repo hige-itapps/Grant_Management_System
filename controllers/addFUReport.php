@@ -1,18 +1,18 @@
 <?php
 	ob_start();
+
+	/*Debug user validation*/
+	/*include "include/debugAuthentication.php";*/
+	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
 	
-	set_include_path('/home/egf897jck0fu/public_html/');
 	//include('../Net/SFTP.php');
-	include('../functions/database.php');
+	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection(); //connect to database
 	
-	include('../functions/documents.php');
-	
-	/*Debug user validation*/
-	include "include/debugAuthentication.php";
+	include_once(dirname(__FILE__) . "/../functions/documents.php");
 	
 	/*Verification functions*/
-	include "functions/verification.php";
+	include_once(dirname(__FILE__) . "/../functions/verification.php");
 	
 	/*Verify that user is allowed to make an application*/
 	if(!hasFUReport($conn, $_POST["appID"]))
