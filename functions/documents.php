@@ -10,13 +10,13 @@
 	/*list documents for a given app ID*/
 	function listDocs($id) {
 		$settings = parse_ini_file('config.ini');
-		$ssh = new Net_SFTP('www.codigo-tech.com');
-		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
+		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
 			for($i = 0; $i <= 3 && $success == 0; $i++)
 			{
 				sleep(2);
-				if($ssh->login($settings["host_user"], "Default1234$"))
+				if($ssh->login($settings["host_user"], $settings["host_password"]))
 					$success = 1;
 			}
 			if($success == 0)
@@ -70,13 +70,13 @@
 	/*Upload the documents; return true on success, false on failure*/
 	function uploadDocs($id) {
 		$settings = parse_ini_file('../config.ini');
-		$ssh = new Net_SFTP('www.codigo-tech.com');
-		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
+		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
 			for($i = 0; $i <= 3 && $success == 0; $i++)
 			{
 				sleep(2);
-				if($ssh->login($settings["host_user"], "Default1234$"))
+				if($ssh->login($settings["host_user"], $settings["host_password"]))
 					$success = 1;
 			}
 			if($success == 0)
@@ -113,15 +113,18 @@
 				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 			}
 		}
-		$followD = $_FILES["followD"];
-		if(!empty($followD))
+		if(isset($_FILES["followD"]))
 		{
-			for($i = 0; $i < count($followD["name"]); $i++)
+			$followD = $_FILES["followD"];
+			if(!empty($followD))
 			{
-				$file = $followD["tmp_name"][$i];
-				$doc = "F" . $id . "-" . $followD["name"][$i];
-				
-				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				for($i = 0; $i < count($followD["name"]); $i++)
+				{
+					$file = $followD["tmp_name"][$i];
+					$doc = "F" . $id . "-" . $followD["name"][$i];
+					
+					$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				}
 			}
 		}
 		unset($ssh);
