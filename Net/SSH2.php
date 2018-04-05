@@ -153,6 +153,8 @@ define('NET_SSH2_READ_NEXT', 3);
  * @author  Jim Wigginton <terrafrost@php.net>
  * @access  public
  */
+ 
+set_include_path($_SERVER['DOCUMENT_ROOT']);
 class Net_SSH2
 {
     /**
