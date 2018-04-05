@@ -407,7 +407,8 @@
 					<div class="row">
 						<center>
 							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
-								<label for="followD"><h3>Click to Upload:</h3></label><input type="file" name="followD[]" id="followD" multiple />
+								<label for="followD"><h3>Click to Upload:</h3></label><input type="file" name="followD[]" id="followD" accept=".txt, .rtf, .doc, .docx, 
+								.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
 							<?php } //for viewing uploaded documents; ANYONE can ?>
 							<p class="title">UPLOADED TRAVEL RECEIPTS: <?php if(count($P > 0)) { foreach($P as $ip) echo $ip . " "; } else { echo "none"; } ?> </p>
 						</center>

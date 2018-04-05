@@ -768,7 +768,8 @@
 					<div class="row">
 						<div class="col-md-6">
 							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
-								<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD"/>
+								<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" accept=".txt, .rtf, .doc, .docx, 
+								.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 							<?php } //for viewing uploaded documents; ANYONE can ?>
 							<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) foreach($P as $ip) echo $ip . " "; else echo "none"; ?> </p>
 						</div>
@@ -776,7 +777,8 @@
 						
 						<div class="col-md-6">
 							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
-								<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" multiple />
+								<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" accept=".txt, .rtf, .doc, .docx, 
+								.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
 							<?php } //for viewing uploaded documents; ANYONE can ?>
 							<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) foreach($S as $is) echo $is . " "; else echo "none"; ?> </p>
 						</div>
