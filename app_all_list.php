@@ -71,12 +71,19 @@
 				<center><h2 class="title">All Applications</h2></center>
 			</div>
 			<div class="row">
-				<div class="col-md-2"></div>
+				<div class="col-md-1"></div>
+			<!--Filter name-->
+			<div class="col-md-2">
+					<div class="form-group">
+						<label for="filterName">Filter by name:</label>
+						<input type="text" ng-model="filterName" class="listInput form-control" id="filterName" name="filterName" />
+					</div>
+				</div>
 			<!--Filter cycle-->
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterCycle">Filter by cycle:</label><br>
-						<select ng-options="item as item for item in appCycles track by item" ng-model="filterCycle" id="filterCycle" name="filterCycle">
+						<select ng-options="item as item for item in appCycles track by item" class="listInput" ng-model="filterCycle" id="filterCycle" name="filterCycle">
 							<option value="">All</option>
 						</select>
 					</div>
@@ -85,21 +92,21 @@
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterDateFrom">Filter date after:</label>
-						<input type="date" ng-model="filterFrom" class="form-control" id="filterDateFrom" name="filterDateFrom" />
+						<input type="date" ng-model="filterFrom" class="listInput form-control" id="filterDateFrom" name="filterDateFrom" />
 					</div>
 				</div>
 			<!--Filter last date-->
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterDateTo">Filter date up to:</label>
-						<input type="date" ng-model="filterTo" class="form-control" id="filterDateTo" name="filterDateTo" />
+						<input type="date" ng-model="filterTo" class="listInput form-control" id="filterDateTo" name="filterDateTo" />
 					</div>
 				</div>
 			<!--Filter status-->
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterStatus">Filter by status:</label><br>
-						<select ng-model="filterStatus" id="filterStatus" name="filterStatus">
+						<select ng-model="filterStatus" class="listInput" id="filterStatus" name="filterStatus">
 							<option value=""></option>
 							<option value="Approved">Approved</option>
 							<option value="Pending">Pending</option>
@@ -108,7 +115,7 @@
 						</select>
 					</div>
 				</div>
-				<div class="col-md-2"></div>
+				<div class="col-md-1"></div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -125,7 +132,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus, cycle: filterCycle}">
+							<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
 								<td>{{ x.id }}</td>
 								<td>{{ x.name }}</td>
 								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
@@ -133,7 +140,7 @@
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 								<td class="{{x.statusText}}">{{ x.statusText }}</td>
 							</tr>
-							<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {statusText: filterStatus}">
+							<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 								<td>{{ x.id }}</td>
 								<td>{{ x.name }}</td>
 								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
