@@ -57,12 +57,24 @@
 
 
 				/*get number of applications this user needs to sign*/
+				//echo "Your email: ".$CASemail;
 				$totalSignApps = getNumberOfApplicationsToSign($conn, $CASemail);
 				if($totalSignApps > 0)
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_all_list.php">Application Signature (<?php echo $totalSignApps ?> to sign)</a></p>
+					<p><a href="app_all_list.php">Application Approval (<?php echo $totalSignApps ?> to approve)</a></p>
+			<?php 
+				}
+
+
+				/*get number of previously signed applications*/
+				$signedApps = getNumberOfSignedApplications($conn, $CASemail);
+				if($signedApps > 0)
+				{
+					$viewCounter++;
+			?>
+					<p><a href="app_all_list.php">Previous Applications (<?php echo $signedApps ?> approved)</a></p>
 			<?php 
 				}
 

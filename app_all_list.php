@@ -47,10 +47,27 @@
 		<!--HEADER-->
 		<?php
 			include 'include/header.php';
-			
-			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))
+
+			$totalPrevApps = getApplications($conn, $CASbroncoNetId);
+			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
+
+			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId) || $signedAppsNumber > 0 || count($totalPrevApps) > 0) //user is allowed to see SOMETHING
 			{
-				$apps = getApplications($conn, "");//get all applications
+				$apps = [];
+				//use user permission to get specific set of applications
+				if($signedAppsNumber > 0) //department chair
+				{
+					$apps = getSignedApplications($conn, $CASemail);//get all signed applications only
+				}
+				else if(count($totalPrevApps) > 0) //normal applicant
+				{
+					$apps = $totalPrevApps;
+				}
+				else //default privileges (for HIGE staff)
+				{
+					$apps = getApplications($conn, "");//get all applications
+				}
+
 				$appCycles = []; //array to hold all app cycles as strings
 				
 				foreach($apps as $curApp)
