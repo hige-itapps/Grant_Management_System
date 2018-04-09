@@ -47,6 +47,11 @@
 		<!--HEADER-->
 		<?php
 			include 'include/header.php';
+		?>
+
+		<div id="MainContent" role="main">
+
+		<?php
 
 			$totalPrevApps = getApplications($conn, $CASbroncoNetId);
 			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
@@ -86,117 +91,119 @@
 				}
 				
 				$appCycles = array_reverse($appCycles); //reverse cycles so that the newest ones are first
-		?>
-		<!--HEADER-->
-		<div class="container-fluid" ng-controller="listCtrl">
-			<div class="row">
-				<center><h2 class="title">All Applications</h2></center>
-			</div>
-			<div class="row">
-				<div class="col-md-1"></div>
-			<!--Filter name-->
-			<div class="col-md-2">
-					<div class="form-group">
-						<label for="filterName">Filter by name:</label>
-						<input type="text" ng-model="filterName" class="listInput form-control" id="filterName" name="filterName" />
-					</div>
-				</div>
-			<!--Filter cycle-->
-				<div class="col-md-2">
-					<div class="form-group">
-						<label for="filterCycle">Filter by cycle:</label><br>
-						<select ng-options="item as item for item in appCycles track by item" class="listInput" ng-init="filterCycle = appCycles[0]" ng-model="filterCycle" id="filterCycle" name="filterCycle">
-							<option value="">All</option>
-						</select>
-					</div>
-				</div>
-			<!--Filter first date-->
-				<div class="col-md-2">
-					<div class="form-group">
-						<label for="filterDateFrom">Filter date after:</label>
-						<input type="date" ng-model="filterFrom" class="listInput form-control" id="filterDateFrom" name="filterDateFrom" />
-					</div>
-				</div>
-			<!--Filter last date-->
-				<div class="col-md-2">
-					<div class="form-group">
-						<label for="filterDateTo">Filter date up to:</label>
-						<input type="date" ng-model="filterTo" class="listInput form-control" id="filterDateTo" name="filterDateTo" />
-					</div>
-				</div>
-			<!--Filter status-->
-				<div class="col-md-2">
-					<div class="form-group">
-						<label for="filterStatus">Filter by status:</label><br>
-						<select ng-model="filterStatus" class="listInput" id="filterStatus" name="filterStatus">
-							<option value=""></option>
-							<option value="Approved">Approved</option>
-							<option value="Pending">Pending</option>
-							<option value="Denied">Denied</option>
-							<option value="Hold">Hold</option>
-						</select>
-					</div>
-				</div>
-				<div class="col-md-1"></div>
-			</div>
-			<div class="row">
-				<div class="col-md-1"></div>
-				<div class="col-md-10">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Name</th>
-								<th>Title</th>
-								<th>Cycle</th>
-								<th>Date Submitted</th>
-								<th>Status</th>
-								<th>Approval</th>
-								<th>Follow-up Report</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
-								<td>{{ x.id }}</td>
-								<td>{{ x.name }}</td>
-								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
-								<td>{{ x.cycle }}</td>
-								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
-								<td class="{{x.statusText}}">{{ x.statusText }}</td>
-								<td>{{x.deptCS}}</td>
-								<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
-							</tr>
-							<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
-								<td>{{ x.id }}</td>
-								<td>{{ x.name }}</td>
-								<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
-								<td>{{ x.cycle }}</td>
-								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
-								<td class="{{x.statusText}}">{{ x.statusText }}</td>
-								<td>{{x.deptCS}}</td>
-								<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div class="col-md-1"></div>
-			</div>
-			<div class="row">
-				<div class="col-md-5"></div>
-				<div class="col-md-2">
-					<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
-				</div>
-				<div class="col-md-5"></div>
-			</div>
-		</div>
-		<?php
-			}
-			else{
 			?>
-				<h1>You are not allowed to view applications!</h1>
+			<!--HEADER-->
+			<div class="container-fluid" ng-controller="listCtrl">
+				<div class="row">
+					<center><h2 class="title">All Applications</h2></center>
+				</div>
+				<div class="row">
+					<div class="col-md-1"></div>
+				<!--Filter name-->
+				<div class="col-md-2">
+						<div class="form-group">
+							<label for="filterName">Filter by name:</label>
+							<input type="text" ng-model="filterName" class="listInput form-control" id="filterName" name="filterName" />
+						</div>
+					</div>
+				<!--Filter cycle-->
+					<div class="col-md-2">
+						<div class="form-group">
+							<label for="filterCycle">Filter by cycle:</label><br>
+							<select ng-options="item as item for item in appCycles track by item" class="listInput" ng-init="filterCycle = appCycles[0]" ng-model="filterCycle" id="filterCycle" name="filterCycle">
+								<option value="">All</option>
+							</select>
+						</div>
+					</div>
+				<!--Filter first date-->
+					<div class="col-md-2">
+						<div class="form-group">
+							<label for="filterDateFrom">Filter date after:</label>
+							<input type="date" ng-model="filterFrom" class="listInput form-control" id="filterDateFrom" name="filterDateFrom" />
+						</div>
+					</div>
+				<!--Filter last date-->
+					<div class="col-md-2">
+						<div class="form-group">
+							<label for="filterDateTo">Filter date up to:</label>
+							<input type="date" ng-model="filterTo" class="listInput form-control" id="filterDateTo" name="filterDateTo" />
+						</div>
+					</div>
+				<!--Filter status-->
+					<div class="col-md-2">
+						<div class="form-group">
+							<label for="filterStatus">Filter by status:</label><br>
+							<select ng-model="filterStatus" class="listInput" id="filterStatus" name="filterStatus">
+								<option value=""></option>
+								<option value="Approved">Approved</option>
+								<option value="Pending">Pending</option>
+								<option value="Denied">Denied</option>
+								<option value="Hold">Hold</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-1"></div>
+				</div>
+				<div class="row">
+					<div class="col-md-1"></div>
+					<div class="col-md-10">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Title</th>
+									<th>Cycle</th>
+									<th>Date Submitted</th>
+									<th>Status</th>
+									<th>Approval</th>
+									<th>Follow-up Report</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
+									<td>{{ x.id }}</td>
+									<td>{{ x.name }}</td>
+									<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+									<td>{{ x.cycle }}</td>
+									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+									<td class="{{x.statusText}}">{{ x.statusText }}</td>
+									<td>{{x.deptCS}}</td>
+									<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+								</tr>
+								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
+									<td>{{ x.id }}</td>
+									<td>{{ x.name }}</td>
+									<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+									<td>{{ x.cycle }}</td>
+									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+									<td class="{{x.statusText}}">{{ x.statusText }}</td>
+									<td>{{x.deptCS}}</td>
+									<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-1"></div>
+				</div>
+				<div class="row">
+					<div class="col-md-5"></div>
+					<div class="col-md-2">
+						<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
+					</div>
+					<div class="col-md-5"></div>
+				</div>
+			</div>
 			<?php
-			}
-		?>
+				}
+				else{
+				?>
+					<h1>You are not allowed to view applications!</h1>
+				<?php
+				}
+			?>
+
+		</div>
 	</body>
 	
 	<!-- AngularJS Script -->

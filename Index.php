@@ -49,8 +49,8 @@
 		<!--HEADER-->
 	
 		<!--BODY-->
-		<div class="container-fluid">
-			<p>Your Views:</p>
+		<div id="MainContent" role="main" class="container-fluid">
+			<h1>Your Views:</h1>
 			<?php
 				/*Initialize a counter to track number of available views to this user*/
 				$viewCounter = 0;
