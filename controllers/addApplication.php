@@ -14,6 +14,16 @@
 	/*Verification functions*/
 	include_once(dirname(__FILE__) . "/../functions/verification.php");
 	
+	
+	// Please specify your Mail Server - Example: mail.example.com.
+	ini_set("SMTP","mail.example.com");
+
+	// Please specify an SMTP Number 25 and 8889 are valid SMTP Ports.
+	ini_set("smtp_port","25");
+
+	// Please specify the return address to use
+	ini_set('sendmail_from', 'info@hige.com');
+	
 	/*Verify that user is allowed to make an application*/
 	if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, true))
 	{
@@ -64,7 +74,7 @@
 			/*Insert data into database - receive the new application id if success, or 0 if failure*/
 			/*parameters: DB connection, name, email, department, dep. mail stop, dep. chair email, travel from, travel to, activity from, activity to, title, destination, amount requested,
 			purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, budgetArray*/
-			$successAppID = insertApplication($conn, false, $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
+			$successAppID = insertApplication($conn, false, null, $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
 				$_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], $_POST["inputRName"], $_POST["inputDest"], $_POST["inputAR"], 
 				$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, $nextCycle, $budgetArray);
 				
