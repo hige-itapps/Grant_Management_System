@@ -83,7 +83,7 @@
 				<div class="col-md-2">
 					<div class="form-group">
 						<label for="filterCycle">Filter by cycle:</label><br>
-						<select ng-options="item as item for item in appCycles track by item" class="listInput" ng-model="filterCycle" id="filterCycle" name="filterCycle">
+						<select ng-options="item as item for item in appCycles track by item" class="listInput" ng-init="filterCycle = appCycles[0]" ng-model="filterCycle" id="filterCycle" name="filterCycle">
 							<option value="">All</option>
 						</select>
 					</div>
