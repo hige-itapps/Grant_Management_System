@@ -121,15 +121,23 @@
 			$sql->execute();
 			$res = $sql->fetchAll();
 			
-			/*create application object*/
-			$FUReport = new FUReport($res[0]);
+			if(!empty($res))
+			{
+				/*create application object*/
+				$FUReport = new FUReport($res[0]);
+				
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				/* return FUReport object */
+				return $FUReport;
+			}
+			else
+			{
+				return null;
+			}
 			
-			
-			/* Close finished query and connection */
-			$sql = null;
-			
-			/* return FUReport object */
-			return $FUReport;
 		}
 	}
 	/* Returns array of all applications that still need to be signed by a specific user(via email address)
