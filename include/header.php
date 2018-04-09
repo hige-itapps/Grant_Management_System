@@ -6,7 +6,7 @@
 	<div class="row">
 		<div class="col-md-4">
 			<img src="images/WMU.png" alt="WMU Logo" class="logo" />
-			<a href="/" id="HomeLink">Haenicke Institute for Global Education</a>
+			<h1 id="HomeText">Haenicke Institute for Global Education</h1>
 		</div>
 		<div class="col-md-4"> 
 		</div>
@@ -15,6 +15,7 @@
 				<input type="hidden" name="logoutUser" value="logout" /> 
 				<input type="submit" class="btn btn-info" id="logoutSub" name="logoutSub" value="Logout" />
 			</form>
+			<a href="/" id="HomeLink" class="btn btn-info">Home</a>
 		</div>
 	</div>
 	
