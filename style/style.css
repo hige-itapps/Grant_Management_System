@@ -58,12 +58,19 @@ p.lt {
 /*give some extra margin to title areas*/
 .title{
 	margin-top: 50px;
+	text-align: center;
+}
+
+/*table captions*/
+caption{
+	text-align: center!important; /*center captions*/
+	color: #6f6f6f!important; /*dark grey color*/
 }
 
 /*Color text for approved, denied, and pending*/
-.Approved{	color: #39b42b; /*green*/}
-.Pending{	color: #cfc04d; /*dark yellow*/}
-.Denied{	color: red;}
+.Approved{	color: #17890a; /*darkish green*/}
+.Pending{	color: #717400; /*darkish yellow*/}
+.Denied{	color: #ed0909; /*darkish red*/}
 .Hold{	color: #1b1be3; /*dark blue*/}
 
 /*Color warning text*/
