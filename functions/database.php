@@ -826,9 +826,11 @@
 		$budgetArray[i][1] is the comment on the expense
 		$budgetArray[i][2] is the actual cost
 	return new application ID if EVERYTHING was successful, otherwise 0
+
+	if $updating = true, then just update the application specified by $updateID
 	*/
 	if(!function_exists('insertApplication')){
-		function insertApplication($conn, $updating, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
+		function insertApplication($conn, $updating, $updateID, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
@@ -897,7 +899,7 @@
 			{
 				list($em, $domain) = explode('@', $deptChairEmail);
 
-				if (!strstr(strtolower($domain), "wmich")) {
+				if (!strstr(strtolower($domain), "wmich.edu")) {
 					header('Location: ../application.php?error=email');
 					$valid = false;
 				}
@@ -919,21 +921,25 @@
 					header('Location: ../application.php?error=emailformat');
 					$valid = false;
 				}
-				/*Make sure cycle is allowed*/
-				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
-				if($lastApprovedApp != null) //if a previous application exists
-				{
-					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
-					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
-					
-					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
-					
-					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
 
-					if(!$lastApproved) 
+				if(!$updating)
+				{
+					/*Make sure cycle is allowed*/
+					$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+					if($lastApprovedApp != null) //if a previous application exists
 					{
-						header('Location: ../application.php?error=cycle');
-						$valid = false;
+						$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+						$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+						
+						$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+						
+						$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
+
+						if(!$lastApproved) 
+						{
+							header('Location: ../application.php?error=cycle');
+							$valid = false;
+						}
 					}
 				}
 				
@@ -955,90 +961,180 @@
 			/*Now insert new application into database*/
 			if($valid)
 			{
-				try
+				if(!$updating) //adding, not updating
 				{
-					//Get dates
-					$curDate = date("Y/m/d");
-					$travelFromDate = date("Y-m-d", $travelFrom);
-					$travelToDate = date("Y-m-d", $travelTo);
-					$activityFromDate = date("Y-m-d", $activityFrom);
-					$activityToDate = date("Y-m-d", $activityTo);
-					
-					$conn->beginTransaction(); //begin atomic transaction
-					//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
-					/*Prepare the query*/
-					$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
-						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle) 
-						VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
-						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle)");
-					$sql->bindParam(':applicant', $broncoNetID);
-					$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
-					$sql->bindParam(':name', $name);
-					$sql->bindParam(':department', $department);
-					//$sql->bindParam(':mailstop', $departmentMailStop);
-					$sql->bindParam(':email', $email);
-					$sql->bindParam(':title', $title);
-					$sql->bindParam(':travelstart', $travelFromDate);
-					$sql->bindParam(':travelend', $travelToDate);
-					$sql->bindParam(':eventstart', $activityFromDate);
-					$sql->bindParam(':eventend', $activityToDate);
-					$sql->bindParam(':destination', $destination);
-					$sql->bindParam(':amountrequested', $amountRequested);
-					$sql->bindParam(':isresearch', $purpose1);
-					$sql->bindParam(':isconference', $purpose2);
-					$sql->bindParam(':iscreativeactivity', $purpose3);
-					$sql->bindParam(':isothereventtext', $purpose4Other);
-					$sql->bindParam(':otherfunding', $otherFunding);
-					$sql->bindParam(':proposalsummary', $proposalSummary);
-					$sql->bindParam(':fulfillsgoal1', $goal1);
-					$sql->bindParam(':fulfillsgoal2', $goal2);
-					$sql->bindParam(':fulfillsgoal3', $goal3);
-					$sql->bindParam(':fulfillsgoal4', $goal4);
-					$sql->bindParam(':departmentchairemail', $deptChairEmail);
-					$sql->bindParam(':nextcycle', $nextCycle);
-					
-					if ($sql->execute() === TRUE) //query executed correctly
+					try
 					{
-						$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+						//Get dates
+						$curDate = date("Y/m/d");
+						$travelFromDate = date("Y-m-d", $travelFrom);
+						$travelToDate = date("Y-m-d", $travelTo);
+						$activityFromDate = date("Y-m-d", $activityFrom);
+						$activityToDate = date("Y-m-d", $activityTo);
 						
-						/*get the application ID of the just-added application*/
-						$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
+						$conn->beginTransaction(); //begin atomic transaction
+						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
+						/*Prepare the query*/
+						$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
+							IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle) 
+							VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
+							:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle)");
 						$sql->bindParam(':applicant', $broncoNetID);
-						$sql->execute();
-						$newAppID = $sql->fetchAll()[0][0];//now we have the current ID!
+						$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
+						$sql->bindParam(':name', $name);
+						$sql->bindParam(':department', $department);
+						//$sql->bindParam(':mailstop', $departmentMailStop);
+						$sql->bindParam(':email', $email);
+						$sql->bindParam(':title', $title);
+						$sql->bindParam(':travelstart', $travelFromDate);
+						$sql->bindParam(':travelend', $travelToDate);
+						$sql->bindParam(':eventstart', $activityFromDate);
+						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':destination', $destination);
+						$sql->bindParam(':amountrequested', $amountRequested);
+						$sql->bindParam(':isresearch', $purpose1);
+						$sql->bindParam(':isconference', $purpose2);
+						$sql->bindParam(':iscreativeactivity', $purpose3);
+						$sql->bindParam(':isothereventtext', $purpose4Other);
+						$sql->bindParam(':otherfunding', $otherFunding);
+						$sql->bindParam(':proposalsummary', $proposalSummary);
+						$sql->bindParam(':fulfillsgoal1', $goal1);
+						$sql->bindParam(':fulfillsgoal2', $goal2);
+						$sql->bindParam(':fulfillsgoal3', $goal3);
+						$sql->bindParam(':fulfillsgoal4', $goal4);
+						$sql->bindParam(':departmentchairemail', $deptChairEmail);
+						$sql->bindParam(':nextcycle', $nextCycle);
 						
-						/*go through budget array*/
-						foreach($budgetArray as $i)
+						if ($sql->execute() === TRUE) //query executed correctly
 						{
-							if(!empty($i))
+							$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+							
+							/*get the application ID of the just-added application*/
+							$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
+							$sql->bindParam(':applicant', $broncoNetID);
+							$sql->execute();
+							$newAppID = $sql->fetchAll()[0][0];//now we have the current ID!
+							
+							/*go through budget array*/
+							foreach($budgetArray as $i)
 							{
-								$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
-								$sql->bindParam(':appID', $newAppID);
-								$sql->bindParam(':name', $i[0]);
-								$sql->bindParam(':cost', $i[2]);
-								$sql->bindParam(':comment', $i[1]);
-								
-								if ($sql->execute() === TRUE) //query executed correctly
+								if(!empty($i))
 								{
-									$conn->commit(); //commit next part of transaction
-								}
-								else //query failed
-								{
-									$conn->rollBack(); //rollBack the transaction
-									$valid = false;
+									$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+									$sql->bindParam(':appID', $newAppID);
+									$sql->bindParam(':name', $i[0]);
+									$sql->bindParam(':cost', $i[2]);
+									$sql->bindParam(':comment', $i[1]);
+									
+									if ($sql->execute() === TRUE) //query executed correctly
+									{
+										$conn->commit(); //commit next part of transaction
+									}
+									else //query failed
+									{
+										$conn->rollBack(); //rollBack the transaction
+										$valid = false;
+									}
 								}
 							}
+						} 
+						else //query failed
+						{
+							$valid = false;
 						}
-					} 
-					else //query failed
+					}
+					catch(Exception $e)
 					{
+						echo "Error inserting application into database: " . $e->getMessage();
 						$valid = false;
 					}
 				}
-				catch(Exception $e)
+				else //just updating
 				{
-					echo "Error inserting application into database: " . $e->getMessage();
-					$valid = false;
+					try
+					{
+						//Get relevant dates
+						$travelFromDate = date("Y-m-d", $travelFrom);
+						$travelToDate = date("Y-m-d", $travelTo);
+						$activityFromDate = date("Y-m-d", $activityFrom);
+						$activityToDate = date("Y-m-d", $activityTo);
+						
+						$conn->beginTransaction(); //begin atomic transaction
+						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
+						/*Prepare the query*/
+						//UPDATE applications SET Name='Dude', Department='Lel' WHERE ID='123'
+						$sql = $conn->prepare("UPDATE applications SET Name=:name, Department=:department, Email=:email, Title=:title, TravelStart=:travelstart, TravelEnd=:travelend, EventStart=:eventstart, EventEnd=:eventend,
+							Destination=:destination, AmountRequested=:amountrequested, IsResearch=:isresearch, IsConference=:isconference, IsCreativeActivity=:iscreativeactivity, IsOtherEventText=:isothereventtext,
+							OtherFunding=:otherfunding, ProposalSummary=:proposalsummary, FulfillsGoal1=:fulfillsgoal1, FulfillsGoal2=:fulfillsgoal2, FulfillsGoal3=:fulfillsgoal3, FulfillsGoal4=:fulfillsgoal4,
+							DepartmentChairEmail=:departmentchairemail, NextCycle=:nextcycle WHERE ID=:id");
+						
+						$sql->bindParam(':name', $name);
+						$sql->bindParam(':department', $department);
+						//$sql->bindParam(':mailstop', $departmentMailStop);
+						$sql->bindParam(':email', $email);
+						$sql->bindParam(':title', $title);
+						$sql->bindParam(':travelstart', $travelFromDate);
+						$sql->bindParam(':travelend', $travelToDate);
+						$sql->bindParam(':eventstart', $activityFromDate);
+						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':destination', $destination);
+						$sql->bindParam(':amountrequested', $amountRequested);
+						$sql->bindParam(':isresearch', $purpose1);
+						$sql->bindParam(':isconference', $purpose2);
+						$sql->bindParam(':iscreativeactivity', $purpose3);
+						$sql->bindParam(':isothereventtext', $purpose4Other);
+						$sql->bindParam(':otherfunding', $otherFunding);
+						$sql->bindParam(':proposalsummary', $proposalSummary);
+						$sql->bindParam(':fulfillsgoal1', $goal1);
+						$sql->bindParam(':fulfillsgoal2', $goal2);
+						$sql->bindParam(':fulfillsgoal3', $goal3);
+						$sql->bindParam(':fulfillsgoal4', $goal4);
+						$sql->bindParam(':departmentchairemail', $deptChairEmail);
+						$sql->bindParam(':nextcycle', $nextCycle);
+						$sql->bindParam(':id', $updateID);
+						
+						if ($sql->execute() === TRUE) //query executed correctly
+						{
+							$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+							
+							/*delete previous budget items*/
+							$sql = $conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID=:id");
+							$sql->bindParam(':id', $updateID);
+							$sql->execute();
+							
+							/*go through budget array*/
+							foreach($budgetArray as $i)
+							{
+								if(!empty($i))
+								{
+									$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+									$sql->bindParam(':appID', $updateID);
+									$sql->bindParam(':name', $i[0]);
+									$sql->bindParam(':cost', $i[2]);
+									$sql->bindParam(':comment', $i[1]);
+									
+									if ($sql->execute() === TRUE) //query executed correctly
+									{
+										$conn->commit(); //commit next part of transaction
+									}
+									else //query failed
+									{
+										$conn->rollBack(); //rollBack the transaction
+										$valid = false;
+									}
+								}
+							}
+						} 
+						else //query failed
+						{
+							$valid = false;
+						}
+					}
+					catch(Exception $e)
+					{
+						echo "Error updating application in database: " . $e->getMessage();
+						$valid = false;
+					}
 				}
 			}
 			
