@@ -1,7 +1,9 @@
 <?php
 ?>
 
-<div class="page-header container-fluid">
+<div role="banner" class="page-header container-fluid">
+
+	<a id="mainContentLink" href="#MainContent">Jump To Main Content</a>
 	
 	<div class="row">
 		<div class="col-md-4">
