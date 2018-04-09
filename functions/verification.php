@@ -83,66 +83,75 @@
 	
 	/*Checks if a user is allowed to create an application
 	Rules:
-	1. Must be faculty
+	1. Must be in a non-student position
 	2. Must not have a pending application
 	3. Must not have received funding within the past year
+	4. Must not be an admin, committee member, application approver, or follow-up report approver
 	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {
 		function isUserAllowedToCreateApplication($conn, $broncoNetID, $positions, $nextCycle)
 		{
-			$check = false;
-			//check all positions to see if any are 'Faculty' or 'Staff'!
-			if (is_array($positions)) {
-				foreach ($positions as $position) {
-					if ($position === 'Faculty' || $position === 'faculty' 
-						|| $position === 'Staff' || $position === 'staff'
-						|| $position === 'Provisional Employee' || $position === 'Student') {
-						$check = true;
-					}
-				}	
-			} else {
-				if ($positions === 'Faculty' || $positions === 'faculty'
-					|| $positions === 'Staff' || $positions === 'staff'
-					|| $positions === 'Provisional Employee' || $position === 'Student') {
-						$check = true;
-					}
-			}
-			
-			$lastApproved = false; //set to true if last approved application was long enough ago
-			$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
-			
-			if($lastApprovedApp != null) //if a previous application exists
+			//make sure user is not part of HIGE staff
+			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFollowUpReportApprover($conn, $broncoNetID))
 			{
-				$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
-				$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+				$check = false;
+				//check all positions to see if any are 'Faculty' or 'Staff'!
+				if (is_array($positions)) {
+					foreach ($positions as $position) {
+						if ($position === 'Faculty' || $position === 'faculty' 
+							|| $position === 'Staff' || $position === 'staff'
+							|| $position === 'Provisional Employee' || $position === 'Student') {
+							$check = true;
+						}
+					}	
+				} else {
+					if ($positions === 'Faculty' || $positions === 'faculty'
+						|| $positions === 'Staff' || $positions === 'staff'
+						|| $positions === 'Provisional Employee' || $position === 'Student') {
+							$check = true;
+						}
+				}
 				
-				$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+				$lastApproved = false; //set to true if last approved application was long enough ago
+				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
 				
-				$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+				if($lastApprovedApp != null) //if a previous application exists
+				{
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+					
+					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+					
+					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+				}
+				else //no previous application
+				{
+					$lastApproved = true;
+				}
+				
+				if($check && !hasPendingApplication($conn, $broncoNetID) && $lastApproved)
+				{
+					return true;
+				}
+				else 
+				{
+					return false; //necessary to specify true/false because of dumb php rules :(
+				}
 			}
-			else //no previous application
+			else //user is part of HIGE staff, so they cannot apply
 			{
-				$lastApproved = true;
-			}
-			
-			if($check && !hasPendingApplication($conn, $broncoNetID) && $lastApproved)
-			{
-				return true;
-			}
-			else 
-			{
-				return false; //necessary to specify true/false because of dumb php rules :(
+				return false;
 			}
 		}
 	}
 	
 	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FOLLOW-UP REPORTS
-	Rules: Must be either an application approver or a committee member*/
+	Rules: Must be an application approver, follow-up report approver, administrator, or a committee member*/
 	if(!function_exists('isUserAllowedToSeeApplications')) {
 		function isUserAllowedToSeeApplications($conn, $broncoNetID)
 		{
 				
-			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID))
+			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID) || isFollowUpReportApprover($conn, $broncoNetID))
 			{
 				return true;
 			}
