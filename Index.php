@@ -63,7 +63,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_all_list.php">Application Approval (<?php echo $totalSignApps ?> to approve)</a></p>
+					<p><a href="app_all_list.php?approval">Application Approval (<?php echo $totalSignApps ?> to approve)</a></p>
 			<?php 
 				}
 
@@ -74,7 +74,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_all_list.php">View Previously Approved Applications (<?php echo $signedApps ?> approved)</a></p>
+					<p><a href="app_all_list.php?previousApproval">View Previously Approved Applications (<?php echo $signedApps ?> approved)</a></p>
 			<?php 
 				}
 
@@ -103,7 +103,7 @@
 				if(count($totalPrevApps) > 0)
 				{
 			?>
-				<p><a href="app_all_list.php">View Previous Applications (<?php echo count($totalPrevApps) ?> total)</a></p>
+				<p><a href="app_all_list.php?previousSubmit">View Previous Applications (<?php echo count($totalPrevApps) ?> total)</a></p>
 			<?php
 				}
 				
@@ -112,7 +112,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_all_list.php">Application List</a></p>
+					<p><a href="app_all_list.php">Application List (All)</a></p>
 			<?php 
 				}
 				

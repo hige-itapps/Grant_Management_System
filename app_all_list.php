@@ -50,16 +50,21 @@
 
 			$totalPrevApps = getApplications($conn, $CASbroncoNetId);
 			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
+			$appsToSignNumber = getNumberOfApplicationsToSign($conn, $CASemail);
 
-			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId) || $signedAppsNumber > 0 || count($totalPrevApps) > 0) //user is allowed to see SOMETHING
+			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId) || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
 			{
 				$apps = [];
 				//use user permission to get specific set of applications
-				if($signedAppsNumber > 0) //department chair
+				if($signedAppsNumber > 0 && isset($_GET["previousApproval"])) //department chair- already signed
 				{
 					$apps = getSignedApplications($conn, $CASemail);//get all signed applications only
 				}
-				else if(count($totalPrevApps) > 0) //normal applicant
+				else if($appsToSignNumber > 0 && isset($_GET["approval"])) //department chair- to sign
+				{
+					$apps = getApplicationsToSign($conn, $CASemail);//get all applications to sign only
+				}
+				else if(count($totalPrevApps) > 0 && isset($_GET["previousSubmit"])) //normal applicant
 				{
 					$apps = $totalPrevApps;
 				}
