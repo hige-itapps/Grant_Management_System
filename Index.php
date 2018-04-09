@@ -74,7 +74,7 @@
 				{
 					$viewCounter++;
 			?>
-					<p><a href="app_all_list.php">Previous Applications (<?php echo $signedApps ?> approved)</a></p>
+					<p><a href="app_all_list.php">View Previously Approved Applications (<?php echo $signedApps ?> approved)</a></p>
 			<?php 
 				}
 
