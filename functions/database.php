@@ -185,53 +185,46 @@
 			}
 		}
 	}
-	
-	/* Returns array of all applications that still need to be approved or denied for a specific user, 
-	or ALL users if no ID is provided*/
-	if(!function_exists('getPendingApplications')) {
-		function getPendingApplications($conn, $bNetID)
+	/* Returns array of all applications signed by this email address's owner*/
+	if(!function_exists('getSignedApplications')) {
+		function getSignedApplications($conn, $email)
 		{
-			if ($bNetID != "") //valid username
+			if ($email != "") //valid email
 			{
-				/* Select only pending applications that this user has has submitted */
-				$sql = $conn->prepare("Select * FROM applications WHERE Approved IS NULL AND Applicant = :bNetID");
-				$sql->bindParam(':bNetID', $bNetID);
-			}
-			else //no username
-			{
-				/* Select all pending applications */
-				$sql = $conn->prepare("Select * FROM applications WHERE Approved IS NULL");
-			}
-			
-			/* run the prepared query */
-			$sql->execute();
-			$res = $sql->fetchAll();
-			
-			$applicationsArray = []; //create new array of applications
-			
-			/*go through all applications, adding them to the array*/
-			for($i = 0; $i < count($res); $i++)
-			{
-				//echo "i is ".$i.".";
-				$application = new Application($res[$i]); //initialize
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL AND DepartmentChairEmail != Email");
+				$sql->bindParam(':dEmail', $email);
 				
-				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
-				$sql->bindParam(':id', $application->id);
 				/* run the prepared query */
 				$sql->execute();
-				$resBudget = $sql->fetchAll();
+				$res = $sql->fetchAll();
 				
-				$application->budget = $resBudget;
+				$applicationsArray = []; //create new array of applications
 				
-				/*add application to array*/
-				$applicationsArray[$i] = $application;
+				/*go through all applications, adding them to the array*/
+				for($i = 0; $i < count($res); $i++)
+				{
+					//echo "i is ".$i.".";
+					$application = new Application($res[$i]); //initialize
+					
+					$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+					$sql->bindParam(':id', $application->id);
+					/* run the prepared query */
+					$sql->execute();
+					$resBudget = $sql->fetchAll();
+					
+					$application->budget = $resBudget;
+					
+					/*add application to array*/
+					$applicationsArray[$i] = $application;
+				}
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				/* return array */
+				return $applicationsArray;
 			}
-			
-			/* Close finished query and connection */
-			$sql = null;
-			
-			/* return array */
-			return $applicationsArray;
 		}
 	}
 	
@@ -578,34 +571,6 @@
 			return $is;
 		}
 	}
-	/* Returns true if this applicant has an approved application from up to a year ago -- OUTDATED!*/
-	/*if(!function_exists('hasApprovedApplicationWithinPastYear')){
-		function hasApprovedApplicationWithinPastYear($conn, $bNetID)
-		{
-			$is = false;
-			
-			if ($bNetID != "") //valid username
-			{
-				/* Select only approved applications that this user has has submitted within the past year*/
-				/*$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Date >= DATE_SUB(NOW(),INTERVAL 1 YEAR) AND Applicant = :bNetID AND Approved = true");
-				$sql->bindParam(':bNetID', $bNetID);
-				$sql->execute();
-				$res = $sql->fetchAll();
-				
-				/* Close finished query and connection */
-				/*$sql = null;
-				
-				//echo 'Count: '.$res[0][0].".";
-				
-				if($res[0][0] > 0) //at least one result
-				{
-					$is = true;
-				}
-			}
-			
-			return $is;
-		}
-	}*/
 	
 	/*Get the most recently approved application of a user- return null if none*/
 	if(!function_exists('getMostRecentApprovedApplication')){
@@ -656,6 +621,28 @@
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql->bindParam(':dEmail', $email);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				return $res[0][0];
+			}
+		}
+	}
+
+	/* Returns number of previously signed applications from this dept. chair's email address*/
+	if(!function_exists('getNumberOfSignedApplications')){
+		function getNumberOfSignedApplications($conn, $email)
+		{
+			if ($email != "") //valid email
+			{
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL AND DepartmentChairEmail != Email");
 				$sql->bindParam(':dEmail', $email);
 				$sql->execute();
 				$res = $sql->fetchAll();
