@@ -330,10 +330,10 @@
 							<div class="col-md-4">
 								<div class="form-group">
 									<?php if($isReviewing || $isFUApprover || $isAdmin){ //for creating or updating applications ?>
-										<label for="inputRName">Title of Research (up to <?php echo $maxTitle; ?> characters):</label>
+										<label for="inputRName">Project Title (up to <?php echo $maxTitle; ?> characters):</label>
 										<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" disabled="true" required <?php echo 'value="'.$app->rTitle.'"'; ?>/>
 									<?php }else{ //for viewing applications ?>
-										<label for="inputRName">Title of Research:</label>
+										<label for="inputRName">Project Title:</label>
 										<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" disabled="true" value="<?php echo $app->rTitle; ?>" />
 									<?php } ?>
 								</div>
