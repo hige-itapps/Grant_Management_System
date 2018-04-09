@@ -246,8 +246,8 @@
 		{
 			//$date = DateTime::createFromFormat('Y/m/d', $dateString);
 			$dateYear = $date->format("Y");
-			$springDate = DateTime::createFromFormat('m-d', '04-01');
-			$fallDate = DateTime::createFromFormat('m-d', '11-01');
+			$springDate = DateTime::createFromFormat('m-d', '04-03'); //added 2 days to 'real' deadline to allow for weekends
+			$fallDate = DateTime::createFromFormat('m-d', '11-03'); //^
 			$dueSpring = ''; //strings that will contain due date if requested
 			$dueFall = '';
 			
