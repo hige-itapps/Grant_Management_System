@@ -105,6 +105,16 @@ p.lt {
 	background-color: #ffa600; /*yellow button color*/
 }
 
+/*link to main content -- hide it visually, but make it visible for screen readers*/
+#mainContentLink{
+	position:absolute;
+	left:-10000px;
+	top:auto;
+	width:1px;
+	height:1px;
+	overflow:hidden;
+}
+
 /*Format admin page*/#adminPage h2{
 	margin-top: 60px;
 }
