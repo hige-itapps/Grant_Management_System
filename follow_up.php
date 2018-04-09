@@ -43,7 +43,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	
 	</head>
-	<body ng-app="HIGE-app">
+	<body>
 	
 	<!--HEADER-->
 	<?php
@@ -78,7 +78,7 @@
 		$isAdmin = false; //user is an administrator
 		$isCommittee = false; //user is a committee member
 		$isChair = false; //user is the associated department chair
-		$isApprover = false; //user is an application approver (director)
+		$isFUApprover = false; //user is an application approver (director)
 		
 		$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
 		
@@ -187,7 +187,7 @@
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
 				<?php } ?>
 				
-					<div ng-controller="appCtrl">
+					<div>
 					
 						<div class="row">
 							<h1 class="title">FOLLOW-UP REPORT:</h1>
@@ -202,7 +202,7 @@
 						
 						<div class="row">
 						<!--NAME-->
-							<div class="col-md-4">
+							<div class="col-md-5">
 								<div class="form-group">
 									<?php if(/*$isCreating || */$isAdmin){ //for creating or updating applications ?>
 										<label for="inputName">Name (up to <?php echo $maxName; ?> characters):</label>
@@ -216,7 +216,7 @@
 							
 							
 						<!--EMAIL-->
-							<div class="col-md-4">
+							<div class="col-md-7">
 								<div class="form-group">
 									<?php if(/*$isCreating || */$isAdmin){ //for creating or updating applications ?>
 										<label for="inputEmail">Email Address (up to <?php echo $maxEmail; ?> characters):</label>
@@ -228,9 +228,13 @@
 								</div>
 							</div>
 							
-							
+						</div>
+						
+						
+						
+						<div class="row">
 						<!--DEPARTMENT-->
-							<div class="col-md-4">
+							<div class="col-md-5">
 								<div class="form-group">
 									<?php if(/*$isCreating || */$isAdmin){ //for creating or updating applications ?>
 										<label for="inputDept">Department (up to <?php echo $maxDep; ?> characters):</label>
@@ -241,27 +245,9 @@
 									<?php } ?>
 								</div>
 							</div>
-						</div>
-						
-						
-						
-						<div class="row">
-						<!--DEPT MAIL STOP-->
-							<div class="col-md-6">
-								<div class="form-group">
-									<?php if(/*$isCreating ||*/ $isAdmin){ //for creating or updating applications ?>
-										<label for="inputDeptM">Department Mail Stop (4 digits):</label>
-										<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Enter Department Mail Stop" maxlength="4" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' required <?php if($isAdmin){echo 'value="'.$app->deptM.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<label for="inputDeptM">Department Mail Stop:</label>
-										<input type="text" class="form-control" id="inputDeptM" name="inputDeptM" placeholder="Enter Department Mail Stop" maxlength="4" disabled="true" value="<?php echo $app->deptM; ?>" />
-									<?php } ?>
-								</div>
-							</div>
-							
 							
 						<!--DEPT CHAIR EMAIL-->
-							<div class="col-md-6">
+							<div class="col-md-7">
 								<div class="form-group">
 									<?php if(/*$isCreating || */$isAdmin){ //for creating or updating applications ?>
 										<label for="inputDeptCE">Department Chair's Email Address (up to <?php echo $maxDepEmail; ?> characters):</label>
@@ -409,13 +395,11 @@
 						
 						<!--UPLOADS-->
 						<div class="row">
-							<center>
-								<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
-									<label for="followD"><h3>Click to Upload:</h3></label><input type="file" name="followD[]" id="followD" accept=".txt, .rtf, .doc, .docx, 
-									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
-								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED TRAVEL RECEIPTS: <?php if(count($P > 0)) { foreach($P as $ip) echo $ip . " "; } else { echo "none"; } ?> </p>
-							</center>
+							<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
+								<label for="followD"><h3>Click to Upload:</h3></label><input type="file" name="followD[]" id="followD" accept=".txt, .rtf, .doc, .docx, 
+								.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
+							<?php } //for viewing uploaded documents; ANYONE can ?>
+							<p class="title">UPLOADED TRAVEL RECEIPTS: <?php if(count($P > 0)) { foreach($P as $ip) echo $ip . " "; } else { echo "none"; } ?> </p>
 						</div>
 						
 						

@@ -111,7 +111,7 @@
 				<div class="row">
 					<div class="col-md-3"></div>
 					<div class="col-md-6">
-						<h1>Administrator View</h1>
+						<h1 class="title">Administrator View</h1>
 						
 					
 						<?php
@@ -130,13 +130,13 @@
 						
 						<!--Admin Table-->
 						<div ng-app="myApp" ng-controller="adminCtrl">
-							<h2>Administrators:</h2>
+							<h2 class="title">Administrators:</h2>
 							<table class="table table-bordered table-sm">
 								<thead>
 									<tr>
 										<th>BroncoNetID</th>
 										<th>Name</th>
-										<th> </th>
+										<th>Actions</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -175,13 +175,13 @@
 						
 						<!--Add or remove application approvers-->
 						<div ng-app="myApp" ng-controller="applicationApproverCtrl">
-							<h2>Application Approvers:</h2>
+							<h2 class="title">Application Approvers:</h2>
 							<table class="table table-bordered table-sm">
 							<thead>
 								<tr>
 									<th>BroncoNetID</th>
 									<th>Name</th>
-									<th> </th>
+									<th>Actions</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -220,13 +220,13 @@
 						
 						<!--Committee table-->
 						<div ng-app="myApp" ng-controller="committeeCtrl">
-							<h2>Committee Members:</h2>
+							<h2 class="title">Committee Members:</h2>
 							<table class="table table-bordered table-sm">
 							<thead>
 								<tr>
 									<th>BroncoNetID</th>
 									<th>Name</th>
-									<th> </th>
+									<th>Actions</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -264,13 +264,13 @@
 						
 						<!--Follow-Up Report Approvers-->
 						<div ng-app="myApp" ng-controller="followUpReportApproverCtrl">
-							<h2>Follow-Up Report Approvers:</h2>
+							<h2 class="title">Follow-Up Report Approvers:</h2>
 							<table class="table table-bordered table-sm">
 							<thead>
 								<tr>
 									<th>BroncoNetID</th>
 									<th>Name</th>
-									<th> </th>
+									<th>Actions</th>
 								</tr>
 							</thead>
 							<tbody>

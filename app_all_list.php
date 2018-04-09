@@ -95,7 +95,7 @@
 			<!--HEADER-->
 			<div class="container-fluid" ng-controller="listCtrl">
 				<div class="row">
-					<center><h2 class="title">All Applications</h2></center>
+					<h1 class="title">All Applications</h1>
 				</div>
 				<div class="row">
 					<div class="col-md-1"></div>
@@ -148,6 +148,7 @@
 					<div class="col-md-1"></div>
 					<div class="col-md-10">
 						<table class="table">
+							<caption>Selected Applications:</caption>
 							<thead>
 								<tr>
 									<th>ID</th>
@@ -157,29 +158,32 @@
 									<th>Date Submitted</th>
 									<th>Status</th>
 									<th>Approval</th>
-									<th>Follow-up Report</th>
+									<th>Application Link</th>
+									<th>Follow-up Report Link</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
 									<td>{{ x.id }}</td>
 									<td>{{ x.name }}</td>
-									<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+									<td>{{ x.rTitle }}</td>
 									<td>{{ x.cycle }}</td>
 									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
-									<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+									<td><a href="application.php?id={{x.id}}">Application</a></td>
+									<td><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
 								</tr>
 								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 									<td>{{ x.id }}</td>
 									<td>{{ x.name }}</td>
-									<td><a href="application.php?id={{ x.id }}">{{ x.rTitle }}</a></td>
+									<td>{{ x.rTitle }}</td>
 									<td>{{ x.cycle }}</td>
 									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
-									<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+									<td><a href="application.php?id={{x.id}}">Application</a></td>
+									<td><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
 								</tr>
 							</tbody>
 						</table>

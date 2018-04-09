@@ -206,7 +206,7 @@
 					<div ng-controller="appCtrl">
 					
 					
-						<center>
+						
 						<?php
 							if(isset($_GET["status"]))
 							{
@@ -239,7 +239,12 @@
 								}
 							}
 						?>
-						</center>
+
+
+						<div class="row">
+							<h1 class="title">APPLICATION:</h1>
+						</div>
+						
 
 						<?php if($isCreating){ //only display a warning if creating ?>
 							<!--SUBMISSION CYCLE WARNING-->
@@ -460,86 +465,80 @@
 						
 						
 						<!--PURPOSES-->
-						<div class="row">
-							<label for="purposes">Purpose of Travel:</label>
-						</div>
+						<fieldset>
+						<legend>Purpose of Travel:</legend>
 						
-						
-						
-						<!--PURPOSE:RESEARCH-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="purpose1" type="checkbox" value="purpose1">Research</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="purpose1" type="checkbox" value="purpose1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr1 == 1) echo "checked"; ?>>Research</label>
-									<?php } ?>
-								</div>
-							</div>
-						</div>
-						
-						
-						
-						<!--PURPOSE:CONFERENCE-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="purpose2" type="checkbox" value="purpose2">Conference</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="purpose2" type="checkbox" value="purpose2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr2 == 1) echo "checked"; ?>>Conference</label>
-									<?php } ?>
-								</div>
-							</div>
-						</div>
-						
-						
-						
-						<!--PURPOSE:CREATIVE ACTIVITY-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating  applications ?>
-										<label><input name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="purpose3" type="checkbox" value="purpose3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr3 == 1) echo "checked"; ?>>Creative Activity</label>
-									<?php } ?>
-								</div>
-							</div>
-						</div>
-						
-						
-						
-						<!--PURPOSE:OTHER-->
-						<div class="row">
-							<div class="col-md-2">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy">Other, explain.</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr4 != "") echo "checked"; ?>>Other, explain.</label>
-									<?php } ?>
+							<!--PURPOSE:RESEARCH-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="purpose1" type="checkbox" value="purpose1">Research</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="purpose1" type="checkbox" value="purpose1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr1 == 1) echo "checked"; ?>>Research</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
 							
 							
-							<div class="col-md-10">
-								<div class="form-group">
-									<?php if($isCreating){ //for creating applications ?>
-										<label for="purposeOtherText">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
-										<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" />
-									<?php }else if($isAdmin){ //for updating applications ?>
-										<label for="purposeOtherText">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
-										<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->pr4; ?>"/>
-									<?php }else{ //for viewing applications ?>
-										<label for="purposeOtherText">Explain other purpose:</label>
-										<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->pr4; ?>"/>
-									<?php } ?>
+							<!--PURPOSE:CONFERENCE-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="purpose2" type="checkbox" value="purpose2">Conference</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="purpose2" type="checkbox" value="purpose2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr2 == 1) echo "checked"; ?>>Conference</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
-						</div>
+							
+							
+							<!--PURPOSE:CREATIVE ACTIVITY-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating  applications ?>
+											<label><input name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="purpose3" type="checkbox" value="purpose3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr3 == 1) echo "checked"; ?>>Creative Activity</label>
+										<?php } ?>
+									</div>
+								</div>
+							</div>
+							
+							
+							<!--PURPOSE:OTHER-->
+							<div class="row">
+								<div class="col-md-2">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy">Other, explain.</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr4 != "") echo "checked"; ?>>Other, explain.</label>
+										<?php } ?>
+									</div>
+								</div>
+								
+								<div class="col-md-10">
+									<div class="form-group">
+										<?php if($isCreating){ //for creating applications ?>
+											<label for="purposeOther">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
+											<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" />
+										<?php }else if($isAdmin){ //for updating applications ?>
+											<label for="purposeOther">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
+											<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->pr4; ?>"/>
+										<?php }else{ //for viewing applications ?>
+											<label for="purposeOther">Explain other purpose:</label>
+											<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->pr4; ?>"/>
+										<?php } ?>
+									</div>
+								</div>
+							</div>
 						
+						</fieldset>
 						
 						
 						<!--OTHER FUNDING-->
@@ -577,80 +576,75 @@
 						
 						
 						<!--GOALS-->
-						<div class="row">
-							<label for="goals">Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</label>
-						</div>
+						<fieldset>
+						<legend>Please indicate which of the prioritized goals of the IEFDF this proposal fulfills:</legend>
 						
-						
-						
-						<!--GOAL 1-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="goal1" type="checkbox" value="goal1">
-										Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="goal1" type="checkbox" value="goal1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg1 == 1) echo "checked"; ?>>
-										Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
-									<?php } ?>
+							<!--GOAL 1-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="goal1" type="checkbox" value="goal1">
+											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="goal1" type="checkbox" value="goal1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg1 == 1) echo "checked"; ?>>
+											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
-						</div>
-						
-						
-						
-						<!--GOAL 2-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="goal2" type="checkbox" value="goal2">
-										Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="goal2" type="checkbox" value="goal2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg2 == 1) echo "checked"; ?>>
-										Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
-									<?php } ?>
+							
+							
+							<!--GOAL 2-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="goal2" type="checkbox" value="goal2">
+											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="goal2" type="checkbox" value="goal2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg2 == 1) echo "checked"; ?>>
+											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
-						</div>
-						
-						
-						
-						<!--GOAL 3-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="goal3" type="checkbox" value="goal3">
-										Support for attendance at international conferences, seminars or workshops.</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="goal3" type="checkbox" value="goal3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg3 == 1) echo "checked"; ?>>
-										Support for attendance at international conferences, seminars or workshops.</label>
-									<?php } ?>
+							
+							
+							<!--GOAL 3-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="goal3" type="checkbox" value="goal3">
+											Support for attendance at international conferences, seminars or workshops.</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="goal3" type="checkbox" value="goal3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg3 == 1) echo "checked"; ?>>
+											Support for attendance at international conferences, seminars or workshops.</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
-						</div>
-						
-						
-						
-						<!--GOAL 4-->
-						<div class="row">
-							<div class="col-md-12">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<label><input name="goal4" type="checkbox" value="goal4">
-										Support for scholarly international travel in order to enrich international knowledge, which will directly
-										contribute to the internationalization of the WMU curricula.</label>
-									<?php }else{ //for viewing or updating applications ?>
-										<label><input name="goal4" type="checkbox" value="goal4" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg4 == 1) echo "checked"; ?>>
-										Support for scholarly international travel in order to enrich international knowledge, which will directly
-										contribute to the internationalization of the WMU curricula.</label>
-									<?php } ?>
+							
+							
+							<!--GOAL 4-->
+							<div class="row">
+								<div class="col-md-12">
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<label><input name="goal4" type="checkbox" value="goal4">
+											Support for scholarly international travel in order to enrich international knowledge, which will directly
+											contribute to the internationalization of the WMU curricula.</label>
+										<?php }else{ //for viewing or updating applications ?>
+											<label><input name="goal4" type="checkbox" value="goal4" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg4 == 1) echo "checked"; ?>>
+											Support for scholarly international travel in order to enrich international knowledge, which will directly
+											contribute to the internationalization of the WMU curricula.</label>
+										<?php } ?>
+									</div>
 								</div>
 							</div>
-						</div>
 						
+						</fieldset>
 						
 						
 						<!--BUDGET-->
@@ -670,6 +664,7 @@
 						<div class="row">
 							<div class="col-md-12">
 								<table id="budgetList" class="table table-sm">
+								<caption>Current Budget:</caption>
 								<!--BUDGET:TABLE HEAD-->
 									<thead>
 										<tr>
@@ -797,17 +792,17 @@
 							<div class="col-md-6">
 								<div class="form-group">
 									<?php if($isChair){ //for department chair to sign ?>
-											<label for="inputDept">Your Approval (up to <?php echo $maxDepChairSig ?> characters):</label>
+											<label for="inputDeptCS">Your Approval (up to <?php echo $maxDepChairSig ?> characters):</label>
 											<input type="text" class="form-control" id="inputDeptCS" name="inputDeptCS" placeholder="Type Your Full Name Here" required/>
 									<?php }else{ //not department chair
 											if($isCreating){ //for when user is creating application ?>
-												<label for="inputDept">Department Chair Approval:</label>
+												<label for="inputDeptCS">Department Chair Approval:</label>
 												<input type="text" class="form-control" id="inputDeptCS" name="inputDeptCS" placeholder="Department Chair Must Type Name Here" disabled="true"/>
 											<?php }else if(isApplicationSigned($conn, $idA) > 0){ //application is signed, so show signature ?>
-												<label for="inputDept">Department Chair Approval:</label>
+												<label for="inputDeptCS">Department Chair Approval:</label>
 												<input type="text" class="form-control" id="inputDeptCS" name="inputDeptCS" placeholder="Department Chair Must Type Name Here" disabled="true" value="<?php echo $app->deptCS; ?>"/>
 										<?php }else{ //application isn't signed, so show default message ?>
-												<label for="inputDept">Department Chair Approval:</label>
+												<label for="inputDeptCS">Department Chair Approval:</label>
 												<input type="text" class="form-control" id="inputDeptCS" name="inputDeptCS" placeholder="Department Chair Must Type Name Here" disabled="true"/>
 									<?php }
 										} ?>
@@ -876,9 +871,9 @@
 							<div class="col-md-2"></div>
 						</div>
 					</div>
-					<center>
-						<span id="loadSpinner" class="lt" style="visibility: hidden;">Submitting... <i class="fa fa-spinner fa-spin" style="font-size:35px !important;"></i></span>
-					</center>
+					
+					<span id="loadSpinner" class="lt" style="visibility: hidden;">Submitting... <i class="fa fa-spinner fa-spin" style="font-size:35px !important;"></i></span>
+					
 				</form>
 			</div>
 			<!--BODY-->
