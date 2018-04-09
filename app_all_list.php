@@ -68,7 +68,7 @@
 				{
 					$apps = $totalPrevApps;
 				}
-				else //default privileges (for HIGE staff)
+				else if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))//default privileges (for HIGE staff)
 				{
 					$apps = getApplications($conn, "");//get all applications
 				}
