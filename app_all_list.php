@@ -118,8 +118,8 @@
 				<div class="col-md-1"></div>
 			</div>
 			<div class="row">
-				<div class="col-md-2"></div>
-				<div class="col-md-8">
+				<div class="col-md-1"></div>
+				<div class="col-md-10">
 					<table class="table">
 						<thead>
 							<tr>
@@ -129,6 +129,8 @@
 								<th>Cycle</th>
 								<th>Date Submitted</th>
 								<th>Status</th>
+								<th>Approval</th>
+								<th>Follow-up Report</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -139,6 +141,8 @@
 								<td>{{ x.cycle }}</td>
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 								<td class="{{x.statusText}}">{{ x.statusText }}</td>
+								<td>{{x.deptCS}}</td>
+								<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
 							</tr>
 							<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 								<td>{{ x.id }}</td>
@@ -147,11 +151,13 @@
 								<td>{{ x.cycle }}</td>
 								<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
 								<td class="{{x.statusText}}">{{ x.statusText }}</td>
+								<td>{{x.deptCS}}</td>
+								<td><a href="/follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-				<div class="col-md-2"></div>
+				<div class="col-md-1"></div>
 			</div>
 			<div class="row">
 				<div class="col-md-5"></div>
