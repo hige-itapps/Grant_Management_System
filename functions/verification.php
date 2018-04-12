@@ -114,6 +114,8 @@
 				
 				$lastApproved = false; //set to true if last approved application was long enough ago
 				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+
+				//echo "Last approved: " .$lastApprovedApp->id;
 				
 				if($lastApprovedApp != null) //if a previous application exists
 				{
@@ -121,8 +123,12 @@
 					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
 					
 					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+
+					//echo "cycles: ".$lastCycle.", ".$curCycle;
 					
 					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+
+					//echo "last approved: " .$lastApproved;
 				}
 				else //no previous application
 				{
@@ -232,8 +238,10 @@
 							
 			//RULES: If applying in Spring, must wait for cur cycle + 3 full cycles. If applying in Fall, must wait for cur cycle + 2 full cycles
 			//This can be simplified by just checking the years between application cycles. If years difference >1, then they are far enough apart
+
+			//echo "years: ".(int)$secondCycleParts[1].", ".(int)$firstCycleParts[1];
 			
-			$yearsBetween = (int)$secondCycleParts[1] - (int)$firstCycleParts[0];//get years between cycles
+			$yearsBetween = (int)$secondCycleParts[1] - (int)$firstCycleParts[1];//get years between cycles
 			
 			if($yearsBetween > 1) {$farEnoughApart = true;}
 			return $farEnoughApart;

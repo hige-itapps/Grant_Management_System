@@ -10,7 +10,7 @@
 	/*list documents for a given app ID*/
 	function listDocs($id) {
 		$settings = parse_ini_file('config.ini');
-		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
+		$ssh = new Net_SFTP($settings["hostname"]);
 		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
 			for($i = 0; $i <= 3 && $success == 0; $i++)
@@ -22,7 +22,7 @@
 			if($success == 0)
 				exit('Auth Failed');
 		}
-		$ret = $ssh->nlist($settings["uploads_dir"] . $id);
+		$ret = $ssh->nlist($id);
 		unset($ssh);
 		return $ret;
 	}
@@ -31,46 +31,38 @@
 	function downloadDocs($id, $doc) {
 		$settings = parse_ini_file('config.ini');
 			
-			/*$ssh = new Net_SFTP('www.codigo-tech.com');
-		if (!$ssh->login($settings["host_user"], "Default1234$")) {
+		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
+		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
 			for($i = 0; $i <= 3 && $success == 0; $i++)
 			{
 				sleep(2);
-				if($ssh->login($settings["host_user"], "Default1234$"))
+				if($ssh->login($settings["host_user"], $settings["host_password"]))
 					$success = 1;
 			}
 			if($success == 0)
 				return false;
-		}*/
-		//file_put_contents($doc, $ssh->get($settings["uploads_dir"] . $id . '/' . $doc));
-		header("Content-type:application/pdf");
-		// It will be called downloaded.pdf
-		header("Content-Disposition:attachment;filename=" . $doc);
-		readfile($settings["uploads_dir"] . $id . '/' . $doc);
-		exit('Downloaded');
-	}
-	/*
-	function reArrayFiles($file)
-	{
-		$file_ary = array();
-		$file_count = count($file['name']);
-		$file_key = array_keys($file);
-	   
-		for($i=0;$i<$file_count;$i++)
-		{
-			foreach($file_key as $val)
-			{
-				$file_ary[$i][$val] = $file[$val][$i];
-			}
 		}
-		return $file_ary;
+		//file_put_contents($doc, $ssh->get($id . '/' . $doc));
+		//$file = $settings["hostname"] . '/uploads/' . $id . '/' . $doc;
+		$file = dirname(__FILE__) . '/../uploads/' . $id . '/' . $doc;
+		header('Connection: Keep-Alive');
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="'.basename($file).'"');
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($file));
+		ob_clean();
+		flush();
+		readfile($file);
 	}
-	*/
 	/*Upload the documents; return true on success, false on failure*/
 	function uploadDocs($id) {
 		$settings = parse_ini_file('../config.ini');
-		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
+		$ssh = new Net_SFTP($settings["hostname"]);
 		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
 			for($i = 0; $i <= 3 && $success == 0; $i++)
@@ -91,14 +83,14 @@
 				
 				try
 				{
-					echo $ssh->exec('mkdir ' . $settings["uploads_dir"] . $id);
+					echo $ssh->mkdir($id);
 				}
 				catch (Exception $e) 
 				{
 					echo 'Upload exception: ',  $e->getMessage(), "\n";
 				}
 				
-				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 				
 			}
 		}
@@ -110,7 +102,7 @@
 				$file = $fsD["tmp_name"][$i];
 				$doc = "S" . $id . "-" . $fsD["name"][$i];
 				
-				$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 			}
 		}
 		if(isset($_FILES["followD"]))
@@ -123,7 +115,7 @@
 					$file = $followD["tmp_name"][$i];
 					$doc = "F" . $id . "-" . $followD["name"][$i];
 					
-					$ssh->put($settings["uploads_dir"] . $id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+					$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
 				}
 			}
 		}

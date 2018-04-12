@@ -98,21 +98,21 @@
 			//isFollowUpReportApprover
 			if(!$permissionSet)
 			{
-				$isFUApprover = isFollowUpReportApprover($conn, $$CASbroncoNetId); //application approver(director) can write notes, choose awarded amount, and generate email text
+				$isFUApprover = isFollowUpReportApprover($conn, $CASbroncoNetId); //application approver(director) can write notes, choose awarded amount, and generate email text
 				$permissionSet = $isFUApprover;
 			}
 			
 			//committee member check
 			if(!$permissionSet)
 			{
-				$isCommittee = isUserAllowedToSeeApplications($conn, $$CASbroncoNetId); //committee member; can only view!
+				$isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetId); //committee member; can only view!
 				$permissionSet = $isCommittee;
 			}
 			
 			//applicant reviewing check
 			if(!$permissionSet)
 			{
-				$isReviewing = doesUserOwnApplication($conn, $$CASbroncoNetId, $_GET['id']) && hasFUReport($conn, $_GET["id"]); //applicant is reviewing their application
+				$isReviewing = doesUserOwnApplication($conn, $CASbroncoNetId, $_GET['id']) && hasFUReport($conn, $_GET["id"]); //applicant is reviewing their application
 				$permissionSet = $isReviewing;
 			}
 		}
@@ -154,15 +154,15 @@
 				/*User wants to approve this application*/
 				if(isset($_POST["approveA"]))
 				{
-					approveFU($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
-					header('Location: app_list.php'); //redirect to app_list
+					approveFU($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					header('Location: app_all_list.php'); //redirect to app_list
 				}
 				
 				/*User wants to deny this application*/
 				if(isset($_POST["denyA"]))
 				{
-					denyFU($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
-					header('Location: app_list.php'); //redirect to app_list
+					denyFU($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					header('Location: app_all_list.php'); //redirect to app_list
 				}
 				/*User wants to HOLD this application*/
 				/*if(isset($_POST["holdA"]))

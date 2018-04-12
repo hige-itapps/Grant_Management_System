@@ -56,6 +56,8 @@
 		
 		/*save the current date*/
 		$newDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+
+		$submitDate = null; //date this app was submitted, if at all
 		
 		/*get initial character limits for text fields*/
 		$appCharMax = getApplicationsMaxLengths($conn);
@@ -79,8 +81,10 @@
 		$isCreating = false; //user is an applicant initially creating application
 		$isReviewing = false; //user is an applicant reviewing their already created application
 		$isAdmin = false; //user is an administrator
+		$isAdminUpdating = false; //user is an administrator who is updating the application
 		$isCommittee = false; //user is a committee member
 		$isChair = false; //user is the associated department chair
+		$isChairReviewing = false; //user is the associated department chair, but cannot do anything (just for reviewing purposes)
 		$isApprover = false; //user is an application approver (director)
 		
 		$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
@@ -94,9 +98,16 @@
 		For everything besides application creation, the app ID MUST BE SET*/
 		if(isset($_GET["id"]))
 		{
+			//admin updating check
+			$isAdminUpdating = (isAdministrator($conn, $CASbroncoNetId) && isset($_GET["updating"])); //admin is viewing page; can edit stuff
+			$permissionSet = $isAdminUpdating;
+
 			//admin check
-			$isAdmin = isAdministrator($conn, $CASbroncoNetId); //admin is viewing page; can edit stuff
-			$permissionSet = $isAdmin;
+			if(!$permissionSet)
+			{
+				$isAdmin = isAdministrator($conn, $CASbroncoNetId); //admin is viewing page
+				$permissionSet = $isAdmin;
+			}
 			
 			//application approver check
 			if(!$permissionSet)
@@ -106,6 +117,13 @@
 			}
 			
 			//department chair check
+			if(!$permissionSet)
+			{
+				$isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id']); //chair member; can sign application
+				$permissionSet = $isChair;
+			}
+
+			//department chair reviewing check
 			if(!$permissionSet)
 			{
 				$isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id']); //chair member; can sign application
@@ -145,6 +163,8 @@
 				$idA = $_GET["id"];
 				
 				$app = getApplication($conn, $_GET['id']); //get application Data
+
+				$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateS);
 				
 				$docs = listDocs($_GET["id"]); //get documents
 				for($i = 0; $i < count($docs); $i++)
@@ -155,31 +175,36 @@
 						array_push($S, "<a href='?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
 				}
 				
-					/*Check for trying to update application*/
+				/*Admin wants to update application*/
+				if($isAdminUpdating && isset($_POST["cancelUpdateApp"]))
+				{
+					header('Location: ?id=' . $_GET["id"]); //reload page as admin
+				}
+
+				/*Admin wants to cancel updating this application*/
 				if($isAdmin && isset($_POST["updateApp"]))
 				{
-					updateApplication($conn, $idA);
-					header('Location: index.php'); //redirect to homepage
+					header('Location: ?id=' . $_GET["id"] . '&updating'); //reload page as admin updating
 				}
 				
 				/*User wants to approve this application*/
 				if(isset($_POST["approveA"]))
 				{
-					approveApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"], $_POST["aAw"]);
-					header('Location: app_list.php'); //redirect to app_list
+					approveApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]), $_POST["aAw"]);
+					header('Location: index.php'); //redirect to app_list
 				}
 				
 				/*User wants to deny this application*/
 				if(isset($_POST["denyA"]))
 				{
-					denyApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
-					header('Location: app_list.php'); //redirect to app_list
+					denyApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					header('Location: index.php'); //redirect to app_list
 				}
 				/*User wants to HOLD this application*/
 				if(isset($_POST["holdA"]))
 				{
-					holdApplication($conn, $_GET["id"], trim($app->email), $_POST["finalE"]);
-					header('Location: app_list.php'); //redirect to app_list
+					holdApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					header('Location: index.php'); //redirect to app_list
 				}
 				
 				/*Check for trying to sign application*/
@@ -197,11 +222,15 @@
 			
 				<?php if($isReviewing){ //form for updating an application ?>
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="functions/documents.php">
-				<?php }else if($isCreating){ //form for a new application ?>
+				<?php }else if($isCreating || $isAdminUpdating){ //form for a new application ?>
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="controllers/addApplication.php">
 				<?php }else{ //default form ?>
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
 				<?php } ?>
+
+					<?php if($isAdminUpdating){ //add extra POST parameter to keep track of app ID when updating ?>
+						<input type="hidden" name="updateID" value="<?php echo $idA ?>" />
+					<?php } ?>
 				
 					<div ng-controller="appCtrl">
 					
@@ -268,7 +297,7 @@
 							<div class="col-md-4"></div>
 							<div class="col-md-4">
 								<div class="checkbox">
-									<?php if($isCreating || $isAdmin){ //for creating applications ?>
+									<?php if($isCreating){ //for creating applications ?>
 										<p>Current date: <?php echo $newDate->format('Y/m/d'); ?></p>
 										<?php if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, false)){//only let user submit this cycle if enough time has passed ?>
 											<div class="radio">
@@ -279,6 +308,14 @@
 										<?php } ?>
 										<div class="radio">
 										<label><input checked type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
+										</div>
+									<?php } else{ //for viewing or updating applications?>
+										<p>Submission date: <?php echo $submitDate->format('Y/m/d'); ?></p>
+										<div class="radio">
+										<label><input <?php if($app->nextCycle != 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($submitDate, false, true); ?>)</label>
+										</div>
+										<div class="radio">
+										<label><input <?php if($app->nextCycle == 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($submitDate, true, true); ?>)</label>
 										</div>
 									<?php } ?>
 								</div>
@@ -299,9 +336,9 @@
 						<!--NAME-->
 							<div class="col-md-5">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputName">Name (up to <?php echo $maxName; ?> characters):</label>
-										<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" required <?php if($isAdmin){echo 'value="'.$app->name.'"';} ?>/>
+										<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" required <?php if($isAdminUpdating){echo 'value="'.$app->name.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<label for="inputName">Name:</label>
 										<input type="text" class="form-control" id="inputName" name="inputName" placeholder="Enter Name" disabled="true" value="<?php echo $app->name; ?>"/>
@@ -313,9 +350,9 @@
 						<!--EMAIL-->
 							<div class="col-md-7">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputEmail">Email Address (up to <?php echo $maxEmail; ?> characters):</label>
-										<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required <?php if($isAdmin){ echo 'value="'.$app->email.'"'; } else{ echo 'value="'.$CASemail.'"'; } ?> />
+										<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" required <?php if($isAdminUpdating){ echo 'value="'.$app->email.'"'; } else{ echo 'value="'.$CASemail.'"'; } ?> />
 									<?php }else{ //for viewing applications ?>
 										<label for="inputEmail">Email Address:</label>
 										<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Email Address" disabled="true" value="<?php echo $app->email; ?>"/>
@@ -330,9 +367,9 @@
 						<!--DEPARTMENT-->
 						<div class="col-md-5">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputDept">Department (up to <?php echo $maxDep; ?> characters):</label>
-										<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" required <?php if($isAdmin){ echo 'value="'.$app->dept.'"'; } ?> />
+										<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" required <?php if($isAdminUpdating){ echo 'value="'.$app->dept.'"'; } ?> />
 									<?php  }else{ //for viewing applications ?>
 										<label for="inputDept">Department:</label>
 										<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" disabled="true" value="<?php echo $app->dept; ?>"/>
@@ -344,9 +381,9 @@
 						<!--DEPT CHAIR EMAIL-->
 							<div class="col-md-7">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputDeptCE">Department Chair's WMU Email Address (up to <?php echo $maxDepEmail; ?> characters):</label>
-										<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" required <?php if($isAdmin){echo 'value="'.$app->deptCE.'"';} ?>/>
+										<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" required <?php if($isAdminUpdating){echo 'value="'.$app->deptCE.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<label for="inputDeptCE">Department Chair's WMU Email Address:</label>
 										<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" disabled="true" value="<?php echo $app->deptCE; ?>" />
@@ -369,8 +406,8 @@
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="inputTFrom">Travel Date From:</label>
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required <?php if($isAdmin){echo 'value="'.$app->tStart.'"';} ?>/>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
+										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" required <?php if($isAdminUpdating){echo 'value="'.$app->tStart.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" disabled="true" value="<?php echo $app->tStart; ?>" />
 									<?php } ?>
@@ -382,8 +419,8 @@
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="inputTTo">Travel Date To:</label>
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" required <?php if($isAdmin){echo 'value="'.$app->tEnd.'"';} ?>/>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
+										<input type="date" class="form-control" id="inputTTo" name="inputTTo" required <?php if($isAdminUpdating){echo 'value="'.$app->tEnd.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->tEnd; ?>" />
 									<?php } ?>
@@ -395,8 +432,8 @@
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="inputAFrom">Activity Date From:</label>
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" required <?php if($isAdmin){echo 'value="'.$app->aStart.'"';} ?>/>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" required <?php if($isAdminUpdating){echo 'value="'.$app->aStart.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->aStart; ?>" />
 									<?php } ?>
@@ -408,8 +445,8 @@
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="inputATo">Activity Date To:</label>
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputATo" name="inputATo" required <?php if($isAdmin){echo 'value="'.$app->aEnd.'"';} ?>/>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
+										<input type="date" class="form-control" id="inputATo" name="inputATo" required <?php if($isAdminUpdating){echo 'value="'.$app->aEnd.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->aEnd; ?>" />
 									<?php } ?>
@@ -423,9 +460,9 @@
 						<!--TITLE-->
 							<div class="col-md-4">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputRName">Project Title (up to <?php echo $maxTitle; ?> characters):</label>
-										<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" required <?php if($isAdmin){echo 'value="'.$app->rTitle.'"';} ?>/>
+										<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" required <?php if($isAdminUpdating){echo 'value="'.$app->rTitle.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<label for="inputRName">Project Title:</label>
 										<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" disabled="true" value="<?php echo $app->rTitle; ?>" />
@@ -437,9 +474,9 @@
 						<!--DESTINATION-->
 							<div class="col-md-4">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="inputDest">Destination (up to <?php echo $maxDestination; ?> characters):</label>
-										<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" required <?php if($isAdmin){echo 'value="'.$app->dest.'"';} ?>/>
+										<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" required <?php if($isAdminUpdating){echo 'value="'.$app->dest.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<label for="inputDest">Destination:</label>
 										<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" disabled="true" value="<?php echo $app->dest; ?>" />
@@ -452,9 +489,9 @@
 							<div class="col-md-4">
 								<div class="form-group">
 									<label for="inputAR">Amount Requested($):</label>
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Enter Amount Requested($)" onkeypress='return (event.which >= 48 && event.which <= 57) 
-											|| event.which == 8 || event.which == 46' required <?php if($isAdmin){echo 'value="'.$app->aReq.'"';} ?>/>
+											|| event.which == 8 || event.which == 46' required <?php if($isAdminUpdating){echo 'value="'.$app->aReq.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<input type="text" class="form-control" id="inputAR" name="inputAR" placeholder="Enter Amount Requested($)" disabled="true" value="<?php echo $app->aReq; ?>" />
 									<?php } ?>
@@ -475,7 +512,7 @@
 										<?php if($isCreating){ //for creating applications ?>
 											<label><input name="purpose1" type="checkbox" value="purpose1">Research</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="purpose1" type="checkbox" value="purpose1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr1 == 1) echo "checked"; ?>>Research</label>
+											<label><input name="purpose1" type="checkbox" value="purpose1" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->pr1 == 1) echo "checked"; ?>>Research</label>
 										<?php } ?>
 									</div>
 								</div>
@@ -489,7 +526,7 @@
 										<?php if($isCreating){ //for creating applications ?>
 											<label><input name="purpose2" type="checkbox" value="purpose2">Conference</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="purpose2" type="checkbox" value="purpose2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr2 == 1) echo "checked"; ?>>Conference</label>
+											<label><input name="purpose2" type="checkbox" value="purpose2" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->pr2 == 1) echo "checked"; ?>>Conference</label>
 										<?php } ?>
 									</div>
 								</div>
@@ -503,7 +540,7 @@
 										<?php if($isCreating){ //for creating  applications ?>
 											<label><input name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="purpose3" type="checkbox" value="purpose3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr3 == 1) echo "checked"; ?>>Creative Activity</label>
+											<label><input name="purpose3" type="checkbox" value="purpose3" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->pr3 == 1) echo "checked"; ?>>Creative Activity</label>
 										<?php } ?>
 									</div>
 								</div>
@@ -517,7 +554,7 @@
 										<?php if($isCreating){ //for creating applications ?>
 											<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy">Other, explain.</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->pr4 != "") echo "checked"; ?>>Other, explain.</label>
+											<label><input name="purposeOtherDummy" id="purposeOtherDummy" type="checkbox" value="purposeOtherDummy" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->pr4 != "") echo "checked"; ?>>Other, explain.</label>
 										<?php } ?>
 									</div>
 								</div>
@@ -527,7 +564,7 @@
 										<?php if($isCreating){ //for creating applications ?>
 											<label for="purposeOther">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
 											<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" />
-										<?php }else if($isAdmin){ //for updating applications ?>
+										<?php }else if($isAdminUpdating){ //for updating applications ?>
 											<label for="purposeOther">Explain other purpose (up to <?php echo $maxOtherEvent; ?> characters):</label>
 											<input type="text" class="form-control" id="purposeOther" name="purposeOther" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->pr4; ?>"/>
 										<?php }else{ //for viewing applications ?>
@@ -545,9 +582,9 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="eS">Are you receiving other funding? Who is providing the funds? How much? (up to <?php echo $maxOtherFunding; ?> characters):</label>
-										<input type="text" class="form-control" id="eS" name="eS" placeholder="Explain here" <?php if($isAdmin){echo 'value="'.$app->oF.'"';} ?>/>
+										<input type="text" class="form-control" id="eS" name="eS" placeholder="Explain here" <?php if($isAdminUpdating){echo 'value="'.$app->oF.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
 										<label for="eS">Are you receiving other funding? Who is providing the funds? How much?:</label>
 										<input type="text" class="form-control" id="eS" name="eS" placeholder="Explain here" disabled="true" value="<?php echo $app->oF; ?>"/>
@@ -562,9 +599,9 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
-									<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="props">Proposal Summary (up to <?php echo $maxProposalSummary; ?> characters) (We recommend up to 150 words):</label>
-										<textarea class="form-control" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 required /><?php if($isAdmin){echo $app->pS;} ?></textarea>
+										<textarea class="form-control" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 required /><?php if($isAdminUpdating){echo $app->pS;} ?></textarea>
 									<?php }else{ //for viewing applications ?>
 										<label for="props">Proposal Summary:</label>
 										<textarea class="form-control" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 disabled="true" required /><?php echo $app->pS; ?></textarea>
@@ -587,7 +624,7 @@
 											<label><input name="goal1" type="checkbox" value="goal1">
 											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="goal1" type="checkbox" value="goal1" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg1 == 1) echo "checked"; ?>>
+											<label><input name="goal1" type="checkbox" value="goal1" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->fg1 == 1) echo "checked"; ?>>
 											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
 										<?php } ?>
 									</div>
@@ -603,7 +640,7 @@
 											<label><input name="goal2" type="checkbox" value="goal2">
 											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="goal2" type="checkbox" value="goal2" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg2 == 1) echo "checked"; ?>>
+											<label><input name="goal2" type="checkbox" value="goal2" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->fg2 == 1) echo "checked"; ?>>
 											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
 										<?php } ?>
 									</div>
@@ -619,7 +656,7 @@
 											<label><input name="goal3" type="checkbox" value="goal3">
 											Support for attendance at international conferences, seminars or workshops.</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="goal3" type="checkbox" value="goal3" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg3 == 1) echo "checked"; ?>>
+											<label><input name="goal3" type="checkbox" value="goal3" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->fg3 == 1) echo "checked"; ?>>
 											Support for attendance at international conferences, seminars or workshops.</label>
 										<?php } ?>
 									</div>
@@ -636,7 +673,7 @@
 											Support for scholarly international travel in order to enrich international knowledge, which will directly
 											contribute to the internationalization of the WMU curricula.</label>
 										<?php }else{ //for viewing or updating applications ?>
-											<label><input name="goal4" type="checkbox" value="goal4" <?php if(!$isAdmin){echo 'disabled="true"';} ?> <?php if($app->fg4 == 1) echo "checked"; ?>>
+											<label><input name="goal4" type="checkbox" value="goal4" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->fg4 == 1) echo "checked"; ?>>
 											Support for scholarly international travel in order to enrich international knowledge, which will directly
 											contribute to the internationalization of the WMU curricula.</label>
 										<?php } ?>
@@ -670,7 +707,7 @@
 										<tr>
 											<th>Expense:</th>
 											
-											<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+											<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 												<th>Comments (up to <?php echo $maxBudgetComment; ?> characters):</th>
 											<?php }else{ //for viewing applications ?>
 												<th>Comments:</th>
@@ -692,7 +729,7 @@
 															<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
 														</select>
 													<?php }else{ //for viewing or updating applications ?>
-														<select ng-model="bitem.ex" class="form-control" name="{{bitem.exN}}" value="{{bitem.ex}}" <?php if(!$isAdmin){echo 'disabled';} ?>>
+														<select ng-model="bitem.ex" class="form-control" name="{{bitem.exN}}" value="{{bitem.ex}}" required <?php if(!$isAdminUpdating){echo 'disabled';} ?>>
 															<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
 														</select>
 													<?php } ?>
@@ -704,10 +741,10 @@
 										<!--BUDGET:COMMENTS-->
 											<td>
 												<div class="form-group">
-													<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+													<?php if($isCreating){ //for creating applications ?>
 														<input type="text" class="form-control" name="{{bitem.comN}}" placeholder="Explain..." required />
-													<?php }else{ //for viewing applications ?>
-														<input type="text" class="form-control" name="{{bitem.comN}}" disabled="true" value="{{bitem.com}}" />
+													<?php }else{ //for viewing or updating applications ?>
+														<input type="text" class="form-control" name="{{bitem.comN}}" placeholder="Explain..." required <?php if(!$isAdminUpdating){echo 'disabled';} ?> value="{{bitem.com}}" />
 													<?php } ?>
 												</div>
 											</td>
@@ -716,10 +753,10 @@
 										<!--BUDGET:AMOUNT-->
 											<td>
 												<div class="form-group">
-													<?php if($isCreating || $isAdmin){ //for creating or updating applications ?>
+													<?php if($isCreating || $isAdminUpdating){ //for creating applications ?>
 														<input type="text" class="form-control" name="{{bitem.amN}}" ng-model="bitem.am" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' required />
-													<?php }else{ //for viewing applications ?>
-														<input type="text" class="form-control" name="{{bitem.amN}}" ng-model="bitem.am" disabled="true" value="{{bitem.am}}" />
+													<?php }else{ //for viewing or updating applications ?>
+														<input type="text" class="form-control" name="{{bitem.amN}}" ng-model="bitem.am" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' required  <?php if(!$isAdminUpdating){echo 'disabled';} ?> value="{{bitem.am}}" />
 													<?php } ?>
 												</div>
 											</td>
@@ -732,7 +769,7 @@
 						
 						
 						<!--BUDGET:ADD OR REMOVE-->
-						<?php if($isCreating || $isAdmin){ //for creating or updating applications only ?>
+						<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications only ?>
 							<div class="row">
 								<div class="col-md-5"></div>
 								<div id="budgetButtons" class="col-md-2">
@@ -766,20 +803,20 @@
 						<!--UPLOADS-->
 						<div class="row">
 							<div class="col-md-6">
-								<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
+								<?php if($isCreating || $isReviewing || $isAdminUpdating){ //for uploading documents; both admins and applicants ?>
 									<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" accept=".txt, .rtf, .doc, .docx, 
 									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) foreach($P as $ip) echo $ip . " "; else echo "none"; ?> </p>
-							</div>
+								<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) { echo "<center><table>"; foreach($P as $ip) { echo "<tr><td>" . $ip . "</td></tr>"; } echo "</table></center>"; } else echo "none"; ?> </p>
+								</div>
 							
 							
 							<div class="col-md-6">
-								<?php if($isCreating || $isReviewing || $isAdmin){ //for uploading documents; both admins and applicants ?>
+								<?php if($isCreating || $isReviewing || $isAdminUpdating){ //for uploading documents; both admins and applicants ?>
 									<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" accept=".txt, .rtf, .doc, .docx, 
 									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
 								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) foreach($S as $is) echo $is . " "; else echo "none"; ?> </p>
+								<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) { echo "<center><table>"; foreach($S as $is) { echo "<tr><td>" . $is . "</td></tr>"; } echo "</table></center>"; } else echo "none"; ?> </p>
 							</div>
 						</div>
 						
@@ -810,7 +847,7 @@
 							</div>
 							<div class="col-md-3"></div>
 						</div>
-						<?php if($isApprover) { ?>
+						<?php if($isApprover || $isAdmin) { ?>
 						<div class="row">
 						<!--EMAIL EDIT-->
 							<div class="col-md-12">
@@ -824,8 +861,8 @@
 						<!--AMOUNT AWARDED-->
 							<div class="col-md-12">
 								<div class="form-group">
-									<label for="finalE">AMOUNT AWARDED:</label>
-									<input type="text" class="form-control" id="aAw" name="aAw" placeholder="AMOUNT AWARDED" onkeypress='return (event.which >= 48 && event.which <= 57) 
+									<label for="finalE">AMOUNT AWARDED($):</label>
+									<input type="text" class="form-control" id="aAw" name="aAw" placeholder="AMOUNT AWARDED" value="<?php echo $app->awarded; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
 									|| event.which == 8 || event.which == 46' />
 								</div>
 							</div>
@@ -833,7 +870,7 @@
 						<?php } ?>
 						<br><br>
 						
-						<?php if($isReviewing || $isAdmin){ //show submit application button if creating ?>
+						<?php if($isReviewing || $isAdminUpdating){ //show submit application button if creating ?>
 							<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
 						<?php } ?>	
 						
@@ -841,15 +878,20 @@
 							<div class="col-md-2"></div>
 						<!--SUBMIT BUTTONS-->
 							<div class="col-md-6">
-								<?php if($isCreating){ //show submit application button if creating ?>
-									<input type="submit" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
-								<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
-									<input type="submit" class="btn btn-success" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
-									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-									<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
-									<?php } else { ?>
-									<input type="submit" class="btn btn-warning" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+								<?php if($isCreating || $isAdminUpdating){ //show submit application button if creating ?>
+									<?php if($isAdminUpdating){ //if updating, show cancel update button?>
+										<input type="submit" onclick="return confirm ('Are you sure you want to cancel updating? Any unsaved data will be lost.')" class="btn btn-warning" id="cancelUpdateApp" name="cancelUpdateApp" value="CANCEL UPDATE" />
 									<?php } ?>
+									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" 
+										class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
+								<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
+									<input type="submit" class="btn btn-warning" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
+									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
+									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+									<?php } else { ?>
+									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+									<?php } ?>
+									<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
 									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
 								<?php }else if($isChair){ //show sign button if dep chair ?>
 									<input type="submit" class="btn btn-success" id="signApp" name="signApp" value="SIGN APPLICATION" />

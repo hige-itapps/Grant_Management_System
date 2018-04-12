@@ -581,17 +581,21 @@
 			if ($bNetID != "") //valid username
 			{
 				/* Select the most recent from this applicant */
-				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :bNetID ORDER BY Date DESC LIMIT 1");
+				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :bNetID AND Approved = 1 ORDER BY Date DESC LIMIT 1");
 				$sql->bindParam(':bNetID', $bNetID);
 				
 					/* run the prepared query */
 				$sql->execute();
 				$res = $sql->fetchAll();
 				
+				//echo "result: " .$res[0][0];
+
 				if($res != null)
 				{
 					//echo "i is ".$i.".";
 					$mostRecent = new Application($res[0]); //initialize
+
+					//echo "result: " .$mostRecent->id;
 					
 					$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 					$sql->bindParam(':id', $mostRecent->id);
@@ -606,6 +610,8 @@
 				/* Close finished query and connection */
 				$sql = null;
 				
+				//echo "Final res: ".$mostRecent->id;
+
 				/* return value */
 				return $mostRecent;
 			}
@@ -701,12 +707,29 @@
 				
 				/* Close finished query and connection */
 				$sql = null;
-				approvalEmail($email, $eb);
+				approvalEmail($email, nl2br($eb));
 				
 			}
 		}
 	}
 	
+	/*Update an application to be denied*/
+	if(!function_exists('denyApplication')){
+		function denyApplication($conn, $id, $email, $eb)
+		{
+			if ($id != "") //valid application id
+			{
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
+				$sql->bindParam(':id', $id);
+				$sql->execute();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				denialEmail($email, nl2br($eb));
+			}
+		}
+	}
 	
 	/*Update a FU Report to be approved*/
 	if(!function_exists('approveFU')){
@@ -715,13 +738,13 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
-				approvalEmail($email, $eb);
+				approvalEmailF($email, nl2br($eb));
 				
 			}
 		}
@@ -734,13 +757,13 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
-				denialEmail($email, $eb);
+				denialEmailF($email, nl2br($eb));
 			}
 		}
 	}
@@ -758,7 +781,7 @@
 				$sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
-				onHoldEmail($email, $eb);
+				onHoldEmail($email, nl2br($eb));
 				
 			}
 		}
@@ -835,7 +858,8 @@
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
 			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
-			
+			echo "inserting app";
+
 			if(!$updating)
 			{
 				//First, add this user to the applicants table IF they don't already exist
@@ -916,11 +940,11 @@
 					$valid = false;
 				}
 				/*Make sure emails are correct format*/
-				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
+				/*if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
 				{
 					header('Location: ../application.php?error=emailformat');
 					$valid = false;
-				}
+				}*/
 
 				if(!$updating)
 				{
@@ -1138,9 +1162,13 @@
 				}
 			}
 			
-			if($valid) //if successful, return new application ID
+			if($valid && !$updating) //if successful and not updating, return new application ID
 			{
 				return $newAppID;
+			}
+			else if($valid && $updating) //if successful and updating, return updateID
+			{
+				return $updateID;
 			}
 			else //otherwise return 0
 			{

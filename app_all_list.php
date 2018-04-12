@@ -83,6 +83,7 @@
 				foreach($apps as $curApp)
 				{
 					$curApp->statusText = $curApp->getStatus();
+					$curApp->FUReport = getFUReport($conn, $curApp->id);
 					//echo $curApp->dateS;
 					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateS), $curApp->nextCycle, false);
 					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
@@ -172,7 +173,8 @@
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+										<td ng-if="!x.FUReport">N/A</td>
 								</tr>
 								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 									<td>{{ x.id }}</td>
@@ -183,7 +185,8 @@
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
+										<td ng-if="!x.FUReport">N/A</td>
 								</tr>
 							</tbody>
 						</table>
