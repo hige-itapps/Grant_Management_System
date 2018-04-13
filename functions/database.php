@@ -692,6 +692,21 @@
 			return $res;
 		}
 	}
+
+	/*return an array of the maximum lengths of every column in the follow_up_reports table*/
+	if(!function_exists('getFollowUpReportsMaxLengths')){
+		function getFollowUpReportsMaxLengths($conn)
+		{
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'follow_up_reports'");
+			$sql->execute();
+			$res = $sql->fetchAll();
+					
+			/* Close finished query and connection */
+			$sql = null;
+			
+			return $res;
+		}
+	}
 	
 	/*Update an application to be approved*/
 	if(!function_exists('approveApplication')){
@@ -1185,7 +1200,7 @@
 	return 1 if insert is successful, 0 otherwise
 	*/
 	if(!function_exists('insertFollowUpReport')){
-		function insertFollowUpReport($conn, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
+		function insertFollowUpReport($conn, $updating, $updateID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
 		{
 			/*Server-Side validation!*/
 			$valid = true; //start valid, turn false if anything is wrong!
@@ -1228,41 +1243,88 @@
 			/*Now insert new follow-up report into database*/
 			if($valid)
 			{
-				try
+				if(!$updating) //adding, not updating
 				{
-					$conn->beginTransaction(); //begin atomic transaction
-					//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
-					/*Prepare the query*/
-					$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date) 
-						VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date)");
-					$sql->bindParam(':applicationid', $appID);
-					$sql->bindParam(':travelstart', date("Y-m-d", $travelFrom));
-					$sql->bindParam(':travelend', date("Y-m-d", $travelTo));
-					$sql->bindParam(':eventstart', date("Y-m-d", $activityFrom));
-					$sql->bindParam(':eventend', date("Y-m-d", $activityTo));
-					$sql->bindParam(':projectsummary', $projectSummary);
-					$sql->bindParam(':totalawardspent', $totalAwardSpent);
-					$sql->bindParam(':date', date("Y/m/d")); //create a new date right when inserting to save current time
-					
-					if ($sql->execute() === TRUE) //query executed correctly
+					try
 					{
-						$conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
-					} 
-					else //query failed
+						//Get dates
+						$curDate = date("Y/m/d");
+						$travelFromDate = date("Y-m-d", $travelFrom);
+						$travelToDate = date("Y-m-d", $travelTo);
+						$activityFromDate = date("Y-m-d", $activityFrom);
+						$activityToDate = date("Y-m-d", $activityTo);
+
+						$conn->beginTransaction(); //begin atomic transaction
+						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
+						/*Prepare the query*/
+						$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date) 
+							VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date)");
+						$sql->bindParam(':applicationid', $updateID);
+						$sql->bindParam(':travelstart', $travelFromDate);
+						$sql->bindParam(':travelend', $travelToDate);
+						$sql->bindParam(':eventstart', $activityFromDate);
+						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':projectsummary', $projectSummary);
+						$sql->bindParam(':totalawardspent', $totalAwardSpent);
+						$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
+						
+						if ($sql->execute() === TRUE) //query executed correctly
+						{
+							$conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
+						} 
+						else //query failed
+						{
+							$valid = false;
+						}
+					}
+					catch(Exception $e)
 					{
+						echo "Error inserting follow-up report into database: " . $e->getMessage();
 						$valid = false;
 					}
 				}
-				catch(Exception $e)
+				else //just updating
 				{
-					echo "Error inserting follow-up report into database: " . $e->getMessage();
-					$valid = false;
+					try
+					{
+						//Get dates
+						$travelFromDate = date("Y-m-d", $travelFrom);
+						$travelToDate = date("Y-m-d", $travelTo);
+						$activityFromDate = date("Y-m-d", $activityFrom);
+						$activityToDate = date("Y-m-d", $activityTo);
+
+						$conn->beginTransaction(); //begin atomic transaction
+
+						$sql = $conn->prepare("UPDATE follow_up_reports SET TravelStart = :travelstart, TravelEnd = :travelend, EventStart = :eventstart, EventEnd = :eventend,
+							ProjectSummary = :projectsummary, TotalAwardSpent = :totalawardspent WHERE ApplicationID = :applicationid");
+						$sql->bindParam(':travelstart', $travelFromDate);
+						$sql->bindParam(':travelend', $travelToDate);
+						$sql->bindParam(':eventstart', $activityFromDate);
+						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':projectsummary', $projectSummary);
+						$sql->bindParam(':totalawardspent', $totalAwardSpent);
+						$sql->bindParam(':applicationid', $updateID);
+						
+						if ($sql->execute() === TRUE) //query executed correctly
+						{
+							$conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
+						} 
+						else //query failed
+						{
+							$valid = false;
+						}
+					}
+					catch(Exception $e)
+					{
+						echo "Error updating follow-up report in database: " . $e->getMessage();
+						$valid = false;
+					}
 				}
 			}
 			
 			if($valid) //if successful, return 1
 			{
-				return $appID;
+				return $updateID;
 			}
 			else //otherwise return 0
 			{

@@ -150,6 +150,25 @@
 			}
 		}
 	}
+
+	/*Checks if a user is allowed to create a follow up report for a specified appID
+	Rules:
+	Application must not already have a follow up report
+	Application must belong to the user
+	Application must have 'Approved' status*/
+	if(!function_exists('isUserAllowedToCreateFollowUpReport')) {
+		function isUserAllowedToCreateFollowUpReport($conn, $broncoNetID, $appID)
+		{
+			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFUReport($conn, $appID) && isApplicationApproved($conn, $appID))
+			{
+				return true;
+			}
+			else 
+			{
+				return false;
+			}
+		}
+	}
 	
 	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FOLLOW-UP REPORTS
 	Rules: Must be an application approver, follow-up report approver, administrator, or a committee member*/
@@ -178,6 +197,62 @@
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql->bindParam(':dEmail', $email);
+				$sql->bindParam(':appID', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				if($res[0][0] > 0)//this is the correct user to sign
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+
+	/* Returns true if this user signed a given application */
+	if(!function_exists('hasUserSignedApplication')){
+		function hasUserSignedApplication($conn, $email, $appID)
+		{
+			$is = false; //initialize boolean to false
+			
+			if ($email != "" && $appID != "") //valid email & ID
+			{
+				/* Only count applications meant for this person that HAVE already been signed */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL");
+				$sql->bindParam(':dEmail', $email);
+				$sql->bindParam(':appID', $appID);
+				$sql->execute();
+				$res = $sql->fetchAll();
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				if($res[0][0] > 0)//this is the correct user to sign
+				{
+					$is = true;
+				}
+			}
+			
+			return $is;
+		}
+	}
+
+	/* Returns true if this user is the department chair specified by an application */
+	if(!function_exists('isUserDepartmentChair')){
+		function isUserDepartmentChair($conn, $email, $appID)
+		{
+			$is = false; //initialize boolean to false
+			
+			if ($email != "" && $appID != "") //valid email & ID
+			{
+				/* Only count applications meant for this person */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
