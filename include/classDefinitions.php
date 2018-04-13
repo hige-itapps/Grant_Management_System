@@ -9,7 +9,8 @@
 			public $aStart;	//event start 			(DATE)
 			public $aEnd;	//event end 			(DATE)
 			public $pS;		//project summary 		(STRING)
-			public $awardedS; //						(DECIMAL)
+			public $awardedS; //award spent			(DECIMAL)
+			public $status;	//status				(STRING)
 			
 			/*Constructor(for everything except budget); just pass in the application array received from the database call (SELECT * FROM applications ...)*/
 			public function __construct($appInfo) {
@@ -19,8 +20,22 @@
 				$this->aEnd = $appInfo[4];
 				$this->pS = $appInfo[5];
 				$this->awardedS = $appInfo[6];
+				$this->status = $appInfo[7];
 			}
 
+			/*Return a text representation of the status boolean*/
+			public function getStatus(){
+				$currentStatus = "Pending";
+				//echo "Real Status: ".$this->status.".";
+				
+				if(isset($this->status))
+				{
+					if($this->status == 0){$currentStatus = "Denied";}
+					if($this->status == 1){$currentStatus = "Approved";}
+				}
+					
+				return $currentStatus;
+			}
 		}
 	}
 
