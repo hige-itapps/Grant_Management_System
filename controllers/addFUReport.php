@@ -14,8 +14,10 @@
 	/*Verification functions*/
 	include_once(dirname(__FILE__) . "/../functions/verification.php");
 	
+	$isAdmin = isAdministrator($conn, $CASbroncoNetId);
+
 	/*Verify that user is allowed to make an application*/
-	if(!hasFUReport($conn, $_POST["appID"]))
+	if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $_POST['updateID']) || $isAdmin)
 	{
 		//echo "User is allowed to create an application!";
 		
@@ -27,9 +29,17 @@
 			/*Insert data into database - receive the new application id if success, or 0 if failure*/
 			/*parameters: DB connection, name, email, department, dep. mail stop, dep. chair email, travel from, travel to, activity from, activity to, title, destination, amount requested,
 			purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, budgetArray*/
-			$successAppID = insertFollowUpReport($conn, $_POST['appID'], $_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], 
-				$_POST["projs"], $_POST["aAw"]);
-				
+			if($isAdmin)
+			{
+				$successAppID = insertFollowUpReport($conn, true, $_POST['updateID'], $_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], 
+					$_POST["projs"], $_POST["aAw"]);
+			}
+			else
+			{
+				$successAppID = insertFollowUpReport($conn, false, $_POST['updateID'], $_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], 
+					$_POST["projs"], $_POST["aAw"]);
+			}
+
 			echo "<br>Insert status: ".$successAppID.".<br>";
 			
 			$successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
