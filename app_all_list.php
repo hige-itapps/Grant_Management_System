@@ -69,7 +69,7 @@
 				{
 					$apps = getApplicationsToSign($conn, $CASemail);//get all applications to sign only
 				}
-				else if(count($totalPrevApps) > 0 && isset($_GET["previousSubmit"])) //normal applicant
+				else if(count($totalPrevApps) > 0 && isset($_GET["previousSubmit"])) //normal applicant viewing previous applications
 				{
 					$apps = $totalPrevApps;
 				}
@@ -83,7 +83,21 @@
 				foreach($apps as $curApp)
 				{
 					$curApp->statusText = $curApp->getStatus();
-					$curApp->FUReport = getFUReport($conn, $curApp->id);
+
+					//If this is a user's own application and they are allowed, let them create a follow-up report
+					if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $curApp->id))
+					{
+						$curApp->FUReportCreate = true; //let user know they can create a follow up report
+					}
+					else
+					{
+						$curApp->FUReport = getFUReport($conn, $curApp->id); //load up an existing follow up report if possible
+						if($curApp->FUReport)
+						{
+							$curApp->reportStatusText = $curApp->FUReport->getStatus();
+						}
+					}
+
 					//echo $curApp->dateS;
 					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateS), $curApp->nextCycle, false);
 					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
@@ -161,6 +175,7 @@
 									<th>Approval</th>
 									<th>Application Link</th>
 									<th>Follow-up Report Link</th>
+									<th>Follow-up Report Status</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -173,8 +188,9 @@
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
-										<td ng-if="!x.FUReport">N/A</td>
+									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FUReport">{{x.reportStatusText}}</td>
+										<td ng-if="x.FUReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FUReportCreate">N/A</td>
+										<td ng-if="!x.FUReport && !x.FUReportCreate">N/A</td>											<td ng-if="!x.FUReport && !x.FUReportCreate">N/A</td>
 								</tr>
 								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 									<td>{{ x.id }}</td>
@@ -185,8 +201,9 @@
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
 									<td>{{x.deptCS}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>
-										<td ng-if="!x.FUReport">N/A</td>
+									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FUReport">{{x.reportStatusText}}</td>
+										<td ng-if="x.FUReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FUReportCreate">N/A</td>
+										<td ng-if="!x.FUReport && !x.FUReportCreate">N/A</td>											<td ng-if="!x.FUReport && !x.FUReportCreate">N/A</td>
 								</tr>
 							</tbody>
 						</table>

@@ -126,8 +126,8 @@
 			//department chair reviewing check
 			if(!$permissionSet)
 			{
-				$isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id']); //chair member; can sign application
-				$permissionSet = $isChair;
+				$isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id']); //chair member; can view the application, but cannot sign
+				$permissionSet = $isChairReviewing;
 			}
 			
 			//committee member check
@@ -162,48 +162,48 @@
 			{
 				$idA = $_GET["id"];
 				
-				$app = getApplication($conn, $_GET['id']); //get application Data
+				$app = getApplication($conn, $idA); //get application Data
 
 				$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateS);
 				
-				$docs = listDocs($_GET["id"]); //get documents
+				$docs = listDocs($idA); //get documents
 				for($i = 0; $i < count($docs); $i++)
 				{
 					if(substr($docs[$i], 0, 1) == 'P')
-						array_push($P, "<a href='?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
+						array_push($P, "<a href='?id=" . $idA . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
 					if(substr($docs[$i], 0, 1) == 'S')
-						array_push($S, "<a href='?id=" . $_GET["id"] . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
+						array_push($S, "<a href='?id=" . $idA . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
 				}
 				
 				/*Admin wants to update application*/
 				if($isAdminUpdating && isset($_POST["cancelUpdateApp"]))
 				{
-					header('Location: ?id=' . $_GET["id"]); //reload page as admin
+					header('Location: ?id=' . $idA); //reload page as admin
 				}
 
 				/*Admin wants to cancel updating this application*/
 				if($isAdmin && isset($_POST["updateApp"]))
 				{
-					header('Location: ?id=' . $_GET["id"] . '&updating'); //reload page as admin updating
+					header('Location: ?id=' . $idA . '&updating'); //reload page as admin updating
 				}
 				
 				/*User wants to approve this application*/
 				if(isset($_POST["approveA"]))
 				{
-					approveApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]), $_POST["aAw"]);
+					approveApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]), $_POST["aAw"]);
 					header('Location: index.php'); //redirect to app_list
 				}
 				
 				/*User wants to deny this application*/
 				if(isset($_POST["denyA"]))
 				{
-					denyApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					denyApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
 					header('Location: index.php'); //redirect to app_list
 				}
 				/*User wants to HOLD this application*/
 				if(isset($_POST["holdA"]))
 				{
-					holdApplication($conn, $_GET["id"], trim($app->email), nl2br($_POST["finalE"]));
+					holdApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
 					header('Location: index.php'); //redirect to app_list
 				}
 				
@@ -284,41 +284,36 @@
 						<?php } ?>
 						
 					
-					
-						<!--SUBMISSION CYCLE TITLE-->
-						<div class="row">
-							<h2 class="title">Submission Cycle:</h2>
-						</div>
-						
-						
-					
 						<!--SUBMISSION CYCLE-->
 						<div class="row">
 							<div class="col-md-4"></div>
 							<div class="col-md-4">
-								<div class="checkbox">
-									<?php if($isCreating){ //for creating applications ?>
-										<p>Current date: <?php echo $newDate->format('Y/m/d'); ?></p>
-										<?php if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, false)){//only let user submit this cycle if enough time has passed ?>
+								<fieldset>
+								<legend>Submission Cycle:</legend>
+									<div class="checkbox">
+										<?php if($isCreating){ //for creating applications ?>
+											<p>Current date: <?php echo $newDate->format('Y/m/d'); ?></p>
+											<?php if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, false)){//only let user submit this cycle if enough time has passed ?>
+												<div class="radio">
+												<label><input type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($newDate, false, true); ?>)</label>
+												</div>
+											<?php }else{//otherwise, let them know they must wait another cycle ?>
+												<p>You are not allowed to submit an application for this cycle due to your previously approved application. </p>
+											<?php } ?>
 											<div class="radio">
-											<label><input type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($newDate, false, true); ?>)</label>
+											<label><input checked type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
 											</div>
-										<?php }else{//otherwise, let them know they must wait another cycle ?>
-											<p>You are not allowed to submit an application for this cycle due to your previously approved application. </p>
+										<?php } else{ //for viewing or updating applications?>
+											<p>Submission date: <?php echo $submitDate->format('Y/m/d'); ?></p>
+											<div class="radio">
+											<label><input <?php if($app->nextCycle != 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($submitDate, false, true); ?>)</label>
+											</div>
+											<div class="radio">
+											<label><input <?php if($app->nextCycle == 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($submitDate, true, true); ?>)</label>
+											</div>
 										<?php } ?>
-										<div class="radio">
-										<label><input checked type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
-										</div>
-									<?php } else{ //for viewing or updating applications?>
-										<p>Submission date: <?php echo $submitDate->format('Y/m/d'); ?></p>
-										<div class="radio">
-										<label><input <?php if($app->nextCycle != 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($submitDate, false, true); ?>)</label>
-										</div>
-										<div class="radio">
-										<label><input <?php if($app->nextCycle == 1) echo "checked"; ?> <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($submitDate, true, true); ?>)</label>
-										</div>
-									<?php } ?>
-								</div>
+									</div>
+								</fieldset>
 							</div>
 							<div class="col-md-4"></div>
 						</div>
@@ -435,7 +430,7 @@
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" required <?php if($isAdminUpdating){echo 'value="'.$app->aStart.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->aStart; ?>" />
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" disabled="true" value="<?php echo $app->aStart; ?>" />
 									<?php } ?>
 								</div>
 							</div>
@@ -448,7 +443,7 @@
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<input type="date" class="form-control" id="inputATo" name="inputATo" required <?php if($isAdminUpdating){echo 'value="'.$app->aEnd.'"';} ?>/>
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" disabled="true" value="<?php echo $app->aEnd; ?>" />
+										<input type="date" class="form-control" id="inputATo" name="inputATo" disabled="true" value="<?php echo $app->aEnd; ?>" />
 									<?php } ?>
 								</div>
 							</div>
@@ -807,7 +802,7 @@
 									<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" accept=".txt, .rtf, .doc, .docx, 
 									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) { echo "<center><table>"; foreach($P as $ip) { echo "<tr><td>" . $ip . "</td></tr>"; } echo "</table></center>"; } else echo "none"; ?> </p>
+								<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) { echo "<table>"; foreach($P as $ip) { echo "<tr><td>" . $ip . "</td></tr>"; } echo "</table>"; } else echo "none"; ?> </p>
 								</div>
 							
 							
@@ -816,7 +811,7 @@
 									<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" accept=".txt, .rtf, .doc, .docx, 
 									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
 								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) { echo "<center><table>"; foreach($S as $is) { echo "<tr><td>" . $is . "</td></tr>"; } echo "</table></center>"; } else echo "none"; ?> </p>
+								<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) { echo "<table>"; foreach($S as $is) { echo "<tr><td>" . $is . "</td></tr>"; } echo "</table>"; } else echo "none"; ?> </p>
 							</div>
 						</div>
 						
@@ -853,7 +848,7 @@
 							<div class="col-md-12">
 								<div class="form-group">
 									<label for="finalE">EMAIL TO BE SENT:</label>
-									<textarea class="form-control" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 required /></textarea>
+									<textarea class="form-control" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 /></textarea>
 								</div>
 							</div>
 						</div>
@@ -861,7 +856,7 @@
 						<!--AMOUNT AWARDED-->
 							<div class="col-md-12">
 								<div class="form-group">
-									<label for="finalE">AMOUNT AWARDED($):</label>
+									<label for="aAw">AMOUNT AWARDED($):</label>
 									<input type="text" class="form-control" id="aAw" name="aAw" placeholder="AMOUNT AWARDED" value="<?php echo $app->awarded; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
 									|| event.which == 8 || event.which == 46' />
 								</div>
@@ -869,10 +864,6 @@
 						</div>
 						<?php } ?>
 						<br><br>
-						
-						<?php if($isReviewing || $isAdminUpdating){ //show submit application button if creating ?>
-							<input type="hidden" name="appID" value="<?php echo $app->id; ?>" />
-						<?php } ?>	
 						
 						<div class="row">
 							<div class="col-md-2"></div>
@@ -887,9 +878,9 @@
 								<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
 									<input type="submit" class="btn btn-warning" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
 									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
 									<?php } else { ?>
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
 									<?php } ?>
 									<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
 									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
@@ -897,14 +888,14 @@
 									<input type="submit" class="btn btn-success" id="signApp" name="signApp" value="SIGN APPLICATION" />
 								<?php }else if($isApprover){ //show approve, hold, and deny buttons if approver ?>
 									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
+										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
 									<?php } else { ?>
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
+										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
 									<?php } ?>
 									<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
 									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
 								<?php }else if($isReviewing){ ?>
-									<input type="submit" class="btn btn-primary" id="uploadDocs" name="uploadDocs" value="Upload More Documents" />
+									<input type="submit" class="btn btn-primary" id="uploadDocs" name="uploadDocs" value="UPLOAD MORE DOCUMENTS" />
 								<?php } ?>
 							</div>
 							<div class="col-md-2">
