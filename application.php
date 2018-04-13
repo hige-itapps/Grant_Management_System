@@ -822,7 +822,7 @@
 						<!--DEPARTMENT CHAIR APPROVAL-->
 							<div class="col-md-3"></div>
 							<div class="col-md-6">
-								<h2 class="title">Note: Applications received without the approval of the chair will not be considered:</h2>
+								<h3 class="title">Note: Applications received without the approval of the chair will not be considered.</h3>
 								<div class="form-group">
 									<?php if($isChair){ //for department chair to sign ?>
 											<label for="inputDeptCS">Your Approval (up to <?php echo $maxDepChairSig ?> characters):</label>
