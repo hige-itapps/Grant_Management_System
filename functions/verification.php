@@ -375,5 +375,25 @@
 			}
 		}
 	}
+
+	/*Return true if current date is within 3 days of due date*/
+	if(!function_exists('isWithinWarningPeriod')){
+		function isWithinWarningPeriod()
+		{
+			$isWithin = false;
+			$curDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+			$springDate = DateTime::createFromFormat('m-d', '04-03'); //added 2 days to 'real' deadline to allow for weekends
+			$fallDate = DateTime::createFromFormat('m-d', '11-03'); //^
+			$springDateWarn = $springDate->modify('-2 day');//find date 2 days before 'real' deadline
+			$fallDateWarn = $fallDate->modify('-2 day');//^
+
+			if(($curDate >= $springDateWarn && $curDate <= $springDate) || ($curDate >= $fallDateWarn && $curDate <= $fallDate))
+			{
+				$isWithin = true;
+			}
+
+			return $isWithin;
+		}
+	}	
 	
 ?>
