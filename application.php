@@ -275,7 +275,7 @@
 						</div>
 						
 
-						<?php if($isCreating){ //only display a warning if creating ?>
+						<?php if($isCreating && isWithinWarningPeriod()){ //only display a warning if creating ?>
 							<!--SUBMISSION CYCLE WARNING-->
 							<div class="row">
 								<h3 class="title warning">WARNING! DO NOT SUBMIT APPLICATION AFTER THE MIDNIGHT OF A CYCLE'S DUE DATE! <br/>
