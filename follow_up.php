@@ -112,6 +112,13 @@
 				$permissionSet = $isCommittee;
 			}
 			
+			//applicant creating check
+			if(!$permissionSet)
+			{
+				$isCreating = isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_GET['id']); //applicant is creating a Follow-Up R
+				$permissionSet = $isCreating; //will set to true if user is 
+			}
+			
 			//applicant reviewing check
 			if(!$permissionSet)
 			{
@@ -119,12 +126,6 @@
 				$permissionSet = $isReviewing;
 			}
 
-			//applicant creating check
-			if(!$permissionSet)
-			{
-				$isCreating = isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_GET['id']); //applicant is creating a Follow-Up R
-				$permissionSet = $isCreating; //will set to true if user is 
-			}
 		}
 		
 		
@@ -180,6 +181,18 @@
 		
 			<!--BODY-->
 			<div class="container-fluid">
+
+
+				<?php if($isAdmin){ //form for admin updates- start ?>
+					<form enctype="multipart/form-data" class="form-horizontal" id="updateForm" name="updateForm" method="POST" action="#">
+						<input type="submit" onclick="return confirm ('Are you sure you want to enter update mode? Any unsaved data will be lost.')" class="btn btn-warning" id="updateApp" name="updateApp" value="---UPDATE MODE---" />
+					</form>
+				<?php }else if($isAdminUpdating){ //form for admin updates- end ?>
+					<form enctype="multipart/form-data" class="form-horizontal" id="updateForm" name="updateForm" method="POST" action="#">
+						<input type="submit" onclick="return confirm ('Are you sure you want to cancel updating? Any unsaved data will be lost.')" class="btn btn-warning" id="cancelUpdateApp" name="cancelUpdateApp" value="---CANCEL EDITS---" />
+					</form>
+				<?php } ?>
+
 			
 				<?php if($isReviewing){ //form for updating an application ?>
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="functions/documents.php">
@@ -190,7 +203,7 @@
 				<?php } ?>
 
 					
-					<input type="hidden" name="updateID" value="<?php echo $idA ?>" />
+					<input type="hidden" name="updateID" value="<?php echo $_GET["id"]; ?>" />
 				
 					<div>
 
@@ -262,9 +275,9 @@
 								<div class="form-group">
 									<label for="inputTFrom">Travel Date From:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php if($isAdminUpdating){echo 'value="'.$fR->tStart.'"';} ?> required/>
+										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->tStart . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php echo 'value="'.$fR->tStart.'"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php echo 'value="' . $fR->tStart .  '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -275,9 +288,9 @@
 								<div class="form-group">
 									<label for="inputTTo">Travel Date To:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php if($isAdminUpdating){echo 'value="'.$fR->tEnd.'"';} ?> required/>
+										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php if($isAdminUpdating){echo 'value="' . $fR->tEnd . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php echo 'value="'.$fR->tEnd.'"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php echo 'value="' . $fR->tEnd . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -288,9 +301,9 @@
 								<div class="form-group">
 									<label for="inputAFrom">Activity Date From:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php if($isAdminUpdating){echo 'value="'.$fR->aStart.'"';} ?> required/>
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->aStart . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php echo 'value="'.$fR->aStart.'"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php echo 'value="' . $fR->aStart . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -301,9 +314,9 @@
 								<div class="form-group">
 									<label for="inputATo">Activity Date To:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php if($isAdminUpdating){echo 'value="'.$fR->aEnd.'"';} ?> required/>
+										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php if($isAdminUpdating){echo 'value="' . $fR->aEnd . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php echo 'value="'.$fR->aEnd.'"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php echo 'value="' . $fR->aEnd . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -376,8 +389,8 @@
 						<!--UPLOADS-->
 						<div class="row">
 							<?php if($isCreating || $isReviewing || $isAdminUpdating){ //for uploading documents; both admins and applicants ?>
-								<label for="fD">UPLOAD DOCUMENTS:</label><input type="file" name="fD" id="fD" accept=".txt, .rtf, .doc, .docx, 
-									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+								<label for="fD">UPLOAD DOCUMENTS:</label><input type="file" name="followD[]" id="followD" accept=".txt, .rtf, .doc, .docx, 
+									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
 								<?php } //for viewing uploaded documents; ANYONE can ?>
 								<p class="title">UPLOADED DOCUMENTS: <?php if(count($P > 0)) { echo "<table>"; foreach($P as $ip) { echo "<tr><td>" . $ip . "</td></tr>"; } echo "</table>"; } else echo "none"; ?> </p>
 							</div>
@@ -402,17 +415,11 @@
 							<div class="col-md-2"></div>
 						<!--SUBMIT BUTTONS-->
 							<div class="col-md-6">
-								<?php if($isCreating || $isAdminUpdating){ //show submit application button if creating ?>
-									<?php if($isAdminUpdating){ //if updating, show cancel update button?>
-										<input type="submit" onclick="return confirm ('Are you sure you want to cancel updating? Any unsaved data will be lost.')" class="btn btn-warning" id="cancelUpdateApp" name="cancelUpdateApp" value="CANCEL UPDATE" />
-									<?php } ?>
-									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" 
-										class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT FOLLOW-UP REPORT" />
-								<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
-									<input type="submit" class="btn btn-warning" id="updateApp" name="updateApp" value="UPDATE FOLLOW-UP REPORT" />
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
-									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
-								<?php }else if($isFUApprover){ //show approve, hold, and deny buttons if approver ?>
+							<?php if($isCreating){ //show submit application button if creating ?>
+									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT FOLLOW-UP REPORT" />
+								<?php }else if($isAdminUpdating){ //show submit edits button and cancel button if editing?>
+									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
+								<?php }else if($isAdmin || $isFUApprover){ //show update, approve, and deny buttons if admin or approver ?>
 									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
 									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
 								<?php }else if($isReviewing){ ?>
@@ -420,7 +427,7 @@
 								<?php } ?>
 							</div>
 							<div class="col-md-2">
-								<a href="index.php" onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" class="btn btn-info">LEAVE PAGE</a>
+								<a href="index.php" <?php if($isCreating || $isAdminUpdating || $isAdmin || $isFUApprover){ ?> onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" <?php } ?> class="btn btn-info">LEAVE PAGE</a>
 							</div>
 							<div class="col-md-2"></div>
 						</div>

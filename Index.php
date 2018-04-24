@@ -102,6 +102,7 @@
 				$totalPrevApps = getApplications($conn, $CASbroncoNetId);
 				if(count($totalPrevApps) > 0)
 				{
+					$viewCounter++;
 			?>
 				<p><a href="app_all_list.php?previousSubmit">View Previous Applications (<?php echo count($totalPrevApps) ?> total)</a></p>
 			<?php

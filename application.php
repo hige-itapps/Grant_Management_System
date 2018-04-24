@@ -219,6 +219,18 @@
 		
 			<!--BODY-->
 			<div class="container-fluid">
+
+				<?php if($isAdmin){ //form for admin updates- start ?>
+					<form enctype="multipart/form-data" class="form-horizontal" id="updateForm" name="updateForm" method="POST" action="#">
+						<input type="submit" onclick="return confirm ('Are you sure you want to enter update mode? Any unsaved data will be lost.')" class="btn btn-warning" id="updateApp" name="updateApp" value="---UPDATE MODE---" />
+					</form>
+				<?php }else if($isAdminUpdating){ //form for admin updates- end ?>
+					<form enctype="multipart/form-data" class="form-horizontal" id="updateForm" name="updateForm" method="POST" action="#">
+						<input type="submit" onclick="return confirm ('Are you sure you want to cancel updating? Any unsaved data will be lost.')" class="btn btn-warning" id="cancelUpdateApp" name="cancelUpdateApp" value="---CANCEL EDITS---" />
+					</form>
+				<?php } ?>
+
+
 			
 				<?php if($isReviewing){ //form for updating an application ?>
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="functions/documents.php">
@@ -228,7 +240,7 @@
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
 				<?php } ?>
 
-					<?php if($isAdminUpdating){ //add extra POST parameter to keep track of app ID when updating ?>
+					<?php if(!$isCreating){ //add extra POST parameter to keep track of app ID when updating ?>
 						<input type="hidden" name="updateID" value="<?php echo $idA ?>" />
 					<?php } ?>
 				
@@ -252,7 +264,7 @@
 								}
 								if($_GET["error"] == "emailformat")
 								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Email addresses must be valid.</b></span>';
+									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Email addresses format must be valid.</b></span>';
 								}
 								if($_GET["error"] == "dates")
 								{
@@ -295,14 +307,18 @@
 											<p>Current date: <?php echo $newDate->format('Y/m/d'); ?></p>
 											<?php if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, false)){//only let user submit this cycle if enough time has passed ?>
 												<div class="radio">
-												<label><input type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($newDate, false, true); ?>)</label>
+												<label><input checked type="radio" value="this" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($newDate, false, true); ?>)</label>
+												</div>
+												<div class="radio">
+												<label><input type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
 												</div>
 											<?php }else{//otherwise, let them know they must wait another cycle ?>
 												<p>You are not allowed to submit an application for this cycle due to your previously approved application. </p>
+												<div class="radio">
+												<label><input checked type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
+												</div>
 											<?php } ?>
-											<div class="radio">
-											<label><input checked type="radio" value="next" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
-											</div>
+											
 										<?php } else{ //for viewing or updating applications?>
 											<p>Submission date: <?php echo $submitDate->format('Y/m/d'); ?></p>
 											<div class="radio">
@@ -849,7 +865,7 @@
 							<div class="col-md-12">
 								<div class="form-group">
 									<label for="finalE">EMAIL TO BE SENT:</label>
-									<textarea class="form-control" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 /></textarea>
+									<textarea class="form-control" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 required /></textarea>
 								</div>
 							</div>
 						</div>
@@ -870,37 +886,22 @@
 							<div class="col-md-2"></div>
 						<!--SUBMIT BUTTONS-->
 							<div class="col-md-6">
-								<?php if($isCreating || $isAdminUpdating){ //show submit application button if creating ?>
-									<?php if($isAdminUpdating){ //if updating, show cancel update button?>
-										<input type="submit" onclick="return confirm ('Are you sure you want to cancel updating? Any unsaved data will be lost.')" class="btn btn-warning" id="cancelUpdateApp" name="cancelUpdateApp" value="CANCEL UPDATE" />
-									<?php } ?>
-									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" 
-										class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
-								<?php }else if($isAdmin){ //show update, approve, and deny buttons if admin ?>
-									<input type="submit" class="btn btn-warning" id="updateApp" name="updateApp" value="UPDATE APPLICATION" />
-									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
-									<?php } else { ?>
-										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
-									<?php } ?>
-									<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
-									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
+								<?php if($isCreating){ //show submit application button if creating ?>
+									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
+								<?php }else if($isAdminUpdating){ //show submit edits button if editing?>
+									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
+								<?php }else if($isAdmin || $isApprover){ //show approve, hold, and deny buttons if admin or approver ?>
+									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to approve this application?')" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" <?php if(isApplicationSigned($conn, $idA) == 0) { ?> disabled="true" <?php } ?> />
+									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to place this application on hold?')" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
+									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to deny this application?')" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
 								<?php }else if($isChair){ //show sign button if dep chair ?>
-									<input type="submit" class="btn btn-success" id="signApp" name="signApp" value="SIGN APPLICATION" />
-								<?php }else if($isApprover){ //show approve, hold, and deny buttons if approver ?>
-									<?php if(isApplicationSigned($conn, $idA) == 0) { ?>
-										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" disabled="true" />
-									<?php } else { ?>
-										<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" />
-									<?php } ?>
-									<input type="submit" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
-									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
+									<input type="submit" onclick="return confirm ('By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.')" class="btn btn-success" id="signApp" name="signApp" value="APPROVE APPLICATION" />
 								<?php }else if($isReviewing){ ?>
 									<input type="submit" class="btn btn-primary" id="uploadDocs" name="uploadDocs" value="UPLOAD MORE DOCUMENTS" />
 								<?php } ?>
 							</div>
 							<div class="col-md-2">
-								<a href="index.php" onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" class="btn btn-info">LEAVE PAGE</a>
+								<a href="index.php" <?php if($isCreating || $isAdminUpdating || $isAdmin || $isApprover || $isChair){ ?> onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" <?php } ?> class="btn btn-info">LEAVE PAGE</a>
 							</div>
 							<div class="col-md-2"></div>
 						</div>
