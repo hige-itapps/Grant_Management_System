@@ -1,12 +1,37 @@
 <?php
+	echo "Dev Test WITH DUMMY CAS:";
+	echo "Caller: ".$_SERVER['HTTP_REFERER'];
+	var_dump($_REQUEST);
+	echo "total POST data: ".count($_POST);
+	echo "total GET data: ".count($_GET);
+	echo "total REQUEST data: ".count($_REQUEST);
+	echo "Dev Test done";
+	foreach($_REQUEST as $key => $value){
+		if(is_array($value)){
+			echo '<li>'.$key.':<ol>';
+			foreach($value as $item){
+				echo '<li><strong>'.$item.'</strong></li>';
+			}
+			echo '</ol></li>';
+		}
+		else{
+			echo '<li>'.$key.':<strong>'.$value.'</strong></li>'.PHP_EOL;
+		}
+	}
+
+	//return;
+
 	ob_start();
 	use PHPMailer\PHPMailer\PHPMailer;
 	use PHPMailer\PHPMailer\Exception;
+
 
 	
 	/*Debug user validation*/
 	/*include "include/debugAuthentication.php";*/
 	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+	//$CASbroncoNetId = 'sfm7690';
+	//$CASallPositions = [];
 
 	//include('../Net/SFTP.php');
 	include_once(dirname(__FILE__) . "/../functions/database.php");
@@ -78,9 +103,6 @@
 				if(strcmp($_POST["cycleChoice"], "next") == 0) //user chose to submit next cycle
 				{$nextCycle = 1;}
 			}
-
-			
-			//echo "current broncoNetID: ".$_SESSION['broncoNetID'];
 			
 			/*Insert data into database - receive the new application id if success, or 0 if failure*/
 			/*parameters: DB connection, name, email, department, dep. mail stop, dep. chair email, travel from, travel to, activity from, activity to, title, destination, amount requested,

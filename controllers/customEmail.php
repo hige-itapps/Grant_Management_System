@@ -36,7 +36,7 @@
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
 		$mail->Subject = "Your HIGE Grant Application has been Approved";
-		$mail->Body    = nl2br($eb);
+		$mail->Body    = $eb;
 
 		$mail->send();
 		
@@ -63,7 +63,7 @@
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
 		$mail->Subject = "Your HIGE Grant Application has been Denied";
-		$mail->Body    = nl2br($eb);
+		$mail->Body    = $eb;
 
 		$mail->send();
 	}
@@ -91,7 +91,7 @@
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
 		$mail->Subject = "Your HIGE Grant Follow-Up Report has been Approved";
-		$mail->Body    = nl2br($eb);
+		$mail->Body    = $eb;
 
 		$mail->send();
 		
@@ -118,7 +118,7 @@
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
 		$mail->Subject = "Your HIGE Grant Follow-Up Report has been Denied";
-		$mail->Body    = nl2br($eb);
+		$mail->Body    = $eb;
 
 		$mail->send();
 	}
@@ -144,7 +144,7 @@
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
 		$mail->Subject = "Your HIGE Grant Application has been Approved";
-		$mail->Body    = nl2br($eb);
+		$mail->Body    = $eb;
 
 		$mail->send();
 		

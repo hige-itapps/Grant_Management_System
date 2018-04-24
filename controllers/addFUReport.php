@@ -1,6 +1,8 @@
 <?php
 	ob_start();
 
+
+
 	/*Debug user validation*/
 	/*include "include/debugAuthentication.php";*/
 	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
@@ -17,7 +19,7 @@
 	$isAdmin = isAdministrator($conn, $CASbroncoNetId);
 
 	/*Verify that user is allowed to make an application*/
-	if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $_POST['updateID']) || $isAdmin)
+	if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_POST['updateID']) || $isAdmin)
 	{
 		//echo "User is allowed to create an application!";
 		
