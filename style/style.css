@@ -122,6 +122,11 @@ caption{
 	overflow:hidden;
 }
 
+/*format Update forms*/
+#updateForm{
+	text-align: center;
+}
+
 /*Format admin page*/#adminPage h2{
 	margin-top: 60px;
 }
