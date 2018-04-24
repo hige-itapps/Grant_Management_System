@@ -4,8 +4,8 @@
 	include_once(dirname(__FILE__) . "/../Net/SFTP.php");
 	
 	
-	if(isset($_POST["uploadDocs"]) || isset($_POST["uploadDocsF"]))
-		uploadDocs($_POST["appID"]);
+	if(isset($_REQUEST["uploadDocs"]) || isset($_REQUEST["uploadDocsF"]))
+		uploadDocs($_REQUEST["updateID"]);
 
 	/*list documents for a given app ID*/
 	function listDocs($id) {
@@ -99,10 +99,13 @@
 		{
 			for($i = 0; $i < count($fsD["name"]); $i++)
 			{
-				$file = $fsD["tmp_name"][$i];
-				$doc = "S" . $id . "-" . $fsD["name"][$i];
-				
-				$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				if ($fsD['size'][$i] != 0)
+				{
+					$file = $fsD["tmp_name"][$i];
+					$doc = "S" . $id . "-" . $fsD["name"][$i];
+					
+					$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+				}
 			}
 		}
 		if(isset($_FILES["followD"]))
@@ -112,18 +115,21 @@
 			{
 				for($i = 0; $i < count($followD["name"]); $i++)
 				{
-					$file = $followD["tmp_name"][$i];
-					$doc = "F" . $id . "-" . $followD["name"][$i];
-					
-					$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+					if ($followD['size'][$i] != 0)
+					{
+						$file = $followD["tmp_name"][$i];
+						$doc = "F" . $id . "-" . $followD["name"][$i];
+						
+						$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+					}
 				}
 			}
 		}
 		unset($ssh);
 		/*everything was successful*/
-		if(isset($_POST["uploadDocs"]))
+		if(isset($_REQUEST["uploadDocs"]))
 			header("Location: ../application.php?id=" . $id);
-		if(isset($_POST["uploadDocsF"]))
+		if(isset($_REQUEST["uploadDocsF"]))
 			header("Location: ../follow_up.php?id=" . $id);
 		return true;
 	}

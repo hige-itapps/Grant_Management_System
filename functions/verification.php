@@ -94,7 +94,8 @@
 			//make sure user is not part of HIGE staff
 			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFollowUpReportApprover($conn, $broncoNetID))
 			{
-				$check = false;
+				$check = true;
+				/*
 				//check all positions to see if any are 'Faculty' or 'Staff'!
 				if (is_array($positions)) {
 					foreach ($positions as $position) {
@@ -110,7 +111,7 @@
 						|| $positions === 'Provisional Employee' || $position === 'Student') {
 							$check = true;
 						}
-				}
+				} */
 				
 				$lastApproved = false; //set to true if last approved application was long enough ago
 				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);

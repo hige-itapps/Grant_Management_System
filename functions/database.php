@@ -715,14 +715,14 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 1, AmountAwarded = :aw WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Approved = 1, AmountAwarded = :aw, OnHold = 0 WHERE ID = :id");
 				$sql->bindParam(':aw', $amount);
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
-				approvalEmail($email, nl2br($eb));
+				approvalEmail($email, $eb);
 				
 			}
 		}
@@ -735,50 +735,13 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 0 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Approved = 0, OnHold = 0 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
-				denialEmail($email, nl2br($eb));
-			}
-		}
-	}
-	
-	/*Update a FU Report to be approved*/
-	if(!function_exists('approveFU')){
-		function approveFU($conn, $id, $email, $eb)
-		{
-			if ($id != "") //valid application id
-			{
-				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ApplicationID = :id");
-				$sql->bindParam(':id', $id);
-				$sql->execute();
-				
-				/* Close finished query and connection */
-				$sql = null;
-				approvalEmailF($email, nl2br($eb));
-				
-			}
-		}
-	}
-	
-	/*Update a FU Report to be denied*/
-	if(!function_exists('denyFU')){
-		function denyFU($conn, $id, $email, $eb)
-		{
-			if ($id != "") //valid application id
-			{
-				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ApplicationID = :id");
-				$sql->bindParam(':id', $id);
-				$sql->execute();
-				
-				/* Close finished query and connection */
-				$sql = null;
-				denialEmailF($email, nl2br($eb));
+				denialEmail($email, $eb);
 			}
 		}
 	}
@@ -796,7 +759,7 @@
 				$sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
-				onHoldEmail($email, nl2br($eb));
+				onHoldEmail($email, $eb);
 				
 			}
 		}
@@ -821,40 +784,43 @@
 	}
 	
 	
-	
-	/*Update a follow-up-report to be approved (need application's ID)*/
-	if(!function_exists('approveFollowUpReport')){
-		function approveFollowUpReport($conn, $id)
+
+	/*Update a FU Report to be approved*/
+	if(!function_exists('approveFU')){
+		function approveFU($conn, $id, $email, $eb)
 		{
-			if ($id != "") //valid report ID
+			if ($id != "") //valid application id
 			{
-				/*Update any follow-up-report with the given id*/
+				/*Update any application with the given id*/
 				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
 				/* Close finished query and connection */
 				$sql = null;
+				approvalEmailF($email, $eb);
+				
 			}
 		}
 	}
 	
-	/*Remove a follow-up report (useful if some information is incorrect) (need application's ID)*/
-	if(!function_exists('removeFollowUpReport')){
-		function removeFollowUpReport($conn, $id)
+	/*Update a FU Report to be denied*/
+	if(!function_exists('denyFU')){
+		function denyFU($conn, $id, $email, $eb)
 		{
-			if ($id != "") //valid report ID
+			if ($id != "") //valid application id
 			{
-				/* Prepare & run the query */
-				$sql = $conn->prepare("DELETE FROM follow_up_reports WHERE ApplicationID = :id");
+				/*Update any application with the given id*/
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
+				
 				/* Close finished query and connection */
 				$sql = null;
+				denialEmailF($email, $eb);
 			}
 		}
 	}
-	
 	
 	
 	/*
@@ -955,11 +921,11 @@
 					$valid = false;
 				}
 				/*Make sure emails are correct format*/
-				/*if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
+				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
 				{
 					header('Location: ../application.php?error=emailformat');
 					$valid = false;
-				}*/
+				}
 
 				if(!$updating)
 				{
