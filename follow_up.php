@@ -13,6 +13,86 @@
 	/*Document functions*/
 	include "functions/documents.php";
 ?>
+
+
+
+<?php
+	 
+	 /*************FOR ADDING OR UPDATING FOLLOW UP REPORT***************/
+	ob_start();
+
+	if(isset($_POST["submitApp"]))
+	{
+		$isAdmin = isAdministrator($conn, $CASbroncoNetId);
+
+		/*Verify that user is allowed to make an application*/
+		if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_POST['updateID']) || $isAdmin)
+		{
+			//echo "User is allowed to create an application!";
+			
+			try
+			{
+				//echo "current broncoNetID: ".$_SESSION['broncoNetID'];
+				//echo "current broncoNetID: ".$_SESSION['broncoNetID'];
+				
+				/*Insert data into database - receive the new application id if success, or 0 if failure*/
+				/*parameters: DB connection, updating boolean, app ID, travel date from, travel date to, activity date from, activity date to, project summary, and amount awarded spent*/
+				if($isAdmin)
+				{
+					$successAppID = insertFollowUpReport($conn, true, $_POST['updateID'], $_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], 
+						$_POST["projs"], $_POST["aAw"]);
+				}
+				else
+				{
+					$successAppID = insertFollowUpReport($conn, false, $_POST['updateID'], $_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], 
+						$_POST["projs"], $_POST["aAw"]);
+				}
+
+				echo "<br>Insert status: ".$successAppID.".<br>";
+				
+				$successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
+				
+				if($successAppID > 0) //if insert into DB was successful, continue
+				{
+					echo "<br>Uploading docs...<br>";
+					$successUpload = uploadDocs($successAppID); //upload the documents
+					
+					echo "<br>Upload status: ".$successUpload.".<br>";
+				}
+				else
+				{
+					echo "<br>ERROR: could not insert application, app status: ".$successAppID."!<br>";
+				}
+				
+				if($successUpload > 0) //upload was successful
+				{
+					header('Location: /');
+				}
+				else
+				{
+					echo "<br>ERROR: could not upload application documents, upload status: ".$successUpload."!<br>";
+				}
+				
+			}
+			catch(Exception $e)
+			{
+				echo "Error adding application: " . $e->getMessage();
+			}
+			
+		}
+		
+		$conn = null; //close connection
+	}
+?>
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -71,11 +151,6 @@
 		
 		$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
 		
-		/*User is trying to download a document*/
-		if(isset($_GET["doc"]))
-		{
-			downloadDocs($_GET["id"], $_GET["doc"]);
-		}
 		/*Get all user permissions. THESE ARE TREATED AS IF THEY ARE MUTUALLY EXCLUSIVE; ONLY ONE CAN BE TRUE!
 		No matter what, the app ID MUST BE SET*/
 		if(isset($_GET["id"]))
@@ -134,6 +209,20 @@
 		{
 			$idA = $_GET["id"];
 
+
+			/*User is trying to download a document*/
+			if(isset($_GET["doc"]))
+			{
+				downloadDocs($_GET["id"], $_GET["doc"]);
+			}
+			/*User is trying to upload a document (only allowed to if has certain permissions)*/
+			if($isCreating || $isReviewing || $isAdminUpdating){
+				if(isset($_REQUEST["uploadDocs"]) || isset($_REQUEST["uploadDocsF"]))
+				{
+					uploadDocs($_REQUEST["updateID"]);
+				}
+			}
+
 			$P = array();
 			$app = getApplication($conn, $idA); //get application Data
 			/*Initialize variables if application has already been created*/
@@ -164,14 +253,14 @@
 				if(isset($_POST["approveA"]))
 				{
 					approveFU($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: app_all_list.php'); //redirect to app_list
+					header('Location: index.php'); //redirect to homepage
 				}
 				
 				/*User wants to deny this report*/
 				if(isset($_POST["denyA"]))
 				{
 					denyFU($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: app_all_list.php'); //redirect to app_list
+					header('Location: index.php'); //redirect to hommepage
 				}
 				
 			} 
@@ -194,16 +283,11 @@
 				<?php } ?>
 
 			
-				<?php if($isReviewing){ //form for updating an application ?>
-					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="functions/documents.php">
-				<?php }else if($isCreating || $isAdminUpdating){ //form for a new application ?>
-					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="controllers/addFUReport.php">
-				<?php }else{ //default form ?>
-					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
-				<?php } ?>
+				<!-- follow-up form -->
+				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" method="POST" action="#">
 
 					
-					<input type="hidden" name="updateID" value="<?php echo $_GET["id"]; ?>" />
+				<input type="hidden" name="updateID" value="<?php echo $_GET["id"]; ?>" />
 				
 					<div>
 
@@ -420,8 +504,8 @@
 								<?php }else if($isAdminUpdating){ //show submit edits button and cancel button if editing?>
 									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
 								<?php }else if($isAdmin || $isFUApprover){ //show update, approve, and deny buttons if admin or approver ?>
-									<input type="submit" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
-									<input type="submit" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
+									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to approve this follow-up report?')" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
+									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to deny this follow-up report?')" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
 								<?php }else if($isReviewing){ ?>
 									<input type="submit" class="btn btn-primary" id="uploadDocsF" name="uploadDocsF" value="UPLOAD MORE DOCUMENTS" />
 								<?php } ?>
@@ -447,6 +531,3 @@
 	</div>
 	</body>
 </html>
-<?php
-	 $conn = null; //close connection 
-?>

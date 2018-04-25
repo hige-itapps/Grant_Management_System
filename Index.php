@@ -94,7 +94,7 @@
 					$viewCounter++;
 			?>
 					<p>Your application is pending!<p>
-					<p><b>Note: IEFDF recipients must wait at least a year between applications.</b></p>
+					<p><strong>Note: IEFDF recipients must wait at least a year between applications.</strong></p>
 			<?php
 				}
 				
