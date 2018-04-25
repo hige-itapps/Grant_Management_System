@@ -4,12 +4,12 @@
 	include_once(dirname(__FILE__) . "/../Net/SFTP.php");
 	
 	
-	if(isset($_REQUEST["uploadDocs"]) || isset($_REQUEST["uploadDocsF"]))
-		uploadDocs($_REQUEST["updateID"]);
+	/*if(isset($_REQUEST["uploadDocs"]) || isset($_REQUEST["uploadDocsF"]))
+		uploadDocs($_REQUEST["updateID"]);*/
 
 	/*list documents for a given app ID*/
 	function listDocs($id) {
-		$settings = parse_ini_file('config.ini');
+		$settings = parse_ini_file(dirname(__FILE__) . '/../config.ini');
 		$ssh = new Net_SFTP($settings["hostname"]);
 		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
@@ -29,7 +29,7 @@
 	
 	/*Download a document for a given app ID @ document name*/
 	function downloadDocs($id, $doc) {
-		$settings = parse_ini_file('config.ini');
+		$settings = parse_ini_file(dirname(__FILE__) . '/../config.ini');
 			
 		$ssh = new Net_SFTP('hige-iefdf-vm.wade.wmich.edu');
 		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
@@ -61,7 +61,7 @@
 	}
 	/*Upload the documents; return true on success, false on failure*/
 	function uploadDocs($id) {
-		$settings = parse_ini_file('../config.ini');
+		$settings = parse_ini_file(dirname(__FILE__) . '/../config.ini');
 		$ssh = new Net_SFTP($settings["hostname"]);
 		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
 			$success = 0;
