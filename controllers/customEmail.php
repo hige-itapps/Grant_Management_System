@@ -35,8 +35,8 @@
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
-		$mail->Subject = "Your HIGE Grant Application has been Approved";
-		$mail->Body    = $eb;
+		$mail->Subject = "IEFDF Application Update";
+		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
 
 		$mail->send();
 		
@@ -62,8 +62,8 @@
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
-		$mail->Subject = "Your HIGE Grant Application has been Denied";
-		$mail->Body    = $eb;
+		$mail->Subject = "IEFDF Application Update";
+		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
 
 		$mail->send();
 	}
@@ -90,8 +90,8 @@
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
-		$mail->Subject = "Your HIGE Grant Follow-Up Report has been Approved";
-		$mail->Body    = $eb;
+		$mail->Subject = "IEFDF Application Update";
+		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
 
 		$mail->send();
 		
@@ -117,8 +117,8 @@
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
-		$mail->Subject = "Your HIGE Grant Follow-Up Report has been Denied";
-		$mail->Body    = $eb;
+		$mail->Subject = "IEFDF Application Update";
+		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
 
 		$mail->send();
 	}
@@ -143,8 +143,8 @@
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
 		$mail->addAddress($email);
-		$mail->Subject = "Your HIGE Grant Application has been Approved";
-		$mail->Body    = $eb;
+		$mail->Subject = "IEFDF Application Update";
+		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
 
 		$mail->send();
 		
