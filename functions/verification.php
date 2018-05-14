@@ -312,14 +312,51 @@
 			//parse $secondCycle to get Spring/Fall and Year
 			$secondCycleParts = explode(" ", $secondCycle); //[0] holds Spring/Fall, [1] holds Year
 							
-			//RULES: If applying in Spring, must wait for cur cycle + 3 full cycles. If applying in Fall, must wait for cur cycle + 2 full cycles
-			//This can be simplified by just checking the years between application cycles. If years difference >1, then they are far enough apart
-
-			//echo "years: ".(int)$secondCycleParts[1].", ".(int)$firstCycleParts[1];
+			/*	
+			RULES: If applying in Fall 2016, must wait until Fall 2018. 
+			If applying in Spring 2017, must also wait until Fall 2018 (Spring 2019 is the earliest acceptable Spring cycle in this case)
+			Example 2-year schedule:
+			(2015) Fall 2015 cycle, Spring 2016 cycle
+			(2016) Fall 2016 cycle, Spring 2017 cycle
+			*/
 			
 			$yearsBetween = (int)$secondCycleParts[1] - (int)$firstCycleParts[1];//get years between cycles
+
+
+			//If old cycle was fall
+			if($firstCycleParts[0] === "Fall")
+			{
+				//If the new cycle is spring
+				if($secondCycleParts[0] === "Spring")
+				{
+					if($yearsBetween > 2) {$farEnoughApart = true;} //must be greater than 2 years difference
+				}
+
+				//If the new cycle is fall
+				if($secondCycleParts[0] === "Fall")
+				{
+					if($yearsBetween > 1) {$farEnoughApart = true;} //must be at least 1 year difference
+				}
+			}
+
+
+
+			//If old cycle was spring
+			if($firstCycleParts[0] === "Spring")
+			{
+				//If the new cycle is spring
+				if($secondCycleParts[0] === "Spring")
+				{
+					if($yearsBetween > 1) {$farEnoughApart = true;} //must be greater than 1 year difference
+				}
+
+				//If the new cycle is fall
+				if($secondCycleParts[0] === "Fall")
+				{
+					if($yearsBetween > 0) {$farEnoughApart = true;} //must be at least 1 year difference
+				}
+			}
 			
-			if($yearsBetween > 1) {$farEnoughApart = true;}
 			return $farEnoughApart;
 		}
 	}
@@ -377,16 +414,15 @@
 		}
 	}
 
-	/*Return true if current date is within 3 days of due date*/
+	/*Return true if current date is within 3 days of one of the due dates*/
 	if(!function_exists('isWithinWarningPeriod')){
-		function isWithinWarningPeriod()
+		function isWithinWarningPeriod($curDate)
 		{
 			$isWithin = false;
-			$curDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
-			$springDate = DateTime::createFromFormat('m-d', '04-03'); //added 2 days to 'real' deadline to allow for weekends
-			$fallDate = DateTime::createFromFormat('m-d', '11-03'); //^
-			$springDateWarn = $springDate->modify('-2 day');//find date 2 days before 'real' deadline
-			$fallDateWarn = $fallDate->modify('-2 day');//^
+			$springDate = DateTime::createFromFormat('Y/m/d', ($curDate->format("Y")).'/4/3'); //added 2 days to 'real' deadline to allow for weekends
+			$fallDate = DateTime::createFromFormat('Y/m/d', ($curDate->format("Y")).'/11/3'); //^
+			$springDateWarn = DateTime::createFromFormat('Y/m/d', ($curDate->format("Y")).'/4/1');//find date 2 days before 'real' deadline
+			$fallDateWarn = DateTime::createFromFormat('Y/m/d', ($curDate->format("Y")).'/11/1');//^
 
 			if(($curDate >= $springDateWarn && $curDate <= $springDate) || ($curDate >= $fallDateWarn && $curDate <= $fallDate))
 			{
