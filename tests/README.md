@@ -1,5 +1,5 @@
 ## Here you will find all the unit tests for this project. ##
-Each tested php file gets its own directory, with separate Test.php files within to test various functions.
+Each tested php file gets its own directory, with separate Test.php files within to test various functions. You will have to modify the testconfig file to fit your needs.
 
 Steps (I took) to get PHP unit testing working on Windows:
 1. Install PHP v7.2.5 under C: PHP7 (follow steps from: http://kizu514.com/blog/install-php7-and-composer-on-windows-10/)
