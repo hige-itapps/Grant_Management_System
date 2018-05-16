@@ -456,6 +456,196 @@
 
 
 
+	/*Checks if a user is an administrator-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	if(!function_exists('isAdministrator')) {
+		function isAdministrator($conn, $broncoNetID)
+		{
+			$is = false; //initialize boolean to false
+			$adminList = getAdministrators($conn);//grab admin list
+			
+			foreach($adminList as $i) //loop through admins
+			{
+				$newID = $i[0];
+				if(strcmp($newID, $broncoNetID) == 0)
+				{
+					$is = true;
+					break; //no need to continue loop
+				}
+			}
+			return $is;
+		}
+	}
+	
+	/*Checks if a user is an application approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	if(!function_exists('isApplicationApprover')) {
+		function isApplicationApprover($conn, $broncoNetID)
+		{
+			$is = false; //initialize boolean to false
+			$approverList = getApplicationApprovers($conn);//grab application approver list
+			
+			foreach($approverList as $i) //loop through approvers
+			{
+				$newID = $i[0];
+				if($newID == $broncoNetID)
+				{
+					$is = true;
+					break; //no need to continue loop
+				}
+			}
+			return $is;
+		}
+	}
+	
+	/*Checks if a user is a follow-up report approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	if(!function_exists('isFollowUpReportApprover')) {
+		function isFollowUpReportApprover($conn, $broncoNetID)
+		{
+			$is = false; //initialize boolean to false
+			$approverList = getFollowUpReportApprovers($conn);//grab follow-up report approver list
+			
+			foreach($approverList as $i) //loop through approvers
+			{
+				$newID = $i[0];
+				if($newID == $broncoNetID)
+				{
+					$is = true;
+					break; //no need to continue loop
+				}
+			}
+			return $is;
+		}
+	}
+	
+	/*Checks if a user is a committee member-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	if(!function_exists('isCommitteeMember')) {
+		function isCommitteeMember($conn, $broncoNetID)
+		{
+			$is = false; //initialize boolean to false
+			$committeeList = getCommittee($conn);//grab committee member list
+			
+			foreach($committeeList as $i) //loop through committee members
+			{
+				$newID = $i[0];
+				if($newID == $broncoNetID)
+				{
+					$is = true;
+					break; //no need to continue loop
+				}
+			}
+			return $is;
+		}
+	}
+	
+	/*Checks if a user is allowed to create an application
+	Rules:
+	1. Must be in a non-student position
+	2. Must not have a pending application
+	3. Must not have received funding within the past year
+	4. Must not be an admin, committee member, application approver, or follow-up report approver
+	&nextCycle = false if checking current cycle, or true if checking next cycle*/
+	if(!function_exists('isUserAllowedToCreateApplication')) {
+		function isUserAllowedToCreateApplication($conn, $broncoNetID, $positions, $nextCycle)
+		{
+			//make sure user is not part of HIGE staff
+			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFollowUpReportApprover($conn, $broncoNetID))
+			{
+				$check = true;
+				/*
+				//check all positions to see if any are 'Faculty' or 'Staff'!
+				if (is_array($positions)) {
+					foreach ($positions as $position) {
+						if ($position === 'Faculty' || $position === 'faculty' 
+							|| $position === 'Staff' || $position === 'staff'
+							|| $position === 'Provisional Employee' || $position === 'Student') {
+							$check = true;
+						}
+					}	
+				} else {
+					if ($positions === 'Faculty' || $positions === 'faculty'
+						|| $positions === 'Staff' || $positions === 'staff'
+						|| $positions === 'Provisional Employee' || $position === 'Student') {
+							$check = true;
+						}
+				} */
+				
+				$lastApproved = false; //set to true if last approved application was long enough ago
+				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+
+				//echo "Last approved: " .$lastApprovedApp->id;
+				
+				if($lastApprovedApp != null) //if a previous application exists
+				{
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+					
+					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+
+					//echo "cycles: ".$lastCycle.", ".$curCycle;
+					
+					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+
+					//echo "last approved: " .$lastApproved;
+				}
+				else //no previous application
+				{
+					$lastApproved = true;
+				}
+				
+				if($check && !hasPendingApplication($conn, $broncoNetID) && $lastApproved)
+				{
+					return true;
+				}
+				else 
+				{
+					return false; //necessary to specify true/false because of dumb php rules :(
+				}
+			}
+			else //user is part of HIGE staff, so they cannot apply
+			{
+				return false;
+			}
+		}
+	}
+
+	/*Checks if a user is allowed to create a follow up report for a specified appID
+	Rules:
+	Application must not already have a follow up report
+	Application must belong to the user
+	Application must have 'Approved' status*/
+	if(!function_exists('isUserAllowedToCreateFollowUpReport')) {
+		function isUserAllowedToCreateFollowUpReport($conn, $broncoNetID, $appID)
+		{
+			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFUReport($conn, $appID) && isApplicationApproved($conn, $appID))
+			{
+				return true;
+			}
+			else 
+			{
+				return false;
+			}
+		}
+	}
+	
+	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FOLLOW-UP REPORTS
+	Rules: Must be an application approver, follow-up report approver, administrator, or a committee member*/
+	if(!function_exists('isUserAllowedToSeeApplications')) {
+		function isUserAllowedToSeeApplications($conn, $broncoNetID)
+		{
+				
+			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID) || isFollowUpReportApprover($conn, $broncoNetID))
+			{
+				return true;
+			}
+			else 
+			{
+				return false; //necessary to specify true/false because of dumb php rules :(
+			}
+		}
+	}
+
+
+
+
 	/* Returns true if the given email == the deptChairEmail for a given app ID, or false otherwise */
 	if(!function_exists('isUserAllowedToSignApplication')){
 		function isUserAllowedToSignApplication($conn, $email, $appID)
