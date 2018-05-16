@@ -18,8 +18,8 @@ final class getAdministratorsTest extends TestCase
         $settings = parse_ini_file($config_url);
         
         //var_dump($settings);
-        $conn = new AtomicPDO("mysql:host=" . $settings["test_hostname"] . ";dbname=" . $settings["database_test_name"] . ";charset=utf8", $settings["database_username"], 
-            $settings["database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+        $conn = new PDO("mysql:host=" . $settings["test_hostname"] . ";dbname=" . $settings["test_database_name"] . ";charset=utf8", $settings["test_database_username"], 
+            $settings["test_database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
         // set the PDO error mode to exception
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
