@@ -8,6 +8,8 @@ Steps (I took) to get PHP unit testing working on Windows:
 
 3. Install PHPUnit using composer (follow steps from: https://phpunit.de/getting-started/phpunit-7.html)
 
-4. To run a single test from the command line, type: vendor\bin\phpunit tests\verification\areCyclesFarEnoughApartTest.php
+4. Installed DbUnit by typing: composer require --dev phpunit/dbunit ^4 (same thing as installing PHPUnit)
 
-5. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests
+5. To run a single test from the command line, type: vendor\bin\phpunit tests\verification\areCyclesFarEnoughApartTest.php
+
+6. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests
