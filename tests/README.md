@@ -10,6 +10,8 @@ Steps (I took) to get PHP unit testing working on Windows:
 
 4. Install DbUnit by typing: composer require --dev phpunit/dbunit ^4 (same thing as installing PHPUnit)
 
-5. To run a single test from the command line, type: vendor\bin\phpunit tests\verification\areCyclesFarEnoughApartTest.php
+5. Install local MySQL server v8.0 and run it as a service. also configure password to work locally with "ALTER USER 'username'@'ip_address' IDENTIFIED WITH mysql_native_password BY 'password';" (you may have to configure it differently depending on your machine/mysql build)
 
-6. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests
+6. To run a single test from the command line, type: vendor\bin\phpunit tests\verification\areCyclesFarEnoughApartTest.php
+
+7. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests
