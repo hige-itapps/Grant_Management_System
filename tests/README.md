@@ -14,4 +14,4 @@ Steps (I took) to get PHP unit testing working on Windows:
 
 6. To run a single test from the command line, type: vendor\bin\phpunit tests\verification\areCyclesFarEnoughApartTest.php
 
-7. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests
+7. To run ALL tests (which should probably be done before committing any code), type: vendor\bin\phpunit tests; This may take a few minutes to complete
