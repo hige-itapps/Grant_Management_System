@@ -1,0 +1,273 @@
+<?xml version="1.0"?>
+
+<dataset>
+	<table name="applications">
+		<column>ID</column>
+		<column>Applicant</column>
+		<column>Date</column>
+		<column>Name</column>
+		<column>Department</column>
+		<column>MailStop</column>
+		<column>Email</column>
+		<column>Title</column>
+		<column>TravelStart</column>
+		<column>TravelEnd</column>
+		<column>EventStart</column>
+		<column>EventEnd</column>
+		<column>Destination</column>
+		<column>AmountRequested</column>
+		<column>IsResearch</column>
+		<column>IsConference</column>
+		<column>IsCreativeActivity</column>
+		<column>IsOtherEventText</column>
+		<column>OtherFunding</column>
+		<column>ProposalSummary</column>
+		<column>FulfillsGoal1</column>
+		<column>FulfillsGoal2</column>
+		<column>FulfillsGoal3</column>
+		<column>FulfillsGoal4</column>
+		<column>DepartmentChairEmail</column>
+		<column>DepartmentChairSignature</column>
+		<column>Approved</column>
+		<column>AmountAwarded</column>
+		<column>OnHold</column>
+		<column>NextCycle</column>
+
+
+
+		<row>
+			<value>1</value>
+			<value>abc1234</value>
+			<value>2012-05-20</value>
+			<value>Alphy</value>
+			<value>Literature</value>
+			<null />
+			<value>abc@wmich.edu</value>
+			<value>Lorum Ipsum</value>
+			<value>2012-06-05</value>
+			<value>2012-06-23</value>
+			<value>2012-06-08</value>
+			<value>2012-06-13</value>
+			<value>Cambridge University</value>
+			<value>700</value>
+			<value>0</value>
+			<value>1</value>
+			<value>0</value>
+			<value>This is also a barbeque</value>
+			<value>No other funding</value>
+			<value>Lorum Ipsum Lorum Ipsum etc.</value>
+			<value>0</value>
+			<value>1</value>
+			<value>0</value>
+			<value>1</value>
+			<value>samuel.j.kison@wmich.edu</value>
+			<value>Sam</value>
+			<value>1</value>
+			<value>700</value>
+			<value>0</value>
+			<value>1</value>
+		</row>
+
+
+
+		<row>
+			<value>2</value>
+			<value>abc1234</value>
+			<value>2018-05-20</value>
+			<value>Alphy</value>
+			<value>Literature</value>
+			<null />
+			<value>abc@wmich.edu</value>
+			<value>Lorum Ipsum mk.2</value>
+			<value>2018-06-05</value>
+			<value>2018-06-23</value>
+			<value>2018-06-08</value>
+			<value>2018-06-13</value>
+			<value>Cambridge University</value>
+			<value>800</value>
+			<value>1</value>
+			<value>0</value>
+			<value>1</value>
+			<value></value>
+			<value></value>
+			<value>Lorum Ipsum Lorum Ipsum etc. mk.2</value>
+			<value>1</value>
+			<value>0</value>
+			<value>1</value>
+			<value>0</value>
+			<value>samuel.j.kison@wmich.edu</value>
+			<value>Sam</value>
+			<value>0</value>
+			<null />
+			<value>0</value>
+			<value>0</value>
+		</row>
+
+
+
+		<row>
+			<value>3</value>
+			<value>zyx4321</value>
+			<value>2018-04-28</value>
+			<value>Xeno</value>
+			<value>Political Science</value>
+			<null />
+			<value>zyx@wmich.edu</value>
+			<value>Politics in South America</value>
+			<value>2018-05-05</value>
+			<value>2018-05-23</value>
+			<value>2018-05-08</value>
+			<value>2018-05-13</value>
+			<value>Alberta Township</value>
+			<value>650</value>
+			<value>0</value>
+			<value>0</value>
+			<value>0</value>
+			<value>This is happening just cuz</value>
+			<value>$300 from local scholarship</value>
+			<value>Once upon a time...</value>
+			<value>0</value>
+			<value>0</value>
+			<value>0</value>
+			<value>1</value>
+			<value>samuel.j.kison@wmich.edu</value>
+			<null />
+			<null />
+			<null />
+			<value>0</value>
+			<value>1</value>
+		</row>
+
+
+
+		<row>
+			<value>4</value>
+			<value>bbb7777</value>
+			<value>2018-05-06</value>
+			<value>Barry</value>
+			<value>CS</value>
+			<null />
+			<value>bbb@wmich.edu</value>
+			<value>Learning about quadratic formula algorithms</value>
+			<value>2018-11-05</value>
+			<value>2018-11-23</value>
+			<value>2018-11-08</value>
+			<value>2018-11-13</value>
+			<value>Bletchly Park</value>
+			<value>1000</value>
+			<value>1</value>
+			<value>0</value>
+			<value>0</value>
+			<value></value>
+			<value></value>
+			<value>Here's a little lesson in trickery...</value>
+			<value>1</value>
+			<value>0</value>
+			<value>0</value>
+			<value>0</value>
+			<value>samuel.j.kison@wmich.edu</value>
+			<value>Sam</value>
+			<null />
+			<null />
+			<value>1</value>
+			<value>0</value>
+		</row>
+
+
+
+		<row>
+			<value>5</value>
+			<value>abc1234</value>
+			<value>2017-05-20</value>
+			<value>Alphy</value>
+			<value>Literature</value>
+			<null />
+			<value>abc@wmich.edu</value>
+			<value>Lorum Ipsum mk.1.5</value>
+			<value>2017-06-05</value>
+			<value>2017-06-23</value>
+			<value>2017-06-08</value>
+			<value>2017-06-13</value>
+			<value>Cambridge University</value>
+			<value>800</value>
+			<value>1</value>
+			<value>0</value>
+			<value>1</value>
+			<value></value>
+			<value></value>
+			<value>Lorum Ipsum Lorum Ipsum etc. mk.1.5</value>
+			<value>1</value>
+			<value>0</value>
+			<value>1</value>
+			<value>0</value>
+			<value>samuel.j.kison@wmich.edu</value>
+			<value>Sam</value>
+			<value>1</value>
+			<null />
+			<value>0</value>
+			<value>0</value>
+		</row>
+	</table>
+
+
+
+	<table name="applications_budgets">
+		<column>BudgetItemID</column>
+		<column>ApplicationID</column>
+		<column>Name</column>
+		<column>Cost</column>
+		<column>Comment</column>
+
+
+		<row>
+			<value>1</value>
+			<value>1</value>
+			<value>Hotel</value>
+			<value>700</value>
+			<value>3 nights</value>
+		</row>
+		<row>
+			<value>2</value>
+			<value>1</value>
+			<value>Air Travel</value>
+			<value>450</value>
+			<value>Flight to Destination</value>
+		</row>
+
+
+		<row>
+			<value>3</value>
+			<value>2</value>
+			<value>Hotel</value>
+			<value>8000</value>
+			<value>Luxury Hotel</value>
+		</row>
+
+
+		<row>
+			<value>4</value>
+			<value>3</value>
+			<value>Hotel</value>
+			<value>800</value>
+			<value>4 nights</value>
+		</row>
+		<row>
+			<value>5</value>
+			<value>3</value>
+			<value>Air Travel</value>
+			<value>550</value>
+			<value>Flight to Destination</value>
+		</row>
+
+
+		<row>
+			<value>6</value>
+			<value>4</value>
+			<value>Per Diem</value>
+			<value>200</value>
+			<value>Food for 4 days</value>
+		</row>
+		
+	</table>
+
+</dataset>

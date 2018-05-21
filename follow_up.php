@@ -12,6 +12,9 @@
 	
 	/*Document functions*/
 	include "functions/documents.php";
+
+	/*For sending custom emails*/
+	include_once(dirname(__FILE__) . "/controllers/customEmail.php");
 ?>
 
 
@@ -252,15 +255,21 @@
 				/*User wants to approve this report*/
 				if(isset($_POST["approveA"]))
 				{
-					approveFU($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: index.php'); //redirect to homepage
+					if(approveFU($conn, $idA))
+					{
+						approvalEmailF(trim($app->email), nl2br($_POST["finalE"]));
+						header('Location: index.php'); //redirect to homepage
+					}
 				}
 				
 				/*User wants to deny this report*/
 				if(isset($_POST["denyA"]))
 				{
-					denyFU($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: index.php'); //redirect to hommepage
+					if(denyFU($conn, $idA))
+					{
+						denialEmailF(trim($app->email), nl2br($_POST["finalE"]));
+						header('Location: index.php'); //redirect to hommepage
+					}
 				}
 				
 			} 

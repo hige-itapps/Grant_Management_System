@@ -5,7 +5,7 @@ include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associa
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
 
-final class getAdministratorsTest extends TestCase
+final class AdministratorsTest extends TestCase
 {    
     use TestCaseTrait;
 
@@ -49,12 +49,12 @@ final class getAdministratorsTest extends TestCase
 
     
 
-    public function testManyAdministrators()
+    public function testGetAdministrators()
     {
         $testArray = array(
-            array(0 => "abc1234", 1 => "Guy"),
-            array(0 => "zyx4321", 1 => "Tom"),
-            array(0 => "bbb7777", 1 => "June")
+            array(0 => "rot1222", 1 => "Guy"),
+            array(0 => "cvb5233", 1 => "Tom"),
+            array(0 => "hhr0012", 1 => "June")
         );
         
         //test array in no particular order
@@ -63,6 +63,51 @@ final class getAdministratorsTest extends TestCase
             getAdministrators($this->pdo),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
+    }
+
+
+    public function testAddAdmin_Existing()
+    {
+        $existingAdminID = "rot1222"; $existingAdminName = "Guy";
+
+        $this->expectException(PDOException::class);
+
+        addAdmin($this->pdo, $existingAdminID, $existingAdminName);
+    }
+
+    public function testAddAdmin_New()
+    {
+        $newAdminID = "red7778"; $newAdminName = "Redson";
+        $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
+
+        addAdmin($this->pdo, $newAdminID, $newAdminName);
+        $this->assertEquals(4, $this->getConnection()->getRowCount('administrators'));
+    }
+
+
+    public function testRemoveAdmin()
+    {
+        $existingAdminID = "rot1222";
+        $newAdminID = "red7778";
+
+        $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
+
+        removeAdmin($this->pdo, $newAdminID);
+        $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
+
+        removeAdmin($this->pdo, $existingAdminID);
+        $this->assertEquals(2, $this->getConnection()->getRowCount('administrators'));
+    }
+
+
+    public function testIsAdministrator()
+    {
+        $existingAdminID = "rot1222";
+        $newAdminID = "red7778";
+
+        $this->assertEquals(false, isAdministrator($this->pdo, $newAdminID));
+
+        $this->assertEquals(true, isAdministrator($this->pdo, $existingAdminID));
     }
 }
 

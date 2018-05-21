@@ -1,6 +1,5 @@
 <?php
 	include_once(dirname(__FILE__) . "/../include/classDefinitions.php");
-	include_once(dirname(__FILE__) . "/../controllers/customEmail.php");
 	include_once('verification.php');
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
@@ -91,23 +90,30 @@
 			/* run the prepared query */
 			$sql->execute();
 			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
-			/*create application object*/
-			$application = new Application($res[0]);
-			
-			$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
-			$sql->bindParam(':id', $application->id);
-			/* run the prepared query */
-			$sql->execute();
-			$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
-			$application->budget = $resBudget;
-			
-			/* Close finished query and connection */
-			$sql = null;
-			
-			/* return application */
-			return $application;
+
+			if(!empty($res))
+			{
+				/*create application object*/
+				$application = new Application($res[0]);
+				
+				$sql = $conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
+				$sql->bindParam(':id', $application->id);
+				/* run the prepared query */
+				$sql->execute();
+				$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+				
+				$application->budget = $resBudget;
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				/* return application */
+				return $application;
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
 	
@@ -974,7 +980,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -989,7 +995,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications_budgets'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -1004,7 +1010,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'follow_up_reports'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -1015,7 +1021,7 @@
 	
 	/*Update an application to be approved*/
 	if(!function_exists('approveApplication')){
-		function approveApplication($conn, $id, $email, $eb, $amount)
+		function approveApplication($conn, $id, $amount)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1024,18 +1030,19 @@
 				$sql->bindParam(':aw', $amount);
 				$sql->bindParam(':id', $id);
 				$sql->execute();
+
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				
 				/* Close finished query and connection */
 				$sql = null;
-				approvalEmail($email, $eb);
-				
+				return $ret;
 			}
 		}
 	}
 	
 	/*Update an application to be denied*/
 	if(!function_exists('denyApplication')){
-		function denyApplication($conn, $id, $email, $eb)
+		function denyApplication($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1043,10 +1050,12 @@
 				$sql = $conn->prepare("UPDATE applications SET Approved = 0, OnHold = 0 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
+
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				
 				/* Close finished query and connection */
 				$sql = null;
-				denialEmail($email, $eb);
+				return $ret;
 			}
 		}
 	}
@@ -1054,7 +1063,7 @@
 	
 	/*Update an application to be put on hold*/
 	if(!function_exists('holdApplication')){
-		function holdApplication($conn, $id, $email, $eb)
+		function holdApplication($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1062,10 +1071,11 @@
 				$sql = $conn->prepare("UPDATE applications SET OnHold = 1 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
+
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				/* Close finished query and connection */
 				$sql = null;
-				onHoldEmail($email, $eb);
-				
+				return $ret;
 			}
 		}
 	}
@@ -1081,9 +1091,11 @@
 				$sql->bindParam(':sig', $signature);
 				$sql->bindParam(':id', $id);
 				$sql->execute();
-				
+
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;
 			}
 		}
 	}
@@ -1092,7 +1104,7 @@
 
 	/*Update a FU Report to be approved*/
 	if(!function_exists('approveFU')){
-		function approveFU($conn, $id, $email, $eb)
+		function approveFU($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1101,17 +1113,17 @@
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				/* Close finished query and connection */
 				$sql = null;
-				approvalEmailF($email, $eb);
-				
+				return $ret;
 			}
 		}
 	}
 	
 	/*Update a FU Report to be denied*/
 	if(!function_exists('denyFU')){
-		function denyFU($conn, $id, $email, $eb)
+		function denyFU($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1120,9 +1132,10 @@
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
 				/* Close finished query and connection */
 				$sql = null;
-				denialEmailF($email, $eb);
+				return $ret;
 			}
 		}
 	}

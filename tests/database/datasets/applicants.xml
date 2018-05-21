@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<dataset>
+	<table name="applicants">
+		<column>BroncoNetID</column>
+		<row>
+			<value>abc1234</value>
+		</row>
+		<row>
+			<value>zyx4321</value>
+		</row>
+		<row>
+			<value>bbb7777</value>
+		</row>
+	</table>
+</dataset>

@@ -13,6 +13,9 @@
 	/*Document functions*/
 	include "functions/documents.php";
 
+	/*For sending custom emails*/
+	include_once(dirname(__FILE__) . "/controllers/customEmail.php");
+
 
 	/*for dept. chair email message*/
 	use PHPMailer\PHPMailer\PHPMailer;
@@ -410,21 +413,30 @@ if(isset($_POST["submitApp"]))
 				/*User wants to approve this application*/
 				if(isset($_POST["approveA"]))
 				{
-					approveApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]), $_POST["aAw"]);
-					header('Location: index.php'); //redirect to app_list
+					if(approveApplication($conn, $idA, $_POST["aAw"]))
+					{
+						approvalEmail(trim($app->email), nl2br($_POST["finalE"]));
+						header('Location: index.php'); //redirect
+					}
 				}
 				
 				/*User wants to deny this application*/
 				if(isset($_POST["denyA"]))
 				{
-					denyApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: index.php'); //redirect to app_list
+					if(denyApplication($conn, $idA))
+					{
+						denialEmail(trim($app->email), nl2br($_POST["finalE"]));
+						header('Location: index.php'); //redirect
+					}
 				}
 				/*User wants to HOLD this application*/
 				if(isset($_POST["holdA"]))
 				{
-					holdApplication($conn, $idA, trim($app->email), nl2br($_POST["finalE"]));
-					header('Location: index.php'); //redirect to app_list
+					if(holdApplication($conn, $idA))
+					{
+						onHoldEmail(trim($app->email), nl2br($_POST["finalE"]));
+						header('Location: index.php'); //redirect
+					}
 				}
 				
 				/*Check for trying to sign application*/

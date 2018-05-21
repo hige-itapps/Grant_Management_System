@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<dataset>
+	<table name="committee">
+		<column>BroncoNetID</column>
+		<column>Name</column>
+		<row>
+			<value>lke4568</value>
+			<value>Luke</value>
+		</row>
+		<row>
+			<value>lia4441</value>
+			<value>Leia</value>
+		</row>
+		<row>
+			<value>han1111</value>
+			<value>Han</value>
+		</row>
+	</table>
+</dataset>
