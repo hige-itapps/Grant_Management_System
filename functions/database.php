@@ -37,7 +37,7 @@
 			/* Prepare & run the query */
 			$sql = $conn->prepare("Select BroncoNetID, Name FROM administrators");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
@@ -52,7 +52,7 @@
 			/* Prepare & run the query */
 			$sql = $conn->prepare("Select BroncoNetID FROM applicants");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
@@ -68,7 +68,7 @@
 			$sql = $conn->prepare("Select Count(*) FROM applicants WHERE BroncoNetID = :id");
 			$sql->bindParam(':id', $newID);
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			
 			if($res[0][0] == 0)//only triggers if user doesn't already exist
 			{
@@ -90,7 +90,7 @@
 			$sql->bindParam(':appID', $appID);
 			/* run the prepared query */
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			
 			/*create application object*/
 			$application = new Application($res[0]);
@@ -99,7 +99,7 @@
 			$sql->bindParam(':id', $application->id);
 			/* run the prepared query */
 			$sql->execute();
-			$resBudget = $sql->fetchAll();
+			$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			
 			$application->budget = $resBudget;
 			
@@ -119,7 +119,7 @@
 			$sql->bindParam(':appID', $appID);
 			/* run the prepared query */
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			
 			if(!empty($res))
 			{
@@ -155,7 +155,7 @@
 				
 				/* run the prepared query */
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				$applicationsArray = []; //create new array of applications
 				
@@ -169,7 +169,7 @@
 					$sql->bindParam(':id', $application->id);
 					/* run the prepared query */
 					$sql->execute();
-					$resBudget = $sql->fetchAll();
+					$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 					$application->budget = $resBudget;
 					
@@ -197,7 +197,7 @@
 				
 				/* run the prepared query */
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				$applicationsArray = []; //create new array of applications
 				
@@ -211,7 +211,7 @@
 					$sql->bindParam(':id', $application->id);
 					/* run the prepared query */
 					$sql->execute();
-					$resBudget = $sql->fetchAll();
+					$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 					$application->budget = $resBudget;
 					
@@ -245,7 +245,7 @@
 			}
 			/* run the prepared query */
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			
 			$applicationsArray = []; //create new array of applications
 			
@@ -259,7 +259,7 @@
 				$sql->bindParam(':id', $application->id);
 				/* run the prepared query */
 				$sql->execute();
-				$resBudget = $sql->fetchAll();
+				$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				$application->budget = $resBudget;
 				
@@ -282,7 +282,7 @@
 			/* Prepare & run the query */
 			$sql = $conn->prepare("Select BroncoNetID, Name FROM application_approval");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
@@ -297,7 +297,7 @@
 			/* Prepare & run the query */
 			$sql = $conn->prepare("Select BroncoNetID, Name FROM committee");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
@@ -312,7 +312,7 @@
 			/* Prepare & run the query */
 			$sql = $conn->prepare("Select BroncoNetID, Name FROM follow_up_approval");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
 			$sql = null;
 			/* return list */
@@ -659,7 +659,7 @@
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -687,7 +687,7 @@
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -715,7 +715,7 @@
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -743,7 +743,7 @@
 				$sql->bindParam(':appID', $appID);
 				$sql->bindParam(':bNetID', $broncoNetID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -774,7 +774,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Approved = true");
 				$sql->bindParam(':id', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -802,7 +802,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND DepartmentChairSignature IS NOT NULL");
 				$sql->bindParam(':id', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -831,7 +831,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Approved IS NULL AND Applicant = :bNetID");
 				$sql->bindParam(':bNetID', $bNetID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -860,7 +860,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM follow_up_reports WHERE ApplicationID = :appID");
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -891,7 +891,7 @@
 				
 					/* run the prepared query */
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				//echo "result: " .$res[0][0];
 
@@ -906,7 +906,7 @@
 					$sql->bindParam(':id', $mostRecent->id);
 					/* run the prepared query */
 					$sql->execute();
-					$resBudget = $sql->fetchAll();
+					$resBudget = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 					$mostRecent->budget = $resBudget;
 				}
@@ -934,7 +934,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
 				$sql->bindParam(':dEmail', $email);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -956,7 +956,7 @@
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL AND DepartmentChairEmail != Email");
 				$sql->bindParam(':dEmail', $email);
 				$sql->execute();
-				$res = $sql->fetchAll();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
@@ -974,7 +974,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications'");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -989,7 +989,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications_budgets'");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -1004,7 +1004,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'follow_up_reports'");
 			$sql->execute();
-			$res = $sql->fetchAll();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -1323,7 +1323,7 @@
 							$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
 							$sql->bindParam(':applicant', $broncoNetID);
 							$sql->execute();
-							$newAppID = $sql->fetchAll()[0][0];//now we have the current ID!
+							$newAppID = $sql->fetchAll(PDO::FETCH_NUM)[0][0];//now we have the current ID!
 							
 							/*go through budget array*/
 							foreach($budgetArray as $i)

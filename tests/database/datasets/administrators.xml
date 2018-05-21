@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<dataset>
+	<table name="administrators">
+		<column>BroncoNetID</column>
+		<column>Name</column>
+		<row>
+			<value>abc1234</value>
+			<value>Guy</value>
+		</row>
+		<row>
+			<value>zyx4321</value>
+			<value>Tom</value>
+		</row>
+		<row>
+			<value>bbb7777</value>
+			<value>June</value>
+		</row>
+	</table>
+</dataset>
