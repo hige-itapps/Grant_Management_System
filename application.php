@@ -428,38 +428,11 @@ if(isset($_POST["submitApp"]))
 				
 					<div ng-controller="appCtrl">
 					
-					
 						
 						<?php
-							if(isset($_GET["status"]))
+							if(isset($insertReturn)) //if we got a return, then there must be an error from inserting/updating the application the first time
 							{
-								if($_GET["status"] == "success")
-								{
-									echo '<span class="lt" style="color: green; font-size: 22px;" id="smsg"><b>Application Submitted.</b></span>';
-								}
-							}
-							if(isset($_GET["error"]))
-							{
-								if($_GET["error"] == "email")
-								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Department Chair E-mail Address must be WMICH.EDU.</b></span>';
-								}
-								if($_GET["error"] == "emailformat")
-								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Email addresses format must be valid.</b></span>';
-								}
-								if($_GET["error"] == "dates")
-								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Travel Dates/Activity Dates are invalid, please verify.</b></span>';
-								}
-								if($_GET["error"] == "emptystring")
-								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>Empty field given, please fill in all required fields.</b></span>';
-								}
-								if($_GET["error"] == "cycle")
-								{
-									echo '<span class="lt" style="color: red; font-size: 22px;" id="smsg"><b>You cannot submit for the chosen cycle.</b></span>';
-								}
+								echo '<h1 class="warning" id="smsg">Error(Code #'.$insertReturn[0].'): '.$insertReturn[1].'.</h1>';
 							}
 						?>
 
