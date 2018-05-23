@@ -66,7 +66,7 @@ caption{
 .Approved{	color: #17890a; /*darkish green*/}
 .Pending{	color: #717400; /*darkish yellow*/}
 .Denied{	color: #ed0909; /*darkish red*/}
-.Hold{	color: #1b1be3; /*dark blue*/}
+.Hold{	color: #c517bf; /*dark pink*/}
 
 /*Color warning text*/
 .warning{ color: red; font-weight: bold; /*bold font*/}
