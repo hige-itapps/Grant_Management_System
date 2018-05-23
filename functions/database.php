@@ -277,7 +277,7 @@
 			}
 		}
 	}
-	
+
 	
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	if(!function_exists('getApplications')) {
@@ -1143,20 +1143,46 @@
 	
 	
 	/*
-	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one
+	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
 		$budgetArray[i][0] is the name of the expense
 		$budgetArray[i][1] is the comment on the expense
 		$budgetArray[i][2] is the actual cost
-	return new application ID if EVERYTHING was successful, otherwise 0
 
-	if $updating = true, then just update the application specified by $updateID
+	This function returns an array, with array[0] being the return code and array[1] being the return status string (useful for specific error messages)
+	The return code is the new application's ID (or the existing ID if updating) if EVERYTHING is successful, OTHERWISE it is a negative error number that corresponds to a specific problem
+
+	ERROR return codes:
+	-1: default code, will only return if a more specific error code was not applied (shouldn't happen). Within the code, to see if any specific errors have occurred already, check for this value.
+
+	-10: sanitization exception (one or more fields are not the types they should be)
+
+	-20: departmnet chair's email address isn't a wmich email
+	-21: at least one of the required fields is empty
+	-22: travel/activity dates aren't possible (activity happening before travel, etc.)
+	-23: at least one of the email addresses is incorrectly formatted (not a valid address)
+	-24: this user is not allowed to submit for this cycle
+	-25: at least one of the budget fields is empty
+
+	-40: exception when inserting application into database
+	-41: first insert query (the main application) failed
+	-42: second insert query (budget items) failed
+
+	-50: exception when updating application in database
+	-51: first query (updating the main application) failed
+	-52: second query (deleting the old budget items) failed
+	-53: third query (inserting new budget items) failed
 	*/
 	if(!function_exists('insertApplication')){
 		function insertApplication($conn, $updating, $updateID, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
+
+			$returnCode = -1; //default error code
+			$returnStatus = "Unspecified error";
+			$newAppID = 0; //set this to the new application's ID if successful
+
 			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 			echo "inserting app";
 
@@ -1165,11 +1191,6 @@
 				//First, add this user to the applicants table IF they don't already exist
 				insertApplicantIfNew($conn, $broncoNetID);
 			}
-			
-			
-			/*Server-Side validation!*/
-			$valid = true; //start valid, turn false if anything is wrong!
-			$newAppID = 0; //set this to the new application's ID if successful
 			
 			/*Sanitize everything*/
 			try
@@ -1214,41 +1235,41 @@
 			}
 			catch(Exception $e)
 			{
-				echo "Application Sanitization Error: " . $e->getMessage();
-				$valid = false;
+				$returnCode = -10; //sanitization exception
+				$returnStatus = "Exception when sanitizing fields";
 			}
 			
 			/*Now validate everything that needs it*/
-			if($valid)
+			if($returnCode == -1) //no errors yet
 			{
 				list($em, $domain) = explode('@', $deptChairEmail);
 
 				if (!strstr(strtolower($domain), "wmich.edu")) {
-					header('Location: ../application.php?error=email');
-					$valid = false;
+					$returnCode = -20;
+					$returnStatus = "Department chair's email address must be a wmich.edu address";
 				}
 				/*Make sure necessary strings aren't empty*/
 				if($name === '' || $email === '' || $department === '' || $title === '' || $proposalSummary === '' || $deptChairEmail === '')
 				{
-					header('Location: ../application.php?error=emptystring');
-					$valid = false;
+					$returnCode = -21;
+					$returnStatus = "At least one required field is empty";
 				}
 				/*Make sure dates are acceptable*/
-				if($travelTo < $travelFrom || $activityTo < $activityFrom || $activityFrom < $travelFrom || $activityTo > $travelTo)
+				if($travelFrom > $activityFrom || $activityFrom > $activityTo || $activityTo > $travelTo)
 				{
-					header('Location: ../application.php?error=dates');
-					$valid = false;
+					$returnCode = -22;
+					$returnStatus = "Travel dates are impossible (must follow the form travelFrom <= activityFrom <= activityTo <= travelTo)";
 				}
 				/*Make sure emails are correct format*/
 				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
 				{
-					header('Location: ../application.php?error=emailformat');
-					$valid = false;
+					$returnCode = -23;
+					$returnStatus = "At least one email address is invalid (invalid email format)";
 				}
 
+				/*Make sure cycle is allowed; ignore this check if an admin is updating*/
 				if(!$updating)
 				{
-					/*Make sure cycle is allowed*/
 					$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
 					if($lastApprovedApp != null) //if a previous application exists
 					{
@@ -1261,8 +1282,8 @@
 
 						if(!$lastApproved) 
 						{
-							header('Location: ../application.php?error=cycle');
-							$valid = false;
+							$returnCode = -24;
+							$returnStatus = "Applicant is not allowed to apply for the specified cycle (not enough cycles have passed since last approved application)";
 						}
 					}
 				}
@@ -1274,16 +1295,16 @@
 					{
 						if($i[0] === '' || $i[1] === '')
 						{
-							header('Location: ../application.php?error=emptystring');
-							$valid = false;
+							$returnCode = -25;
+							$returnStatus = "At least one required budget item field is empty";
 							break;
 						}
 					}
 				}
-			}
+			
 			
 			/*Now insert new application into database*/
-			if($valid)
+			if($returnCode == -1) //no errors yet
 			{
 				if(!$updating) //adding, not updating
 				{
@@ -1357,20 +1378,23 @@
 									else //query failed
 									{
 										$conn->rollBack(); //rollBack the transaction
-										$valid = false;
+										$returnCode = -42;
+										$returnStatus = "Query failed to insert budget items";
+										break;
 									}
 								}
 							}
 						} 
 						else //query failed
 						{
-							$valid = false;
+							$returnCode = -41;
+							$returnStatus = "Query failed to insert application";
 						}
 					}
 					catch(Exception $e)
 					{
-						echo "Error inserting application into database: " . $e->getMessage();
-						$valid = false;
+						$returnCode = -40;
+						$returnStatus = "Exception when trying to insert application into database";
 					}
 				}
 				else //just updating
@@ -1424,56 +1448,72 @@
 							/*delete previous budget items*/
 							$sql = $conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID=:id");
 							$sql->bindParam(':id', $updateID);
-							$sql->execute();
-							
-							/*go through budget array*/
-							foreach($budgetArray as $i)
+
+							if ($sql->execute() === TRUE) //query executed correctly
 							{
-								if(!empty($i))
+								$conn->commit();//commit second part of transaction
+
+								/*go through budget array*/
+								foreach($budgetArray as $i)
 								{
-									$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
-									$sql->bindParam(':appID', $updateID);
-									$sql->bindParam(':name', $i[0]);
-									$sql->bindParam(':cost', $i[2]);
-									$sql->bindParam(':comment', $i[1]);
-									
-									if ($sql->execute() === TRUE) //query executed correctly
+									if(!empty($i))
 									{
-										$conn->commit(); //commit next part of transaction
-									}
-									else //query failed
-									{
-										$conn->rollBack(); //rollBack the transaction
-										$valid = false;
+										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+										$sql->bindParam(':appID', $updateID);
+										$sql->bindParam(':name', $i[0]);
+										$sql->bindParam(':cost', $i[2]);
+										$sql->bindParam(':comment', $i[1]);
+										
+										if ($sql->execute() === TRUE) //query executed correctly
+										{
+											$conn->commit(); //commit next part of transaction
+										}
+										else //query failed
+										{
+											$conn->rollBack(); //rollBack the transaction
+											$returnCode = -53;
+											$returnStatus = "Query failed to insert new budget items";
+											break;
+										}
 									}
 								}
+							}
+							else
+							{
+								$conn->rollBack(); //rollBack the transaction
+								$returnCode = -52;
+								$returnStatus = "Query failed to delete old budget items";
 							}
 						} 
 						else //query failed
 						{
-							$valid = false;
+							$returnCode = -51;
+							$returnStatus = "Query failed to update application";
 						}
 					}
 					catch(Exception $e)
 					{
-						echo "Error updating application in database: " . $e->getMessage();
-						$valid = false;
+						$returnCode = -50;
+						$returnStatus = "Exception when trying to update application in database";
 					}
 				}
 			}
+
+			if($returnCode == -1) //no errors
+			{
+				if(!$updating)
+				{
+					$returnCode = $newAppID;
+					$returnStatus = "Successfully inserted application into database";
+				}
+				else
+				{
+					$returnCode = $updateID;
+					$returnStatus = "Successfully updated application in database";
+				}
+			}
 			
-			if($valid && !$updating) //if successful and not updating, return new application ID
-			{
-				return $newAppID;
-			}
-			else if($valid && $updating) //if successful and updating, return updateID
-			{
-				return $updateID;
-			}
-			else //otherwise return 0
-			{
-				return 0;
-			}
+			return array($returnCode, $returnStatus); //return both the return code and status
 		}
 	}
 	

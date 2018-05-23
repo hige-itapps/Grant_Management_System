@@ -257,7 +257,7 @@
 				{
 					if(approveFU($conn, $idA))
 					{
-						approvalEmailF(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]));
 						header('Location: index.php'); //redirect to homepage
 					}
 				}
@@ -267,7 +267,7 @@
 				{
 					if(denyFU($conn, $idA))
 					{
-						denialEmailF(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]));
 						header('Location: index.php'); //redirect to hommepage
 					}
 				}

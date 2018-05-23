@@ -102,33 +102,34 @@ if(isset($_POST["submitApp"]))
 			/*Insert data into database - receive the new application id if success, or 0 if failure*/
 			/*parameters: DB connection, updating boolean, app ID (if exists), broncoNetID, name, email, department, dep. chair email, travel from, travel to, activity from, activity to, title, 
 			destination, amount requested, purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, next cycle boolean, budgetArray*/
+			$insertReturn = null; //will be an array with return code, status
 			if($isAdmin)
 			{
-				$successAppID = insertApplication($conn, true, $_POST["updateID"], $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
+				$insertReturn = insertApplication($conn, true, $_POST["updateID"], $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
 					$_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], $_POST["inputRName"], $_POST["inputDest"], $_POST["inputAR"], 
 					$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, $nextCycle, $budgetArray);
 			}
 			else
 			{
-				$successAppID = insertApplication($conn, false, null, $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
+				$insertReturn = insertApplication($conn, false, null, $CASbroncoNetId, $_POST["inputName"], $_POST["inputEmail"], $_POST["inputDept"], $_POST["inputDeptCE"], 
 					$_POST["inputTFrom"], $_POST["inputTTo"], $_POST["inputAFrom"], $_POST["inputATo"], $_POST["inputRName"], $_POST["inputDest"], $_POST["inputAR"], 
 					$pr1, $pr2, $pr3, $pr4, $_POST["eS"], $_POST["props"], $pg1, $pg2, $pg3, $pg4, $nextCycle, $budgetArray);
 			}
 			
-			echo "<br>Insert status: ".$successAppID.".<br>";
+			echo "<br>Insert status: ".$insertReturn[1].".<br>";
 			
 			$successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
 			
-			if($successAppID > 0) //if insert into DB was successful, continue
+			if($insertReturn[0] > 0) //if insert into DB was successful, continue
 			{
 				echo "<br>Uploading docs...<br>";
-				$successUpload = uploadDocs($successAppID); //upload the documents
+				$successUpload = uploadDocs($insertReturn[0]); //upload the documents
 				
 				echo "<br>Upload status: ".$successUpload.".<br>";
 			}
 			else
 			{
-				echo "<br>ERROR: could not insert application, app status: ".$successAppID."!<br>";
+				echo "<br>ERROR: could not insert application, app status: ".$insertReturn[0]."!<br>";
 			}
 			
 			if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
@@ -415,7 +416,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(approveApplication($conn, $idA, $_POST["aAw"]))
 					{
-						approvalEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]));
 						header('Location: index.php'); //redirect
 					}
 				}
@@ -425,7 +426,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(denyApplication($conn, $idA))
 					{
-						denialEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]));
 						header('Location: index.php'); //redirect
 					}
 				}
@@ -434,7 +435,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(holdApplication($conn, $idA))
 					{
-						onHoldEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]));
 						header('Location: index.php'); //redirect
 					}
 				}
