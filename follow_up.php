@@ -1,20 +1,20 @@
 <?php
 	/*Debug user validation*/
 	//include "include/debugAuthentication.php";
-	include "include/CAS_login.php";
+	include_once(dirname(__FILE__) . "/include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include "functions/database.php";
+	include_once(dirname(__FILE__) . "/functions/database.php");
 	$conn = connection();
 	
 	/*Verification functions*/
-	include "functions/verification.php";
+	include_once(dirname(__FILE__) . "/functions/verification.php");
 	
 	/*Document functions*/
-	include "functions/documents.php";
+	include_once(dirname(__FILE__) . "/functions/documents.php");
 
 	/*For sending custom emails*/
-	include_once(dirname(__FILE__) . "/controllers/customEmail.php");
+	include_once(dirname(__FILE__) . "/functions/customEmail.php");
 ?>
 
 
