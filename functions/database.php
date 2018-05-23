@@ -981,7 +981,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
+			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -996,7 +996,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications_budgets'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
+			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;
@@ -1011,7 +1011,7 @@
 		{
 			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'follow_up_reports'");
 			$sql->execute();
-			$res = $sql->fetchAll(PDO::FETCH_ASSOC); //return names as keys
+			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
 			/* Close finished query and connection */
 			$sql = null;

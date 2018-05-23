@@ -226,6 +226,8 @@ if(isset($_POST["submitApp"]))
 		/*get initial character limits for text fields*/
 		$appCharMax = getApplicationsMaxLengths($conn);
 		$appBudgetCharMax = getApplicationsBudgetsMaxLengths($conn);
+
+		//echo var_dump($appCharMax);
 		
 		$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
 		$maxEmail = $appCharMax[array_search('Email', array_column($appCharMax, 0))][1]; //email char limit
