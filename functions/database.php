@@ -1244,7 +1244,8 @@
 			{
 				list($em, $domain) = explode('@', $deptChairEmail);
 
-				if (!strstr(strtolower($domain), "wmich.edu")) {
+				if (!strstr(strtolower($domain), "wmich.edu")) 
+				{
 					$returnCode = -20;
 					$returnStatus = "Department chair's email address must be a wmich.edu address";
 				}
@@ -1301,7 +1302,7 @@
 						}
 					}
 				}
-			
+			}
 			
 			/*Now insert new application into database*/
 			if($returnCode == -1) //no errors yet
