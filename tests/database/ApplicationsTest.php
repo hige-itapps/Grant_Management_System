@@ -50,7 +50,7 @@ final class ApplicationsTest extends TestCase
     }
 
     
-    //test getting a single application
+    //test getting a single application- make sure all fields are correct!
     public function testGetApplication()
     {
         $exisitingAppID = 1;

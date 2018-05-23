@@ -233,6 +233,51 @@
 			}
 		}
 	}
+
+	/* Returns number of applications that this user(via email address) needs to sign (for department chairs) */
+	if(!function_exists('getNumberOfApplicationsToSign')){
+		function getNumberOfApplicationsToSign($conn, $email)
+		{
+			if ($email != "") //valid email
+			{
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql->bindParam(':dEmail', $email);
+				$sql->execute();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				return $res[0][0];
+			}
+		}
+	}
+
+	/* Returns number of previously signed applications from this dept. chair's email address*/
+	if(!function_exists('getNumberOfSignedApplications')){
+		function getNumberOfSignedApplications($conn, $email)
+		{
+			if ($email != "") //valid email
+			{
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL AND DepartmentChairEmail != Email");
+				$sql->bindParam(':dEmail', $email);
+				$sql->execute();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				return $res[0][0];
+			}
+		}
+	}
+	
 	
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	if(!function_exists('getApplications')) {
@@ -927,50 +972,6 @@
 				return $mostRecent;
 			}
 			
-		}
-	}
-	
-	/* Returns number of applications that this user(via email address) needs to sign (for department chairs) */
-	if(!function_exists('getNumberOfApplicationsToSign')){
-		function getNumberOfApplicationsToSign($conn, $email)
-		{
-			if ($email != "") //valid email
-			{
-				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
-				$sql->bindParam(':dEmail', $email);
-				$sql->execute();
-				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-				
-				/* Close finished query and connection */
-				$sql = null;
-				
-				//echo 'Count: '.$res[0][0].".";
-				
-				return $res[0][0];
-			}
-		}
-	}
-
-	/* Returns number of previously signed applications from this dept. chair's email address*/
-	if(!function_exists('getNumberOfSignedApplications')){
-		function getNumberOfSignedApplications($conn, $email)
-		{
-			if ($email != "") //valid email
-			{
-				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL AND DepartmentChairEmail != Email");
-				$sql->bindParam(':dEmail', $email);
-				$sql->execute();
-				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-				
-				/* Close finished query and connection */
-				$sql = null;
-				
-				//echo 'Count: '.$res[0][0].".";
-				
-				return $res[0][0];
-			}
 		}
 	}
 	
