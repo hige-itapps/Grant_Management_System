@@ -14,9 +14,18 @@
 	if (!class_exists('PHPMailer'))
 		require_once dirname(__FILE__) . '/../PHPMAILER/src/SMTP.php';
 
-	
-	function customEmail($email, $eb) {
+	//Send an email to a specific address, with a custom message and subject. If the subject is left blank, a default one is prepared instead.
+	function customEmail($toAddress, $customMessage, $customSubject) {
 			
+		$customSubject = trim($customSubject); //remove surrounding spaces
+		if(!$customSubject === '')//it's blank, so just use a default subject
+		{
+			$customSubject = "IEFDF Application Update";
+		}
+		//custom footer to be attached to the end of every message
+		$footer = "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
+
+
 		$mail = new PHPMailer(true); 
 		//Server settings
 		$mail->SMTPDebug = 2;                                 // Enable verbose debug output
@@ -34,12 +43,40 @@
 			
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML
-		$mail->addAddress($email);
-		$mail->Subject = "IEFDF Application Update";
-		$mail->Body    = $eb . "<br><br><b>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</b>";
+		$mail->addAddress($toAddress);
+		$mail->Subject = $customSubject;
+		$mail->Body    = $customMessage . $footer;
 
 		$mail->send();
-		
+	}
+
+	//The email to send to the department chair to let them know of their needed approval. Let them know the applicant's name and email
+	function chairApprovalEmail($toAddress, $applicantName, $applicantEmail)
+	{
+		$subject = "New HIGE Grant Application - Do Not Reply";
+
+		$body = "<p>Dear Department Chair, </p>
+			<p>Your approval is needed for an IEFDF application for #name(#email). Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:</p>
+
+			<p>1. Go to the IEFDF website at www.wmich.edu/international/iefdf</p>
+
+			<p>2. Click on the application system log in</p>
+
+			<p>3. Log in with your bronco net id</p>
+
+			<p>4. Click on the link to view the application</p>
+
+			<p>5. At the bottom of the page, type your name in the signature field</p>
+
+			<p>6. Submit</p>
+
+			<p>If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmcih.edu) or 7-3908.</p>
+			
+			<p>Best Regards, Dr. Michelle Metro-Roland</p>";
+		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
+		$body = str_replace("#email", nl2br($applicantEmail), $body); //insert the applicant's email into the message
+
+		customEmail($toAddress, $body, $subject);
 	}
 	
 ?>

@@ -134,54 +134,9 @@ if(isset($_POST["submitApp"]))
 			
 			if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
 			{
-				$body = "<p>Dear Department Chair, </p>
-					<p>Your approval is needed for an IEFDF application for #name. Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:</p>
-
-					<p>1. Go to the IEFDF website at www.wmich.edu/international/iefdf</p>
-
-					<p>2. Click on the application system log in</p>
-
-					<p>3. Log in with your bronco net id</p>
-
-					<p>4. Click on the link to view the application</p>
-
-					<p>5. At the bottom of the page, type your name in the signature field</p>
-
-					<p>6. Submit</p>
-
-					<p>If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmcih.edu) or 7-3908.</p>
-					
-					<p>Best Regards, Dr. Michelle Metro-Roland</p>";//file_get_contents('customEmail.html');
-				$body = str_replace("#name", nl2br($_POST["inputName"]), $body);
-				$body = str_replace("#dept", nl2br($_POST["inputDept"]), $body);
-
+				chairApprovalEmail($_POST["inputDeptCE"], $_POST["inputName"], $_POST["inputEmail"]); //send the email
 				
-				
-				$mail = new PHPMailer(true); 
-				//Server settings
-				$mail->SMTPDebug = 2;                                 // Enable verbose debug output
-				$mail->isSMTP();                                      // Set mailer to use SMTP
-				$mail->Host = 'outlook.office365.com';  // Specify main and backup SMTP servers
-				$mail->SMTPAuth = true;                               // Enable SMTP authentication
-				$mail->Username = 'hige_iefdf_not@wmich.edu';         // SMTP username
-				$mail->Password = 'r!cr8juqUwe=';                     // SMTP password
-				$mail->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
-				$mail->Port = 587;                                    // TCP port to connect to
-
-				//Recipients
-				$mail->setFrom('hige_iefdf_not@wmich.edu', 'Mailer');
-				$mail->addReplyTo('no-reply@wmich.edu', 'No-Reply');
-				//Content
-				$mail->isHTML(true);                                  // Set email format to HTML
-				$mail->addAddress($_POST["inputDeptCE"]);
-				$mail->Subject = "New HIGE Grant Application - Do Not Reply";
-				$mail->Body    = $body;
-
-				$mail->send();
-				
-				//redirect back to homepage
-				//header('Location: /');
-				header('Location: ../index.php');
+				header('Location: ../index.php'); //redirect back to homepage
 			}
 			else if($successUpload > 0 && $isAdmin) //upload was successful for admin, so reload page
 			{
@@ -416,7 +371,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(approveApplication($conn, $idA, $_POST["aAw"]))
 					{
-						customEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]), "");
 						header('Location: index.php'); //redirect
 					}
 				}
@@ -426,7 +381,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(denyApplication($conn, $idA))
 					{
-						customEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]), "");
 						header('Location: index.php'); //redirect
 					}
 				}
@@ -435,7 +390,7 @@ if(isset($_POST["submitApp"]))
 				{
 					if(holdApplication($conn, $idA))
 					{
-						customEmail(trim($app->email), nl2br($_POST["finalE"]));
+						customEmail(trim($app->email), nl2br($_POST["finalE"]), "");
 						header('Location: index.php'); //redirect
 					}
 				}
