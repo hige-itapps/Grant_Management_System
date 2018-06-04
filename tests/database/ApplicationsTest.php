@@ -200,6 +200,25 @@ final class ApplicationsTest extends TestCase
         $this->assertEquals(null, $newApplicantMostRecent);
     }
 
+    //Check for all past approved application cycles for a user
+    public function testGetPastApprovedCycles()
+    {
+        $firstApplicant = "abc1234";
+        $secondApplicant = "zyx4321";
+        $thirdApplicant = "bbb7777";
+        $newApplicant = "eqk7410";
+
+        $firstApplicantApproved = getPastApprovedCycles($this->pdo, $firstApplicant);
+        $secondApplicantApproved = getPastApprovedCycles($this->pdo, $secondApplicant);
+        $thirdApplicantApproved = getPastApprovedCycles($this->pdo, $thirdApplicant);
+        $newApplicantApproved = getPastApprovedCycles($this->pdo, $newApplicant);
+
+        $this->assertEquals(array("Fall 2017", "Spring 2013"), $firstApplicantApproved);
+        $this->assertEquals(null, $secondApplicantApproved);
+        $this->assertEquals(null, $thirdApplicantApproved);
+        $this->assertEquals(null, $newApplicantApproved);
+    }
+
 
 
     //Check the max lengths of the applications columns (no point in testing specific numbers since this could easily change depending on MySQL/schema configuration)

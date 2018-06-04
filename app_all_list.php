@@ -103,6 +103,8 @@
 					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
 						$appCycles[] = $curApp->cycle;
 					}
+
+					$curApp->pastApprovedCycles = getPastApprovedCycles($conn, $curApp->bnid); //save the previously approved cycles for this user
 				}
 				
 				$appCycles = sortCycles($appCycles); //sort cycles in descending order

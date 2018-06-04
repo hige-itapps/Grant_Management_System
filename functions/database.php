@@ -974,6 +974,51 @@
 			
 		}
 	}
+
+	/*Get all past approved cycles for this user- return null if none*/
+	if(!function_exists('getPastApprovedCycles')){
+		function getPastApprovedCycles($conn, $bNetID)
+		{
+			$pastCycles = null;
+			
+			if ($bNetID != "") //valid username
+			{
+				/* Select all dates from past approved applications */
+				$sql = $conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :bNetID AND Approved = 1");
+				$sql->bindParam(':bNetID', $bNetID);
+				
+					/* run the prepared query */
+				$sql->execute();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+
+				/* Close finished query and connection */
+				$sql = null;
+				
+
+				if($res != null)
+				{
+					$pastCycles = []; //initialize array
+
+					foreach($res as $i) //go through all the dates, grab the cycles
+					{
+						if(!empty($i))
+						{
+							array_push($pastCycles, getCycleName(DateTime::createFromFormat('Y-m-d', $i[0]), $i[1], false)); //push the cycle name to the array
+						}
+					}
+
+					$pastCycles = sortCycles($pastCycles); //sort cycles in descending order
+				}
+				
+				
+				//echo "Final res: ".$pastCycles->id;
+
+				/* return value */
+				return $pastCycles;
+			}
+			
+		}
+	}
 	
 	/*return an array of the maximum lengths of every column in the applications table*/
 	if(!function_exists('getApplicationsMaxLengths')){
