@@ -1157,21 +1157,40 @@
 
 	-10: sanitization exception (one or more fields are not the types they should be)
 
-	-20: departmnet chair's email address isn't a wmich email
-	-21: at least one of the required fields is empty
-	-22: travel/activity dates aren't possible (activity happening before travel, etc.)
-	-23: at least one of the email addresses is incorrectly formatted (not a valid address)
-	-24: this user is not allowed to submit for this cycle
-	-25: at least one of the budget fields is empty
+	-20: Empty field (Name)
+	-21: Empty field (Email)
+	-22: Empty field (Department)
+	-23: Empty field (Title)
+	-24: Empty field (Destination)
+	-25: Empty field (Proposal Summary)
+	-26: Empty field (Department Chair Email)
+	-27: Empty field (Travel From)
+	-28: Empty field (Travel To)
+	-29: Empty field (Activity From)
+	-30: Empty field (Activity To)
 
-	-40: exception when inserting application into database
-	-41: first insert query (the main application) failed
-	-42: second insert query (budget items) failed
+	-31: no cycle was chosen
+	-32: departmnet chair's email address isn't a wmich email
+	-33: travel/activity dates aren't possible (activity starts before travel)
+	-34: travel/activity dates aren't possible (activity ends before it begins)
+	-35: travel/activity dates aren't possible (travel ends before activity)
+	-36: email address is incorrectly formatted (not a valid address)
+	-37: department chair's email address is incorrectly formatted (not a valid address)
+	-38: at least one purpose must be selected
+	-39: at least one goal must be selected
+	-40: amount requested must be > $0
+	-41: this user is not allowed to submit for this cycle
+	-42: at least one of the budget fields is empty
+	-43: there must be at least one budget item
 
-	-50: exception when updating application in database
-	-51: first query (updating the main application) failed
-	-52: second query (deleting the old budget items) failed
-	-53: third query (inserting new budget items) failed
+	-60: exception when inserting application into database
+	-61: first insert query (the main application) failed
+	-62: second insert query (budget items) failed
+
+	-70: exception when updating application in database
+	-71: first query (updating the main application) failed
+	-72: second query (deleting the old budget items) failed
+	-73: third query (inserting new budget items) failed
 	*/
 	if(!function_exists('insertApplication')){
 		function insertApplication($conn, $updating, $updateID, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
@@ -1183,7 +1202,7 @@
 			$returnStatus = "Unspecified error";
 			$newAppID = 0; //set this to the new application's ID if successful
 
-			//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
+			echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 			echo "inserting app";
 
 			if(!$updating)
@@ -1199,11 +1218,11 @@
 				$email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
 				$department = trim(filter_var($department, FILTER_SANITIZE_STRING));
 				//$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
-				$travelFrom = strtotime($travelFrom);
-				$travelTo = strtotime($travelTo);
 				$title = trim(filter_var($title, FILTER_SANITIZE_STRING));
-				$activityFrom = strtotime($activityFrom);
-				$activityTo = strtotime($activityTo);
+				if ($travelFrom !== ''){$travelFrom = strtotime($travelFrom);}
+				if ($travelTo !== ''){$travelTo = strtotime($travelTo);}
+				if ($activityFrom !== ''){$activityFrom = strtotime($activityFrom);}
+				if ($activityTo!== ''){$activityTo = strtotime($activityTo);}
 				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING));
 				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
 				$purpose1 = filter_var($purpose1, FILTER_SANITIZE_NUMBER_INT);
@@ -1238,36 +1257,133 @@
 				$returnCode = -10; //sanitization exception
 				$returnStatus = "Exception when sanitizing fields";
 			}
+
+			echo "Travel From:";
+			var_dump($travelFrom);
 			
 			/*Now validate everything that needs it*/
 			if($returnCode == -1) //no errors yet
 			{
 				list($em, $domain) = explode('@', $deptChairEmail);
 
-				if (!strstr(strtolower($domain), "wmich.edu")) 
+				/*Make sure necessary strings aren't empty*/
+				if($name === '')
 				{
 					$returnCode = -20;
-					$returnStatus = "Department chair's email address must be a wmich.edu address";
+					$returnStatus = "Name field is empty";
 				}
-				/*Make sure necessary strings aren't empty*/
-				if($name === '' || $email === '' || $department === '' || $title === '' || $proposalSummary === '' || $deptChairEmail === '')
+				else if($email === '')
 				{
 					$returnCode = -21;
-					$returnStatus = "At least one required field is empty";
+					$returnStatus = "Email field is empty";
 				}
-				/*Make sure dates are acceptable*/
-				if($travelFrom > $activityFrom || $activityFrom > $activityTo || $activityTo > $travelTo)
+				else if($department === '')
 				{
 					$returnCode = -22;
-					$returnStatus = "Travel dates are impossible (must follow the form travelFrom <= activityFrom <= activityTo <= travelTo)";
+					$returnStatus = "Department field is empty";
 				}
-				/*Make sure emails are correct format*/
-				if(!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
+				else if($title === '')
 				{
 					$returnCode = -23;
-					$returnStatus = "At least one email address is invalid (invalid email format)";
+					$returnStatus = "Title field is empty";
+				}
+				else if($destination === '')
+				{
+					$returnCode = -24;
+					$returnStatus = "Destination field is empty";
+				}
+				else if($proposalSummary === '')
+				{
+					$returnCode = -25;
+					$returnStatus = "Proposal Summary field is empty";
+				}
+				else if($deptChairEmail === '')
+				{
+					$returnCode = -26;
+					$returnStatus = "Department Chair Email field is empty";
+				}
+				else if($travelFrom === '')
+				{
+					$returnCode = -27;
+					$returnStatus = "Travel From field is empty";
+				}
+				else if($travelTo === '')
+				{
+					$returnCode = -28;
+					$returnStatus = "Travel To field is empty";
+				}
+				else if($activityFrom === '')
+				{
+					$returnCode = -29;
+					$returnStatus = "Activity From field is empty";
+				}
+				else if($activityTo === '')
+				{
+					$returnCode = -30;
+					$returnStatus = "Activity To field is empty";
 				}
 
+
+
+				else if($nextCycle === '')
+				{
+					$returnCode = -31;
+					$returnStatus = "No cycle chosen";
+				}
+				/*Make sure department chair's email address is a wmich address*/
+				else if (!strstr(strtolower($domain), "wmich.edu")) 
+				{
+					$returnCode = -32;
+					$returnStatus = "Department chair's email address must be a wmich.edu address";
+				}
+				/*Make sure dates are acceptable*/
+				else if($travelFrom > $activityFrom)
+				{
+					$returnCode = -33;
+					$returnStatus = "Travel dates are impossible (activity cannot start before travel!)";
+				}
+				else if($activityFrom > $activityTo)
+				{
+					$returnCode = -34;
+					$returnStatus = "Travel dates are impossible (activity cannot end before it begins!)";
+				}
+				else if($activityTo > $travelTo)
+				{
+					$returnCode = -35;
+					$returnStatus = "Travel dates are impossible (travel cannot end before activity ends!)";
+				}
+				/*Make sure emails are correct format*/
+				else if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+				{
+					$returnCode = -36;
+					$returnStatus = "Email address is invalid (invalid email format)";
+				}
+				else if(!filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
+				{
+					$returnCode = -37;
+					$returnStatus = "Department chair's email address is invalid (invalid email format)";
+				}
+				/*Make sure at least one purpose is chosen*/
+				else if($purpose1 == 0 && $purpose2 == 0 && $purpose3 == 0 && $purpose4Other === '')
+				{
+					$returnCode = -38;
+					$returnStatus = "At least one purpose must be selected!";
+				}
+				/*Make sure at least one goal is chosen*/
+				else if($goal1 == 0 && $goal2 == 0 && $goal3 == 0 && $goal4 == 0)
+				{
+					$returnCode = -39;
+					$returnStatus = "At least one goal must be selected!";
+				}
+				else if ($amountRequested <= 0)
+				{
+					$returnCode = -40;
+					$returnStatus = "Amount requested must be greater than $0!";
+				}
+			}
+
+			if($returnCode == -1) //no errors yet
+			{
 				/*Make sure cycle is allowed; ignore this check if an admin is updating*/
 				if(!$updating)
 				{
@@ -1283,25 +1399,38 @@
 
 						if(!$lastApproved) 
 						{
-							$returnCode = -24;
+							$returnCode = -41;
 							$returnStatus = "Applicant is not allowed to apply for the specified cycle (not enough cycles have passed since last approved application)";
 						}
 					}
 				}
-				
-				/*go through budget array*/
-				foreach($budgetArray as $i)
+			}
+
+			if($returnCode == -1) //no errors yet
+			{
+
+				if(count($budgetArray) != 0) //at least one budget item
 				{
-					if(!empty($i))
+					/*go through budget array*/
+					foreach($budgetArray as $i)
 					{
-						if($i[0] === '' || $i[1] === '')
+						if(!empty($i))
 						{
-							$returnCode = -25;
-							$returnStatus = "At least one required budget item field is empty";
-							break;
+							if($i[0] === '' || $i[1] === '')
+							{
+								$returnCode = -42;
+								$returnStatus = "At least one required budget item field is empty";
+								break;
+							}
 						}
 					}
 				}
+				else //no budget items
+				{
+					$returnCode = -43;
+					$returnStatus = "There must be at least one budget item";
+				}
+				
 			}
 			
 			/*Now insert new application into database*/
@@ -1379,7 +1508,7 @@
 									else //query failed
 									{
 										$conn->rollBack(); //rollBack the transaction
-										$returnCode = -42;
+										$returnCode = -62;
 										$returnStatus = "Query failed to insert budget items";
 										break;
 									}
@@ -1388,13 +1517,13 @@
 						} 
 						else //query failed
 						{
-							$returnCode = -41;
+							$returnCode = -61;
 							$returnStatus = "Query failed to insert application";
 						}
 					}
 					catch(Exception $e)
 					{
-						$returnCode = -40;
+						$returnCode = -60;
 						$returnStatus = "Exception when trying to insert application into database";
 					}
 				}
@@ -1472,7 +1601,7 @@
 										else //query failed
 										{
 											$conn->rollBack(); //rollBack the transaction
-											$returnCode = -53;
+											$returnCode = -73;
 											$returnStatus = "Query failed to insert new budget items";
 											break;
 										}
@@ -1482,19 +1611,19 @@
 							else
 							{
 								$conn->rollBack(); //rollBack the transaction
-								$returnCode = -52;
+								$returnCode = -72;
 								$returnStatus = "Query failed to delete old budget items";
 							}
 						} 
 						else //query failed
 						{
-							$returnCode = -51;
+							$returnCode = -71;
 							$returnStatus = "Query failed to update application";
 						}
 					}
 					catch(Exception $e)
 					{
-						$returnCode = -50;
+						$returnCode = -70;
 						$returnStatus = "Exception when trying to update application in database";
 					}
 				}

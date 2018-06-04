@@ -105,7 +105,7 @@
 					}
 				}
 				
-				$appCycles = array_reverse($appCycles); //reverse cycles so that the newest ones are first
+				$appCycles = sortCycles($appCycles); //sort cycles in descending order
 			?>
 			<!--HEADER-->
 			<div class="container-fluid" ng-controller="listCtrl">

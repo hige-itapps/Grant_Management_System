@@ -36,21 +36,13 @@ phpCAS::client(SAML_VERSION_1_1, $cas_host, $cas_port, $cas_context);
 // VALIDATING THE CAS SERVER IS CRUCIAL TO THE SECURITY OF THE CAS PROTOCOL!
 // phpCAS::setNoCasServerValidation();
 
-/* echo 'BEFORE DUMP';
-var_dump $_POST;
-return; */
-
 // check CAS authentication
 $auth = phpCAS::checkAuthentication();
 
 if(!$auth) {
-	//echo "INSIDE: " . $auth;
-	//return;
-	phpCAS::forceAuthentication();
-	
-	//return;
+	phpCAS::forceAuthentication(); //force CAS authentication
 }
-// force CAS authentication
+
 
 
 // at this step, the user has been authenticated by the CAS server

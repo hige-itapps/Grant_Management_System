@@ -133,6 +133,39 @@
 
 			return $isWithin;
 		}
-	}	
+	}
 	
+	/*Sort a list of cycles in descending order*/
+	if(!function_exists('sortCycles')){
+		function sortCycles($cycles)
+		{
+			usort($cycles, "cmpCycles");
+			return array_reverse($cycles);
+		}
+	}
+	/*The comparator between two cycles, used for sorting*/
+	if(!function_exists('cmpCycles')){
+		function cmpCycles($c1, $c2)
+		{
+			if($c1 === $c2) //equal case
+			{
+				return 0;
+			}
+		 
+			$fullCycle1 = explode(' ', $c1);
+			$fullCycle2 = explode(' ', $c2);
+
+			$cycle1Year = $fullCycle1[1];
+			$cycle2Year = $fullCycle2[1];
+			$cycle1Semester = $fullCycle1[0];
+			$cycle2Semester = $fullCycle2[0];
+		 
+		 
+			if ($cycle1Year === $cycle2Year) { //same year
+			   return ($cycle1Semester > $cycle2Semester) ? -1 : 1; 
+			}
+		 
+			return ($cycle1Year < $cycle2Year) ? -1 : 1; //different year
+		}
+	}
 ?>

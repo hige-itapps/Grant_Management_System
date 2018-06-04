@@ -17,7 +17,7 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
-$phpcas_path = '/home/egf897jck0fu/public_html/include/phpCAS';
+$phpcas_path = '../..';
 
 ///////////////////////////////////////
 // Basic Config of the phpCAS client //
@@ -33,7 +33,7 @@ $cas_port = 443;
 
 // Path to the ca chain that issued the cas server certificate
 // $cas_server_ca_cert_path = '../../webauth.test.wmich.edu.pem';
-$cas_server_ca_cert_path = '/home/egf897jck0fu/public_html/include/phpCAS/cacert.pem';
+$cas_server_ca_cert_path = '/wamp64/www/IEFDF/include/phpCAS/cacert.pem';
 
 //////////////////////////////////////////
 // Advanced Config for special purposes //
