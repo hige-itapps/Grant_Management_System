@@ -1,5 +1,14 @@
 <?php
 
+
+/*if(session_status() == PHP_SESSION_NONE){
+    //session has not started
+    session_start();
+}*/
+
+
+//print_r($_SESSION);
+
 /**
  *   Example for a simple cas 2.0 client
  *
@@ -29,24 +38,13 @@ phpCAS::client(SAML_VERSION_1_1, $cas_host, $cas_port, $cas_context);
 
 // For production use set the CA certificate that is the issuer of the cert
 // on the CAS server and uncomment the line below
- phpCAS::setCasServerCACert($cas_server_ca_cert_path);
+phpCAS::setCasServerCACert($cas_server_ca_cert_path);
 
 // For quick testing you can disable SSL validation of the CAS server.
 // THIS SETTING IS NOT RECOMMENDED FOR PRODUCTION.
 // VALIDATING THE CAS SERVER IS CRUCIAL TO THE SECURITY OF THE CAS PROTOCOL!
 // phpCAS::setNoCasServerValidation();
 
-// check CAS authentication
-$auth = phpCAS::checkAuthentication();
-
-if(!$auth) {
-	phpCAS::forceAuthentication(); //force CAS authentication
-}
-
-
-
-// at this step, the user has been authenticated by the CAS server
-// and the user's login name can be read with phpCAS::getUser().
 
 // logout if desired
 if (isset($_REQUEST['logout'])) {
@@ -54,23 +52,33 @@ if (isset($_REQUEST['logout'])) {
 }
 
 
-$CASinfo = phpCAS::getAttributes();
-
-if(isset($CASinfo) && !is_null($CASinfo) && !empty($CASinfo)) {
-	//try to get bronco net ID, positions, and email 
-	if(isset($CASinfo['uid']) && !is_null($CASinfo['uid']) && !empty($CASinfo['uid']))
-		$CASbroncoNetId = $CASinfo['uid'];
-	if(isset($CASinfo['wmuEduPersonPrimaryAffiliation']) && !is_null($CASinfo['wmuEduPersonPrimaryAffiliation']) && !empty($CASinfo['wmuEduPersonPrimaryAffiliation']))
-		$CASprimaryPosition = $CASinfo['wmuEduPersonPrimaryAffiliation'];
-	if(isset($CASinfo['wmuEduPersonAffiliation']) && !is_null($CASinfo['wmuEduPersonAffiliation']) && !empty($CASinfo['wmuEduPersonAffiliation']))
-		$CASallPositions = $CASinfo['wmuEduPersonAffiliation']; //an array! search through this to see if a staff or faculty or student 
-	else 
-		$CASallPositions = $CASprimaryPosition;
-	if(isset($CASinfo['mail']) && !is_null($CASinfo['mail']) && !empty($CASinfo['mail']))
-		$CASemail = $CASinfo['mail'];
-	else 
-		$CASemail = "NO_EMAIL";
+if(!isset($_SESSION["phpCAS"]["attributes"])) { //if user data hasn't been retrieved yet
+	$auth = 0; //init to false
+	$auth = phpCAS::checkAuthentication(); //check if authorized
+	if($auth != 1) //not yet authorized
+	{
+		phpCAS::forceAuthentication(); //force CAS authentication
+	}
+	else
+	{
+		/*$CASinfo = */ phpCAS::getAttributes(); //get CAS info from server
+	}
 }
+
+
+$CASbroncoNetId = $_SESSION["phpCAS"]["attributes"]["uid"];
+$CASprimaryPosition = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonPrimaryAffiliation"];
+$CASallPositions = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonAffiliation"];
+$CASemail = $_SESSION["phpCAS"]["attributes"]["mail"];
+
+
+
+print_r($_SESSION);
+
+// at this step, the user has been authenticated by the CAS server
+// and the user's login name can be read with phpCAS::getUser().
+
+
 
 // for this test, simply print that the authentication was successfull
 ?>

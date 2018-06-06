@@ -624,10 +624,10 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 								<div class="form-group">
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="props">Proposal Summary (up to <?php echo $maxProposalSummary; ?> characters) (We recommend up to 150 words):</label>
-										<textarea class="form-control" ng-model="formData.props" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 /><?php if($isAdminUpdating){echo $app->pS;} ?></textarea>
+										<textarea class="form-control" ng-model="formData.props" id="props" name="props" placeholder="Enter Proposal Summary" rows="10"><?php if($isAdminUpdating){echo $app->pS;} ?></textarea>
 									<?php }else{ //for viewing applications ?>
 										<label for="props">Proposal Summary:</label>
-										<textarea class="form-control" ng-model="formData.props" id="props" name="props" placeholder="Enter Proposal Summary" rows=10 disabled="true" /><?php echo $app->pS; ?></textarea>
+										<textarea class="form-control" ng-model="formData.props" id="props" name="props" placeholder="Enter Proposal Summary" rows="10" disabled="true"><?php echo $app->pS; ?></textarea>
 									<?php } ?>
 								</div>
 							</div>
@@ -893,13 +893,15 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						</div>
 						<?php } ?>
 						<br><br>
+
+						<a href="#" id="search-btn" ng-click="processForm()">submit</a>
 						
 						<div class="row">
 							<div class="col-md-2"></div>
 						<!--SUBMIT BUTTONS-->
 							<div class="col-md-6">
 								<?php if($isCreating){ //show submit application button if creating ?>
-									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
+									<input type="submit" onclick="alert('123'); return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.');" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
 								<?php }else if($isAdminUpdating){ //show submit edits button if editing?>
 									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
 								<?php }else if($isAdmin || $isApprover){ //show approve, hold, and deny buttons if admin or approver ?>
@@ -970,13 +972,13 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 			// process the form (AJAX request)
 			$scope.processForm = function() {
 
-				//alert("Sending data");
+				alert("Sending data");
 				//alert($scope.formData.inputAFrom);
 
 				
 				$http({
 					method  : 'POST',
-					url     : 'application_form.php',
+					url     : 'http://hige-iefdf-vm.wade.wmich.edu/application_form.php',
 					data    : $.param($scope.formData),  // pass in data as strings
 					headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
 				})
