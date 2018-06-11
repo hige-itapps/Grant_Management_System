@@ -31,7 +31,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 
 /*************FOR ADDING OR UPDATING APPLICATION VIA SUMBISSION***************/
 
-$insertReturn = null; //will be an array with return code and status, assuming no unexpected errors
+$insertReturn = null; //will be an array with return code and status, or an array of errors
 //$data = array();    // array to pass back data
 
 
@@ -57,55 +57,57 @@ $isAdmin = isAdministrator($conn, $CASbroncoNetId);
 if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, true) || $isAdmin)
 {
     //echo "User is allowed to create an application!";
+    //print_r($_POST);
     
     try
     {
-        /*Set budgetArray*/
-        $budgetArray = [[]];
-        $count = 0; //index. Use this +1 to find name of current index (see below)
-        
-        while(true) //loop until no more budget items remaining
+        //$budgetItems = [[]]; //array of budget items
+        //$count = 0; //budget items index. Use this +1 to find name of current index (see below)
+        /*while(true) //loop until no more budget items remaining
         {
             if(isset($_POST["amount" . ($count+1)])) {//make sure this index is used
-                $budgetArray[$count][0] = $_POST["expense" . ($count+1)];
-                $budgetArray[$count][1] = $_POST["comm" . ($count+1)];
-                $budgetArray[$count][2] = $_POST["amount" . ($count+1)];
+                $budgetItems[$count][0] = $_POST["expense" . ($count+1)];
+                $budgetItems[$count][1] = $_POST["comment" . ($count+1)];
+                $budgetItems[$count][2] = $_POST["amount" . ($count+1)];
             }else{
                 break;
             }
             $count++;
-        }
+        }*/
+        /*Get the budget items*/
+        $budgetItems = null;
+        if(isset($_POST["budgetItems"])){$budgetItems = $_POST["budgetItems"];}
         
         /*get the 4 purposes and 4 goals*/
-        $pr1 = 0; $pr2 = 0; $pr3 = 0; $pr4 = ""; 
-        $pg1 = 0; $pg2 = 0; $pg3 = 0; $pg4 = 0;
-        if(isset($_POST["purpose1"])){$pr1 = 1;}
-        if(isset($_POST["purpose2"])){$pr2 = 1;}
-        if(isset($_POST["purpose3"])){$pr3 = 1;}
-        if(isset($_POST["purposeOther"])){$pr4 = $_POST["purposeOther"];}
-        if(isset($_POST["goal1"])){$pg1 = 1;}
-        if(isset($_POST["goal2"])){$pg2 = 1;}
-        if(isset($_POST["goal3"])){$pg3 = 1;}
-        if(isset($_POST["goal4"])){$pg4 = 1;}
+        $purpose1 = 0; $purpose2 = 0; $purpose3 = 0; $purpose4Other = ""; 
+        $goal1 = 0; $goal2 = 0; $goal3 = 0; $goal4 = 0;
+        if(isset($_POST["purpose1"])){$purpose1 = 1;}
+        if(isset($_POST["purpose2"])){$purpose2 = 1;}
+        if(isset($_POST["purpose3"])){$purpose3 = 1;}
+        if(isset($_POST["purpose4Other"])){$purpose4Other = $_POST["purpose4Other"];}
+        if(isset($_POST["goal1"])){$goal1 = 1;}
+        if(isset($_POST["goal2"])){$goal2 = 1;}
+        if(isset($_POST["goal3"])){$goal3 = 1;}
+        if(isset($_POST["goal4"])){$goal4 = 1;}
 
         /*get other data*/
-        $updateID = null; $inputName = null; $inputEmail = null; $inputDept = null; $inputDeptCE = null;
-        $inputTFrom = null; $inputTTo = null; $inputAFrom = null; $inputATo = null; $inputRName = null;
-        $inputDest = null; $inputAR = null; $eS = null; $props = null;
+        $updateID = null; $name = null; $email = null; $department = null; $deptChairEmail = null;
+        $travelFrom = null; $travelTo = null; $activityFrom = null; $activityTo = null; $title = null;
+        $destination = null; $amountRequested = null; $otherFunding = null; $proposalSummary = null;
         if(isset($_POST["updateID"])){$updateID = $_POST["updateID"];}
-        if(isset($_POST["inputName"])){$inputName = $_POST["inputName"];}
-        if(isset($_POST["inputEmail"])){$inputEmail = $_POST["inputEmail"];}
-        if(isset($_POST["inputDept"])){$inputDept = $_POST["inputDept"];}
-        if(isset($_POST["inputDeptCE"])){$inputDeptCE = $_POST["inputDeptCE"];}
-        if(isset($_POST["inputTFrom"])){$inputTFrom = $_POST["inputTFrom"];}
-        if(isset($_POST["inputTTo"])){$inputTTo = $_POST["inputTTo"];}
-        if(isset($_POST["inputAFrom"])){$inputAFrom = $_POST["inputAFrom"];}
-        if(isset($_POST["inputATo"])){$inputATo = $_POST["inputATo"];}
-        if(isset($_POST["inputRName"])){$inputRName = $_POST["inputRName"];}
-        if(isset($_POST["inputDest"])){$inputDest = $_POST["inputDest"];}
-        if(isset($_POST["inputAR"])){$inputAR = $_POST["inputAR"];}
-        if(isset($_POST["eS"])){$eS = $_POST["eS"];}
-        if(isset($_POST["props"])){$props = $_POST["props"];}
+        if(isset($_POST["name"])){$name = $_POST["name"];}
+        if(isset($_POST["email"])){$email = $_POST["email"];}
+        if(isset($_POST["department"])){$department = $_POST["department"];}
+        if(isset($_POST["deptChairEmail"])){$deptChairEmail = $_POST["deptChairEmail"];}
+        if(isset($_POST["travelFrom"])){$travelFrom = $_POST["travelFrom"];}
+        if(isset($_POST["travelTo"])){$travelTo = $_POST["travelTo"];}
+        if(isset($_POST["activityFrom"])){$activityFrom = $_POST["activityFrom"];}
+        if(isset($_POST["activityTo"])){$activityTo = $_POST["activityTo"];}
+        if(isset($_POST["title"])){$title = $_POST["title"];}
+        if(isset($_POST["destination"])){$destination = $_POST["destination"];}
+        if(isset($_POST["amountRequested"])){$amountRequested = $_POST["amountRequested"];}
+        if(isset($_POST["otherFunding"])){$otherFunding = $_POST["otherFunding"];}
+        if(isset($_POST["proposalSummary"])){$proposalSummary = $_POST["proposalSummary"];}
 
 
         /*get nextCycle or currentCycle*/
@@ -121,18 +123,18 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, tr
         
         /*Insert data into database - receive the new application id if success, or 0 if failure*/
         /*parameters: DB connection, updating boolean, app ID (if exists), broncoNetID, name, email, department, dep. chair email, travel from, travel to, activity from, activity to, title, 
-        destination, amount requested, purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, next cycle boolean, budgetArray*/
+        destination, amount requested, purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, next cycle boolean, budgetItems*/
         if($isAdmin)
         {
-            $insertReturn = insertApplication($conn, true, $updateID, $CASbroncoNetId, $inputName, $inputEmail, $inputDept, $inputDeptCE, 
-                $inputTFrom, $inputTTo, $inputAFrom, $inputATo, $inputRName, $inputDest, $inputAR, 
-                $pr1, $pr2, $pr3, $pr4, $eS, $props, $pg1, $pg2, $pg3, $pg4, $nextCycle, $budgetArray);
+            $insertReturn = insertApplication($conn, true, $updateID, $CASbroncoNetId, $name, $email, $department, $deptChairEmail, 
+                $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
+                $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
         }
         else
         {
-            $insertReturn = insertApplication($conn, false, null, $CASbroncoNetId, $inputName, $inputEmail, $inputDept, $inputDeptCE, 
-                $inputTFrom, $inputTTo, $inputAFrom, $inputATo, $inputRName, $inputDest, $inputAR, 
-                $pr1, $pr2, $pr3, $pr4, $eS, $props, $pg1, $pg2, $pg3, $pg4, $nextCycle, $budgetArray);
+            $insertReturn = insertApplication($conn, false, null, $CASbroncoNetId, $name, $email, $department, $deptChairEmail, 
+                $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
+                $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
         }
         
         /*echo "<br>Insert status: ".$insertReturn[1].".<br>";

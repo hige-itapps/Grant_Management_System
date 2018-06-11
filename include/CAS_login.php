@@ -1,14 +1,5 @@
 <?php
 
-
-/*if(session_status() == PHP_SESSION_NONE){
-    //session has not started
-    session_start();
-}*/
-
-
-//print_r($_SESSION);
-
 /**
  *   Example for a simple cas 2.0 client
  *
@@ -61,24 +52,31 @@ if(!isset($_SESSION["phpCAS"]["attributes"])) { //if user data hasn't been retri
 	}
 	else
 	{
-		/*$CASinfo = */ phpCAS::getAttributes(); //get CAS info from server
+		phpCAS::getAttributes(); //get CAS info from server
 	}
 }
 
+//set local variables from CAS session
+try {
+	$CASbroncoNetId = $_SESSION["phpCAS"]["attributes"]["uid"];
+	$CASprimaryPosition = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonPrimaryAffiliation"];
+	$CASallPositions = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonAffiliation"];
+	$CASemail = $_SESSION["phpCAS"]["attributes"]["mail"];
+} catch (Exception $e) {
+	echo "<h1>Session exception occured! Please refresh the page or try restarting your browser.</h1>";
+	echo "<h1>".$e."</h1>";
+	exit();
+}
 
-$CASbroncoNetId = $_SESSION["phpCAS"]["attributes"]["uid"];
-$CASprimaryPosition = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonPrimaryAffiliation"];
-$CASallPositions = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonAffiliation"];
-$CASemail = $_SESSION["phpCAS"]["attributes"]["mail"];
+//make sure all variables aren't blank or null
+if(!isset($CASbroncoNetId) || trim($CASbroncoNetId)==='' ||
+	!isset($CASprimaryPosition) || trim($CASprimaryPosition)==='' ||
+	!isset($CASallPositions) || trim($CASallPositions)==='' ||
+	!isset($CASemail) || trim($CASemail)==='')
+{
+	echo "<h1>Error retrieving valid user data! Please refresh the page or try restarting your browser.</h1>";
+	exit();
+}
 
-
-
-print_r($_SESSION);
-
-// at this step, the user has been authenticated by the CAS server
-// and the user's login name can be read with phpCAS::getUser().
-
-
-
-// for this test, simply print that the authentication was successfull
+//print_r($_SESSION);
 ?>

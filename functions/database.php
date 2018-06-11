@@ -1243,12 +1243,17 @@
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
 
-			$returnCode = -1; //default error code
-			$returnStatus = "Unspecified error";
+			//$returnCode = -1; //default error code
+			//$returnStatus = "Unspecified error";
+
+			$errors = array();  // array to hold validation errors
+			$data = array();        // array to pass back data
+
+
 			$newAppID = 0; //set this to the new application's ID if successful
 
-			echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
-			echo "inserting app";
+			/*echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
+			echo "inserting app";*/
 
 			if(!$updating)
 			{
@@ -1291,195 +1296,201 @@
 					if(!empty($i))
 					{
 						//echo 'Budget array at ' . $i[0];
-						$i[0] = trim(filter_var($i[0], FILTER_SANITIZE_STRING));
-						$i[1] = trim(filter_var($i[1], FILTER_SANITIZE_STRING));
+						if(isset($i["expense"])){ $i["expense"] = trim(filter_var($i["expense"], FILTER_SANITIZE_STRING)); }
+						if(isset($i["comment"])){ $i["comment"] = trim(filter_var($i["comment"], FILTER_SANITIZE_STRING)); }
 					}
 				}
 				
 			}
 			catch(Exception $e)
 			{
-				$returnCode = -10; //sanitization exception
-				$returnStatus = "Exception when sanitizing fields";
+				$errors["other"] = "Exception when sanitizing fields!";
 			}
 
-			echo "Travel From:";
-			var_dump($travelFrom);
+			/*echo "Travel From:";
+			var_dump($travelFrom);*/
 			
 			/*Now validate everything that needs it*/
-			if($returnCode == -1) //no errors yet
+			if(empty($errors)) //no errors yet
 			{
-				list($em, $domain) = explode('@', $deptChairEmail);
 
 				/*Make sure necessary strings aren't empty*/
 				if($name === '')
 				{
-					$returnCode = -20;
-					$returnStatus = "Name field is empty";
-				}
-				else if($email === '')
-				{
-					$returnCode = -21;
-					$returnStatus = "Email field is empty";
-				}
-				else if($department === '')
-				{
-					$returnCode = -22;
-					$returnStatus = "Department field is empty";
-				}
-				else if($title === '')
-				{
-					$returnCode = -23;
-					$returnStatus = "Title field is empty";
-				}
-				else if($destination === '')
-				{
-					$returnCode = -24;
-					$returnStatus = "Destination field is empty";
-				}
-				else if($proposalSummary === '')
-				{
-					$returnCode = -25;
-					$returnStatus = "Proposal Summary field is empty";
-				}
-				else if($deptChairEmail === '')
-				{
-					$returnCode = -26;
-					$returnStatus = "Department Chair Email field is empty";
-				}
-				else if($travelFrom === '')
-				{
-					$returnCode = -27;
-					$returnStatus = "Travel From field is empty";
-				}
-				else if($travelTo === '')
-				{
-					$returnCode = -28;
-					$returnStatus = "Travel To field is empty";
-				}
-				else if($activityFrom === '')
-				{
-					$returnCode = -29;
-					$returnStatus = "Activity From field is empty";
-				}
-				else if($activityTo === '')
-				{
-					$returnCode = -30;
-					$returnStatus = "Activity To field is empty";
+					$errors["name"] = "Name field is required.";
 				}
 
-
-
-				else if($nextCycle === '')
+				if($email === '')
 				{
-					$returnCode = -31;
-					$returnStatus = "No cycle chosen";
+					$errors["email"] = "Email field is required.";
 				}
-				/*Make sure department chair's email address is a wmich address*/
-				else if (!strstr(strtolower($domain), "wmich.edu")) 
-				{
-					$returnCode = -32;
-					$returnStatus = "Department chair's email address must be a wmich.edu address";
-				}
-				/*Make sure dates are acceptable*/
-				else if($travelFrom > $activityFrom)
-				{
-					$returnCode = -33;
-					$returnStatus = "Travel dates are impossible (activity cannot start before travel!)";
-				}
-				else if($activityFrom > $activityTo)
-				{
-					$returnCode = -34;
-					$returnStatus = "Travel dates are impossible (activity cannot end before it begins!)";
-				}
-				else if($activityTo > $travelTo)
-				{
-					$returnCode = -35;
-					$returnStatus = "Travel dates are impossible (travel cannot end before activity ends!)";
-				}
-				/*Make sure emails are correct format*/
 				else if(!filter_var($email, FILTER_VALIDATE_EMAIL))
 				{
-					$returnCode = -36;
-					$returnStatus = "Email address is invalid (invalid email format)";
+					$errors["email"] = "Email address is invalid (invalid email format).";
+				}
+
+				if($department === '')
+				{
+					$errors["department"] = "Department field is required.";
+				}
+				if($title === '')
+				{
+					$errors["title"] = "Title field is required.";
+				}
+				if($destination === '')
+				{
+					$errors["destination"] = "Destination field is required.";
+				}
+				if($proposalSummary === '')
+				{
+					$errors["proposalSummary"] = "Proposal Summary field is required.";
+				}
+
+				if($deptChairEmail === '')
+				{
+					$errors["deptChairEmail"] = "Department Chair Email field is required.";
 				}
 				else if(!filter_var($deptChairEmail, FILTER_VALIDATE_EMAIL))
 				{
-					$returnCode = -37;
-					$returnStatus = "Department chair's email address is invalid (invalid email format)";
+					$errors["deptChairEmail"] = "Department chair's email address is invalid (invalid email format).";
+				}
+				else
+				{
+					list($em, $domain) = explode('@', $deptChairEmail);
+					/*Make sure department chair's email address is a wmich address*/
+					if (!strstr(strtolower($domain), "wmich.edu")) 
+					{
+						$errors["deptChairEmail"] = "Department chair's email address must be a wmich.edu address.";
+					}
+				}
+
+				if($travelFrom === '')
+				{
+					$errors["travelFrom"] = "Travel From field is required.";
+				}
+				if($travelTo === '')
+				{
+					$errors["travelTo"] = "Travel To field is required.";
+				}
+				if($activityFrom === '')
+				{
+					$errors["activityFrom"] = "Activity From field is required.";
+				}
+				if($activityTo === '')
+				{
+					$errors["activityTo"] = "Activity To field is required.";
+				}
+
+
+
+				if($nextCycle === '')
+				{
+					$errors["cycleChoice"] = "Must choose a cycle.";
+				}
+
+				/*Make sure dates are acceptable*/
+				if($travelFrom > $activityFrom)
+				{
+					$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
+				}
+				if($activityFrom > $activityTo)
+				{
+					$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
+				}
+				if($activityTo > $travelTo)
+				{
+					$errors["activityTo"] = "Travel dates are impossible (travel cannot end before activity ends!).";
 				}
 				/*Make sure at least one purpose is chosen*/
-				else if($purpose1 == 0 && $purpose2 == 0 && $purpose3 == 0 && $purpose4Other === '')
+				if($purpose1 == 0 && $purpose2 == 0 && $purpose3 == 0 && $purpose4Other === '')
 				{
-					$returnCode = -38;
-					$returnStatus = "At least one purpose must be selected!";
+					$errors["purpose"] = "At least one purpose must be selected.";
 				}
 				/*Make sure at least one goal is chosen*/
-				else if($goal1 == 0 && $goal2 == 0 && $goal3 == 0 && $goal4 == 0)
+				if($goal1 == 0 && $goal2 == 0 && $goal3 == 0 && $goal4 == 0)
 				{
-					$returnCode = -39;
-					$returnStatus = "At least one goal must be selected!";
+					$errors["goal"] = "At least one goal must be selected.";
 				}
-				else if ($amountRequested <= 0)
+				if ($amountRequested <= 0)
 				{
-					$returnCode = -40;
-					$returnStatus = "Amount requested must be greater than $0!";
+					$errors["amountRequested"] = "Amount requested must be greater than $0.";
 				}
 			}
 
-			if($returnCode == -1) //no errors yet
+			/*Make sure cycle is allowed; ignore this check if an admin is updating*/
+			if(!$updating)
 			{
-				/*Make sure cycle is allowed; ignore this check if an admin is updating*/
-				if(!$updating)
+				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
+				if($lastApprovedApp != null) //if a previous application exists
 				{
-					$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
-					if($lastApprovedApp != null) //if a previous application exists
-					{
-						$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
-						$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
-						
-						$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
-						
-						$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+					
+					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+					
+					$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
 
-						if(!$lastApproved) 
-						{
-							$returnCode = -41;
-							$returnStatus = "Applicant is not allowed to apply for the specified cycle (not enough cycles have passed since last approved application)";
-						}
+					if(!$lastApproved) 
+					{
+						$errors["other"] = "Applicant is not allowed to apply for the specified cycle (not enough cycles have passed since last approved application).";
 					}
 				}
 			}
 
-			if($returnCode == -1) //no errors yet
+			if(sizeof($budgetArray) != 0) //at least one budget item
 			{
-
-				if(count($budgetArray) != 0) //at least one budget item
+				/*go through budget array*/
+				$index = 0; //index of budget item
+				foreach($budgetArray as $item)
 				{
-					/*go through budget array*/
-					foreach($budgetArray as $i)
+					/*echo "Budget item: ";
+					print_r($i);
+					var_dump($i);*/
+
+					if(!empty($i))
 					{
-						if(!empty($i))
+						if(!isset($i["expense"]))
 						{
-							if($i[0] === '' || $i[1] === '')
-							{
-								$returnCode = -42;
-								$returnStatus = "At least one required budget item field is empty";
-								break;
-							}
+							$errors["budgetArray ".($index+1)." expense"] = "Budget expense is required.";
+						}
+						else if($i["expense"] === '')
+						{
+							$errors["budgetArray ".($index+1)." expense"] = "Budget expense is required.";
+						}
+
+						if(!isset($i["comment"]))
+						{
+							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
+						}
+						else if($i["comment"] === '')
+						{
+							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
+						}
+
+						if(!isset($i["amount"]))
+						{
+							$errors["budgetArray ".($index+1)." amount"] = "Budget amount is required.";
+						}
+						else if($i["amount"] <= 0)
+						{
+							$errors["budgetArray ".($index+1)." amount"] = "Budget amount must be greater than $0";
 						}
 					}
+					else
+					{
+						$errors["budgetArray ".($index+1)] = "Budget item must not be empty.";
+					}
+
+					$index++;
 				}
-				else //no budget items
-				{
-					$returnCode = -43;
-					$returnStatus = "There must be at least one budget item";
-				}
-				
+			}
+			else //no budget items
+			{
+				$errors["budgetArray"] = "There must be at least one budget item.";
 			}
 			
 			/*Now insert new application into database*/
-			if($returnCode == -1) //no errors yet
+			if(empty($errors)) //no errors yet
 			{
 				if(!$updating) //adding, not updating
 				{
@@ -1553,8 +1564,7 @@
 									else //query failed
 									{
 										$conn->rollBack(); //rollBack the transaction
-										$returnCode = -62;
-										$returnStatus = "Query failed to insert budget items";
+										$errors["other"] = "Query failed to insert budget items";
 										break;
 									}
 								}
@@ -1562,14 +1572,12 @@
 						} 
 						else //query failed
 						{
-							$returnCode = -61;
-							$returnStatus = "Query failed to insert application";
+							$errors["other"] = "Query failed to insert application";
 						}
 					}
 					catch(Exception $e)
 					{
-						$returnCode = -60;
-						$returnStatus = "Exception when trying to insert application into database";
+						$errors["other"] = "Exception when trying to insert application into database";
 					}
 				}
 				else //just updating
@@ -1646,8 +1654,7 @@
 										else //query failed
 										{
 											$conn->rollBack(); //rollBack the transaction
-											$returnCode = -73;
-											$returnStatus = "Query failed to insert new budget items";
+											$errors["other"] = "Query failed to insert new budget items";
 											break;
 										}
 									}
@@ -1656,39 +1663,42 @@
 							else
 							{
 								$conn->rollBack(); //rollBack the transaction
-								$returnCode = -72;
-								$returnStatus = "Query failed to delete old budget items";
+								$errors["other"] = "Query failed to delete old budget items";
 							}
 						} 
 						else //query failed
 						{
-							$returnCode = -71;
-							$returnStatus = "Query failed to update application";
+							$errors["other"] = "Query failed to update application";
 						}
 					}
 					catch(Exception $e)
 					{
-						$returnCode = -70;
-						$returnStatus = "Exception when trying to update application in database";
+						$errors["other"] = "Exception when trying to update application in database";
 					}
 				}
 			}
 
-			if($returnCode == -1) //no errors
-			{
+			// response if there are errors
+			if ( ! empty($errors)) {
+				// if there are items in our errors array, return those errors
+				$data['success'] = false;
+				$data['errors']  = $errors;
+			} else {
+				// if there are no errors, return a message
+				$data['success'] = true;
 				if(!$updating)
 				{
-					$returnCode = $newAppID;
-					$returnStatus = "Successfully inserted application into database";
+					$data['appID'] = $newAppID;
+					$data['message'] = "Successfully inserted application into database";
 				}
 				else
 				{
-					$returnCode = $updateID;
-					$returnStatus = "Successfully updated application in database";
+					$data['appID'] = $updateID;
+					$data['message'] = "Successfully updated application in database";
 				}
 			}
 			
-			return array($returnCode, $returnStatus); //return both the return code and status
+			return $data; //return both the return code and status
 		}
 	}
 	

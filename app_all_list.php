@@ -40,6 +40,9 @@
 		
 		<!-- Font-Awesome ICONS -->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+		<!-- For exporting files in-browser -->
+		<script type="module" src="FileSaver.js-master/src/FileSaver.js"></script>
 	
 	</head>
 	<body ng-app="HIGE-app">
@@ -56,6 +59,8 @@
 			$totalPrevApps = getApplications($conn, $CASbroncoNetId);
 			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
 			$appsToSignNumber = getNumberOfApplicationsToSign($conn, $CASemail);
+
+			$isAllowedToSeeApplications = false; //permission for whether or not user is allowed to see everyone's applications
 
 			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId) || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
 			{
@@ -75,6 +80,7 @@
 				}
 				else if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))//default privileges (for HIGE staff)
 				{
+					$isAllowedToSeeApplications = true;
 					$apps = getApplications($conn, "");//get all applications
 				}
 
@@ -164,7 +170,7 @@
 				<div class="row">
 					<div class="col-md-1"></div>
 					<div class="col-md-10">
-						<table class="table">
+						<table class="table" id="appTable">
 							<caption>Selected Applications:</caption>
 							<thead>
 								<tr>
@@ -212,9 +218,16 @@
 					</div>
 					<div class="col-md-1"></div>
 				</div>
+
 				<div class="row">
 					<div class="col-md-5"></div>
 					<div class="col-md-2">
+						<?php if($isAllowedToSeeApplications){ //if the user can see all applications, give them the option to download an excel summary sheet of them ?>
+							<a href="" class="btn btn-success" ng-click="exportExcelSheet()">
+								Download Excel Summary Sheet
+							</a>
+						<?php } ?>
+
 						<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
 					</div>
 					<div class="col-md-5"></div>
@@ -234,6 +247,9 @@
 	
 	<!-- AngularJS Script -->
 	<script>
+
+		//import saveAs from "FileSaver.js";
+
 		var myApp = angular.module('HIGE-app', []);
 		
 		//var currentDate = new Date(); //get current date
@@ -245,6 +261,16 @@
 			$scope.appCycles = <?php echo json_encode($appCycles) ?>;
 			//$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
 			//$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
+			$scope.exportExcelSheet = function () {
+				alert("Exporting to excel!");
+				var blob = new Blob(["Hello World!"], {
+					type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+				});
+				saveAs(blob, "SummarySheet.xls");
+
+				 /*window.open('data:application/vnd.ms-excel,' + $('#appTable').html());
+   				 e.preventDefault();*/
+			};
 		});
 		
 		/*Custom filter used to filter within a date range*/
