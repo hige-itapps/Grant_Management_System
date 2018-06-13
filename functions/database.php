@@ -1194,48 +1194,9 @@
 		$budgetArray[i][1] is the comment on the expense
 		$budgetArray[i][2] is the actual cost
 
-	This function returns an array, with array[0] being the return code and array[1] being the return status string (useful for specific error messages)
-	The return code is the new application's ID (or the existing ID if updating) if EVERYTHING is successful, OTHERWISE it is a negative error number that corresponds to a specific problem
-
-	ERROR return codes:
-	-1: default code, will only return if a more specific error code was not applied (shouldn't happen). Within the code, to see if any specific errors have occurred already, check for this value.
-
-	-10: sanitization exception (one or more fields are not the types they should be)
-
-	-20: Empty field (Name)
-	-21: Empty field (Email)
-	-22: Empty field (Department)
-	-23: Empty field (Title)
-	-24: Empty field (Destination)
-	-25: Empty field (Proposal Summary)
-	-26: Empty field (Department Chair Email)
-	-27: Empty field (Travel From)
-	-28: Empty field (Travel To)
-	-29: Empty field (Activity From)
-	-30: Empty field (Activity To)
-
-	-31: no cycle was chosen
-	-32: departmnet chair's email address isn't a wmich email
-	-33: travel/activity dates aren't possible (activity starts before travel)
-	-34: travel/activity dates aren't possible (activity ends before it begins)
-	-35: travel/activity dates aren't possible (travel ends before activity)
-	-36: email address is incorrectly formatted (not a valid address)
-	-37: department chair's email address is incorrectly formatted (not a valid address)
-	-38: at least one purpose must be selected
-	-39: at least one goal must be selected
-	-40: amount requested must be > $0
-	-41: this user is not allowed to submit for this cycle
-	-42: at least one of the budget fields is empty
-	-43: there must be at least one budget item
-
-	-60: exception when inserting application into database
-	-61: first insert query (the main application) failed
-	-62: second insert query (budget items) failed
-
-	-70: exception when updating application in database
-	-71: first query (updating the main application) failed
-	-72: second query (deleting the old budget items) failed
-	-73: third query (inserting new budget items) failed
+	This function returns a data array; If the application is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
+	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the application's fields.
+	
 	*/
 	if(!function_exists('insertApplication')){
 		function insertApplication($conn, $updating, $updateID, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
