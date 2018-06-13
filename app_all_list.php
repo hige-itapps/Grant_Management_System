@@ -17,7 +17,7 @@
 	
 	<!-- Page Head -->
 	<?php include 'include/head_content.html'; ?>
-	<body>
+	<body ng-app="HIGE-app">
 	
 		<!-- Shared Site Banner -->
 		<?php include 'include/site_banner.html'; ?>
