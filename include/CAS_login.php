@@ -58,7 +58,7 @@ if(!isset($_SESSION["phpCAS"]["attributes"])) { //if user data hasn't been retri
 
 //set local variables from CAS session
 try {
-	$CASbroncoNetId = $_SESSION["phpCAS"]["attributes"]["uid"];
+	$CASbroncoNetID = $_SESSION["phpCAS"]["attributes"]["uid"];
 	$CASprimaryPosition = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonPrimaryAffiliation"];
 	$CASallPositions = $_SESSION["phpCAS"]["attributes"]["wmuEduPersonAffiliation"];
 	$CASemail = $_SESSION["phpCAS"]["attributes"]["mail"];
@@ -69,7 +69,7 @@ try {
 }
 
 //make sure all variables aren't blank or null
-if(!isset($CASbroncoNetId) || trim($CASbroncoNetId)==='' ||
+if(!isset($CASbroncoNetID) || trim($CASbroncoNetID)==='' ||
 	!isset($CASprimaryPosition) || trim($CASprimaryPosition)==='' ||
 	!isset($CASallPositions) || trim($CASallPositions)==='' ||
 	!isset($CASemail) || trim($CASemail)==='')

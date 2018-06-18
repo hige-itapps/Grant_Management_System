@@ -26,10 +26,10 @@
 
 	if(isset($_POST["submitApp"]))
 	{
-		$isAdmin = isAdministrator($conn, $CASbroncoNetId);
+		$isAdmin = isAdministrator($conn, $CASbroncoNetID);
 
 		/*Verify that user is allowed to make an application*/
-		if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_POST['updateID']) || $isAdmin)
+		if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $_POST['updateID']) || $isAdmin)
 		{
 			//echo "User is allowed to create an application!";
 			
@@ -132,20 +132,20 @@
 		if(isset($_GET["id"]))
 		{
 			//admin updating check
-			$isAdminUpdating = (isAdministrator($conn, $CASbroncoNetId) && isset($_GET["updating"])); //admin is viewing page; can edit stuff
+			$isAdminUpdating = (isAdministrator($conn, $CASbroncoNetID) && isset($_GET["updating"])); //admin is viewing page; can edit stuff
 			$permissionSet = $isAdminUpdating;
 
 			//admin check
 			if(!$permissionSet)
 			{
-				$isAdmin = isAdministrator($conn, $CASbroncoNetId); //admin is viewing page
+				$isAdmin = isAdministrator($conn, $CASbroncoNetID); //admin is viewing page
 				$permissionSet = $isAdmin;
 			}
 			
 			//application approver check
 			if(!$permissionSet)
 			{
-				$isFUApprover = isFollowUpReportApprover($conn, $CASbroncoNetId); //application approver(director) can write notes, choose awarded amount, and generate email text
+				$isFUApprover = isFollowUpReportApprover($conn, $CASbroncoNetID); //application approver(director) can write notes, choose awarded amount, and generate email text
 				$permissionSet = $isFUApprover;
 			}
 
@@ -159,21 +159,21 @@
 			//committee member check
 			if(!$permissionSet)
 			{
-				$isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetId); //committee member; can only view!
+				$isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //committee member; can only view!
 				$permissionSet = $isCommittee;
 			}
 			
 			//applicant creating check
 			if(!$permissionSet)
 			{
-				$isCreating = isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $_GET['id']); //applicant is creating a Follow-Up R
+				$isCreating = isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $_GET['id']); //applicant is creating a Follow-Up R
 				$permissionSet = $isCreating; //will set to true if user is 
 			}
 			
 			//applicant reviewing check
 			if(!$permissionSet)
 			{
-				$isReviewing = (doesUserOwnApplication($conn, $CASbroncoNetId, $_GET['id']) && getFUReport($conn, $_GET['id'])); //applicant is reviewing their application
+				$isReviewing = (doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id']) && getFollowUpReport($conn, $_GET['id'])); //applicant is reviewing their application
 				$permissionSet = $isReviewing;
 			}
 
@@ -204,7 +204,7 @@
 			/*Initialize variables if application has already been created*/
 			if(!$isCreating)
 			{
-				$fR = getFUReport($conn, $idA);
+				$fR = getFollowUpReport($conn, $idA);
 				$docs = listDocs($idA); //get documents
 
 				for($i = 0; $i < count($docs); $i++)
@@ -313,7 +313,7 @@
 							<div class="col-md-5">
 								<div class="form-group">
 									<label for="inputDept">Department:</label>
-									<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" disabled="true" value="<?php echo $app->dept; ?>"/>
+									<input type="text" class="form-control" id="inputDept" name="inputDept" placeholder="Enter Department" disabled="true" value="<?php echo $app->department; ?>"/>
 								</div>
 							</div>
 							
@@ -321,7 +321,7 @@
 							<div class="col-md-7">
 								<div class="form-group">
 									<label for="inputDeptCE">Department Chair's Email Address:</label>
-									<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" disabled="true" value="<?php echo $app->deptCE; ?>" />
+									<input type="email" class="form-control" id="inputDeptCE" name="inputDeptCE" placeholder="Enter Department Chair's Email Address" disabled="true" value="<?php echo $app->deptChairEmail; ?>" />
 								</div>
 							</div>
 						</div>
@@ -341,9 +341,9 @@
 								<div class="form-group">
 									<label for="inputTFrom">Travel Date From:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->tStart . '"';} ?> required />
+										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->travelFrom . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php echo 'value="' . $fR->tStart .  '"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputTFrom" name="inputTFrom" <?php echo 'value="' . $fR->travelFrom .  '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -354,9 +354,9 @@
 								<div class="form-group">
 									<label for="inputTTo">Travel Date To:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php if($isAdminUpdating){echo 'value="' . $fR->tEnd . '"';} ?> required />
+										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php if($isAdminUpdating){echo 'value="' . $fR->travelTo . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php echo 'value="' . $fR->tEnd . '"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputTTo" name="inputTTo" <?php echo 'value="' . $fR->travelTo . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -367,9 +367,9 @@
 								<div class="form-group">
 									<label for="inputAFrom">Activity Date From:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->aStart . '"';} ?> required />
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php if($isAdminUpdating){echo 'value="' . $fR->activityFrom . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php echo 'value="' . $fR->aStart . '"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputAFrom" name="inputAFrom" <?php echo 'value="' . $fR->activityFrom . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -380,9 +380,9 @@
 								<div class="form-group">
 									<label for="inputATo">Activity Date To:</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php if($isAdminUpdating){echo 'value="' . $fR->aEnd . '"';} ?> required />
+										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php if($isAdminUpdating){echo 'value="' . $fR->activityTo . '"';} ?> required />
 									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php echo 'value="' . $fR->aEnd . '"'; ?> disabled="true"/>
+										<input type="date" class="form-control" id="inputATo" name="inputATo" <?php echo 'value="' . $fR->activityTo . '"'; ?> disabled="true"/>
 									<?php } ?>
 								</div>
 							</div>
@@ -396,7 +396,7 @@
 							<div class="col-md-4">
 								<div class="form-group">
 									<label for="inputRName">Project Title:</label>
-									<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" disabled="true" value="<?php echo $app->rTitle; ?>" />
+									<input type="text" class="form-control" id="inputRName" name="inputRName" placeholder="Enter Title of Research" disabled="true" value="<?php echo $app->title; ?>" />
 								</div>
 							</div>
 							
@@ -405,7 +405,7 @@
 							<div class="col-md-4">
 								<div class="form-group">
 									<label for="inputDest">Destination:</label>
-									<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" disabled="true" value="<?php echo $app->dest; ?>" />
+									<input type="text" class="form-control" id="inputDest" name="inputDest" placeholder="Enter Destination" disabled="true" value="<?php echo $app->destination; ?>" />
 								</div>
 							</div>
 						
@@ -418,10 +418,10 @@
 									<label for="aAw">Awarded Amount Spent($):</label>
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 									<input type="text" class="form-control" id="aAw" name="aAw" placeholder="Enter Awarded Amount Spent" onkeypress='return (event.which >= 48 && event.which <= 57) 
-									|| event.which == 8 || event.which == 46' <?php if($isAdminUpdating){echo 'value="'.$fR->awardedS.'"'; } ?> />
+									|| event.which == 8 || event.which == 46' <?php if($isAdminUpdating){echo 'value="'.$fR->amountAwardedSpent.'"'; } ?> />
 									<?php }else{ //for viewing applications ?>
 									<input type="text" class="form-control" id="aAw" name="aAw" placeholder="Enter Awarded Amount Spent" onkeypress='return (event.which >= 48 && event.which <= 57) 
-									|| event.which == 8 || event.which == 46' disabled="true" <?php echo 'value="'.$fR->awardedS.'"'; ?>/>
+									|| event.which == 8 || event.which == 46' disabled="true" <?php echo 'value="'.$fR->amountAwardedSpent.'"'; ?>/>
 									<?php } ?>
 								</div>
 							</div>
@@ -433,10 +433,10 @@
 								<div class="form-group">
 									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
 										<label for="projs">Project Summary (up to <?php echo $maxProjectSummary; ?> characters):</label>
-										<textarea class="form-control" id="projs" name="projs" placeholder="Enter Project Summary" rows=10 required /><?php if($isAdminUpdating){echo $fR->pS;} ?></textarea>
+										<textarea class="form-control" id="projs" name="projs" placeholder="Enter Project Summary" rows=10 required /><?php if($isAdminUpdating){echo $fR->projectSummary;} ?></textarea>
 									<?php }else{ //for viewing applications ?>
 										<label for="projs">Project Summary:</label>
-										<textarea class="form-control" id="projs" name="projs" placeholder="Enter Project Summary" rows=10 required disabled="true" /><?php echo $fR->pS; ?></textarea>
+										<textarea class="form-control" id="projs" name="projs" placeholder="Enter Project Summary" rows=10 required disabled="true" /><?php echo $fR->projectSummary; ?></textarea>
 									<?php } ?>
 								</div>
 							</div>

@@ -26,13 +26,13 @@
 
 		<?php
 
-			$totalPrevApps = getApplications($conn, $CASbroncoNetId);
+			$totalPrevApps = getApplications($conn, $CASbroncoNetID);
 			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
 			$appsToSignNumber = getNumberOfApplicationsToSign($conn, $CASemail);
 
 			$isAllowedToSeeApplications = false; //permission for whether or not user is allowed to see everyone's applications
 
-			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId) || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
+			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
 			{
 				$apps = [];
 				//use user permission to get specific set of applications
@@ -48,7 +48,7 @@
 				{
 					$apps = $totalPrevApps;
 				}
-				else if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))//default privileges (for HIGE staff)
+				else if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID))//default privileges (for HIGE staff)
 				{
 					$isAllowedToSeeApplications = true;
 					$apps = getApplications($conn, "");//get all applications
@@ -61,7 +61,7 @@
 					$curApp->statusText = $curApp->getStatus();
 
 					//If this is a user's own application and they are allowed, let them create a follow-up report
-					if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetId, $curApp->id))
+					if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $curApp->id))
 					{
 						$curApp->FUReportCreate = true; //let user know they can create a follow up report
 					}
@@ -74,13 +74,13 @@
 						}
 					}
 
-					//echo $curApp->dateS;
-					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateS), $curApp->nextCycle, false);
+					//echo $curApp->dateSubmitted;
+					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false);
 					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
 						$appCycles[] = $curApp->cycle;
 					}
 
-					$curApp->pastApprovedCycles = getPastApprovedCycles($conn, $curApp->bnid); //save the previously approved cycles for this user
+					$curApp->pastApprovedCycles = getPastApprovedCycles($conn, $curApp->broncoNetID); //save the previously approved cycles for this user
 				}
 				
 				$appCycles = sortCycles($appCycles); //sort cycles in descending order
@@ -160,11 +160,11 @@
 								<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
 									<td>{{ x.id }}</td>
 									<td>{{ x.name }}</td>
-									<td>{{ x.rTitle }}</td>
+									<td>{{ x.title }}</td>
 									<td>{{ x.cycle }}</td>
-									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+									<td>{{ x.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
-									<td>{{x.deptCS}}</td>
+									<td>{{x.deptChairApproval}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
 									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FUReport">{{x.reportStatusText}}</td>
 										<td ng-if="x.FUReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FUReportCreate">N/A</td>
@@ -173,11 +173,11 @@
 								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
 									<td>{{ x.id }}</td>
 									<td>{{ x.name }}</td>
-									<td>{{ x.rTitle }}</td>
+									<td>{{ x.title }}</td>
 									<td>{{ x.cycle }}</td>
-									<td>{{ x.dateS | date: 'MM/dd/yyyy'}}</td>
+									<td>{{ x.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
 									<td class="{{x.statusText}}">{{ x.statusText }}</td>
-									<td>{{x.deptCS}}</td>
+									<td>{{x.deptChairApproval}}</td>
 									<td><a href="application.php?id={{x.id}}">Application</a></td>
 									<td ng-if="x.FUReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FUReport">{{x.reportStatusText}}</td>
 										<td ng-if="x.FUReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FUReportCreate">N/A</td>
@@ -248,7 +248,7 @@
 			//alert("running date filter");
 			return function(items, dateFrom, dateTo) {
 				var result = [];  
-				/*alert("First date: " + new Date(items[0].dateS));
+				/*alert("First date: " + new Date(items[0].dateSubmitted));
 				alert("Date from: " + dateFrom);
 				alert("Date to: " + dateTo);*/
 				
@@ -258,11 +258,11 @@
 				if(dateTo == null){testTo = currentDate;}*/
 				
 				for (var i=0; i<items.length; i++){
-					var dateSub = new Date(items[i].dateS);
+					var dateSubmittedub = new Date(items[i].dateSubmitted);
 					if(dateFrom == null && dateTo == null)		{result.push(items[i]);} //if neither filter date is defined
-					else if(dateFrom != null && dateTo != null)	{if (dateSub >= dateFrom && dateSub <= dateTo){result.push(items[i]);}} //if both filter dates are defined
-					else if(dateFrom != null) 					{if (dateSub >= dateFrom){result.push(items[i]);}} //if only from date is defined
-					else if(dateTo != null)						{if (dateSub <= dateTo){result.push(items[i]);}} //if only date to is defined
+					else if(dateFrom != null && dateTo != null)	{if (dateSubmittedub >= dateFrom && dateSubmittedub <= dateTo){result.push(items[i]);}} //if both filter dates are defined
+					else if(dateFrom != null) 					{if (dateSubmittedub >= dateFrom){result.push(items[i]);}} //if only from date is defined
+					else if(dateTo != null)						{if (dateSubmittedub <= dateTo){result.push(items[i]);}} //if only date to is defined
 				}
 				
 				return result;

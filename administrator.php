@@ -26,13 +26,13 @@
 		<div id="MainContent" role="main">
 
 		<?php
-			if(isAdministrator($conn, $CASbroncoNetId)) 
+			if(isAdministrator($conn, $CASbroncoNetID)) 
 			{ 
 
 				if(isset($_GET["removeAdminID"])) {
 				$_removeAdminID = $_GET['removeAdminID'];
 
-					if($CASbroncoNetId != $_removeAdminID) {
+					if($CASbroncoNetID != $_removeAdminID) {
 						removeAdmin($conn, $_removeAdminID);
 					} else {
 						?>

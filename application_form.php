@@ -51,10 +51,10 @@ ini_set("smtp_port","25");
 // Please specify the return address to use
 ini_set('sendmail_from', 'info@hige.com');
 
-$isAdmin = isAdministrator($conn, $CASbroncoNetId);
+$isAdmin = isAdministrator($conn, $CASbroncoNetID);
 
 /*Verify that user is allowed to make an application*/
-if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, true) || $isAdmin)
+if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true) || $isAdmin)
 {
     //echo "User is allowed to create an application!";
     //print_r($_POST);
@@ -110,6 +110,24 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, tr
         if(isset($_POST["proposalSummary"])){$proposalSummary = $_POST["proposalSummary"];}
 
 
+        /*echo "application_form Travel From:";
+        var_dump($travelFrom);*/
+        
+        //split unnecessary day of the week from rest of strings
+        /*$travelFromParts = explode(' ', $travelFrom, 2);
+        $travelToParts = explode(' ', $travelTo, 2);
+        $activityFromParts = explode(' ', $activityFrom, 2);
+        $activityToParts = explode(' ', $activityTo, 2);
+
+        //remove unnecessary day of week off the front of the string
+        $travelFrom = $travelFromParts[1];
+        $travelTo = $travelToParts[1];
+        $activityFrom = $activityFromParts[1];
+        $activityTo = $activityToParts[1];
+
+        echo "2: application_form Travel From:";
+        var_dump($travelFrom);*/
+
         /*get nextCycle or currentCycle*/
         $nextCycle = null;
 
@@ -126,13 +144,13 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, tr
         destination, amount requested, purpose1, purpose2, purpose3, purpose4Other, other funding, proposal summary, goal1, goal2, goal3, goal4, next cycle boolean, budgetItems*/
         if($isAdmin)
         {
-            $insertReturn = insertApplication($conn, true, $updateID, $CASbroncoNetId, $name, $email, $department, $deptChairEmail, 
+            $insertReturn = insertApplication($conn, true, $updateID, $CASbroncoNetID, $name, $email, $department, $deptChairEmail, 
                 $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
                 $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
         }
         else
         {
-            $insertReturn = insertApplication($conn, false, null, $CASbroncoNetId, $name, $email, $department, $deptChairEmail, 
+            $insertReturn = insertApplication($conn, false, null, $CASbroncoNetID, $name, $email, $department, $deptChairEmail, 
                 $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
                 $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
         }

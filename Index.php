@@ -52,7 +52,7 @@
 
 			
 				/*Make sure user is allowed to make an application. Check the latest cycle possible*/
-				if(isUserAllowedToCreateApplication($conn, $CASbroncoNetId, $CASallPositions, true))
+				if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true))
 				{ 
 					$viewCounter++;
 			?>
@@ -61,7 +61,7 @@
 				}
 				
 				/*Let the user know they've got a pending application (if they do)*/
-				if(hasPendingApplication($conn, $CASbroncoNetId))
+				if(hasPendingApplication($conn, $CASbroncoNetID))
 				{
 					$viewCounter++;
 			?>
@@ -71,7 +71,7 @@
 				}
 				
 				/* Let user see the apps they've submitted, if they have at least 1 */
-				$totalPrevApps = getApplications($conn, $CASbroncoNetId);
+				$totalPrevApps = getApplications($conn, $CASbroncoNetID);
 				if(count($totalPrevApps) > 0)
 				{
 					$viewCounter++;
@@ -81,7 +81,7 @@
 				}
 				
 				/*Verify that user is allowed to freely see applications*/
-				if(isUserAllowedToSeeApplications($conn, $CASbroncoNetId))
+				if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID))
 				{
 					$viewCounter++;
 			?>
@@ -90,7 +90,7 @@
 				}
 				
 				/*Verify user as administrator to give link to admin view*/
-				if(isAdministrator($conn, $CASbroncoNetId))
+				if(isAdministrator($conn, $CASbroncoNetID))
 				{
 					$viewCounter++;
 			?>

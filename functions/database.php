@@ -118,8 +118,8 @@
 	}
 	
 	/*Returns a single follow up report for a specified application ID*/
-	if(!function_exists('getFUReport')) {
-		function getFUReport($conn, $appID)
+	if(!function_exists('getFollowUpReport')) {
+		function getFollowUpReport($conn, $appID)
 		{
 			$sql = $conn->prepare("Select * FROM follow_up_reports WHERE ApplicationID = :appID");
 			$sql->bindParam(':appID', $appID);
@@ -130,14 +130,14 @@
 			if(!empty($res))
 			{
 				/*create application object*/
-				$FUReport = new FUReport($res[0]);
+				$FollowUpReport = new FollowUpReport($res[0]);
 				
 				
 				/* Close finished query and connection */
 				$sql = null;
 				
-				/* return FUReport object */
-				return $FUReport;
+				/* return FollowUpReport object */
+				return $FollowUpReport;
 			}
 			else
 			{
@@ -626,7 +626,7 @@
 				
 				if($lastApprovedApp != null) //if a previous application exists
 				{
-					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateSubmitted);
 					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
 					
 					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
@@ -666,7 +666,7 @@
 	if(!function_exists('isUserAllowedToCreateFollowUpReport')) {
 		function isUserAllowedToCreateFollowUpReport($conn, $broncoNetID, $appID)
 		{
-			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFUReport($conn, $appID) && isApplicationApproved($conn, $appID))
+			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFollowUpReport($conn, $appID) && isApplicationApproved($conn, $appID))
 			{
 				return true;
 			}
@@ -900,8 +900,8 @@
 	}
 	
 	/* Returns true if this applicant has a follow up r already created, or false otherwise */
-	if(!function_exists('hasFUReport')){
-		function hasFUReport($conn, $appID)
+	if(!function_exists('hasFollowUpReport')){
+		function hasFollowUpReport($conn, $appID)
 		{
 			$is = false;
 			
@@ -1230,10 +1230,6 @@
 				$department = trim(filter_var($department, FILTER_SANITIZE_STRING));
 				//$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
 				$title = trim(filter_var($title, FILTER_SANITIZE_STRING));
-				if ($travelFrom !== ''){$travelFrom = strtotime($travelFrom);}
-				if ($travelTo !== ''){$travelTo = strtotime($travelTo);}
-				if ($activityFrom !== ''){$activityFrom = strtotime($activityFrom);}
-				if ($activityTo!== ''){$activityTo = strtotime($activityTo);}
 				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING));
 				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
 				$purpose1 = filter_var($purpose1, FILTER_SANITIZE_NUMBER_INT);
@@ -1350,18 +1346,30 @@
 				}
 
 				/*Make sure dates are acceptable*/
-				if($travelFrom > $activityFrom)
+				if(!isset($errors["travelFrom"]) && !isset($errors["activityFrom"]))//making sure dates were set
 				{
-					$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
+					if(DateTime::createFromFormat("Y-m-d", $travelFrom) > DateTime::createFromFormat("Y-m-d", $activityFrom))
+					{
+						$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
+					}
 				}
-				if($activityFrom > $activityTo)
+				
+				if(!isset($errors["activityFrom"]) && !isset($errors["activityTo"]))//making sure dates were set
 				{
-					$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
+					if(DateTime::createFromFormat("Y-m-d", $activityFrom) > DateTime::createFromFormat("Y-m-d", $activityTo))
+					{
+						$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
+					}
 				}
-				if($activityTo > $travelTo)
+
+				if(!isset($errors["activityTo"]) && !isset($errors["travelTo"]))//making sure dates were set
 				{
-					$errors["activityTo"] = "Travel dates are impossible (travel cannot end before activity ends!).";
+					if(DateTime::createFromFormat("Y-m-d", $activityTo) > DateTime::createFromFormat("Y-m-d", $travelTo))
+					{
+						$errors["activityTo"] = "Travel dates are impossible (travel cannot end before activity ends!).";
+					}
 				}
+
 				/*Make sure at least one purpose is chosen*/
 				if($purpose1 == 0 && $purpose2 == 0 && $purpose3 == 0 && $purpose4Other === '')
 				{
@@ -1384,7 +1392,7 @@
 				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
 				if($lastApprovedApp != null) //if a previous application exists
 				{
-					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateS);
+					$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateSubmitted);
 					$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
 					
 					$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
