@@ -114,9 +114,9 @@
 								</thead>
 								<tbody>
 									<tr ng-repeat="x in admins">
-										<td>{{ x.BroncoNetID }}</td>
-										<td>{{ x.Name }}</td>
-										<td><a class="btn btn-danger" href="?removeAdminID={{x.BroncoNetID}}">REMOVE</a></td> 
+										<td>{{ x[0] }}</td>
+										<td>{{ x[1] }}</td>
+										<td><a class="btn btn-danger" href="?removeAdminID={{x[0]}}">REMOVE</a></td> 
 									</tr>
 								</tbody>
 							</table>
@@ -159,9 +159,9 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="x in applicationApprovers">
-									<td>{{ x.BroncoNetID }}</td>
-									<td>{{ x.Name }}</td>
-									<td><a class="btn btn-danger" href="?removeApproverID={{x.BroncoNetID}}">REMOVE</a></td> 
+									<td>{{ x[0] }}</td>
+									<td>{{ x[1] }}</td>
+									<td><a class="btn btn-danger" href="?removeApproverID={{x[0]}}">REMOVE</a></td> 
 								</tr>
 							</tbody>
 							</table>
@@ -204,9 +204,9 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="x in committee">
-									<td>{{ x.BroncoNetID }}</td>
-									<td>{{ x.Name }}</td>
-									<td><a class="btn btn-danger" href="?removeCommitteeID={{x.BroncoNetID}}">REMOVE</a></td> 
+									<td>{{ x[0] }}</td>
+									<td>{{ x[1] }}</td>
+									<td><a class="btn btn-danger" href="?removeCommitteeID={{x[0]}}">REMOVE</a></td> 
 								</tr>
 							</tbody>
 							</table>
@@ -248,9 +248,9 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="x in followUpReportApprovers">
-									<td>{{ x.BroncoNetID }}</td>
-									<td>{{ x.Name }}</td>
-									<td><a class="btn btn-danger" href="?removeFollowupID={{x.BroncoNetID}}">REMOVE</a></td> 
+									<td>{{ x[0] }}</td>
+									<td>{{ x[1] }}</td>
+									<td><a class="btn btn-danger" href="?removeFollowupID={{x[0]}}">REMOVE</a></td> 
 								</tr>
 							</tbody>
 							</table>

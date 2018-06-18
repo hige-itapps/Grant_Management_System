@@ -196,6 +196,6 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
 
 $conn = null; //close connection
 
-echo json_encode($insertReturn); //return data
+echo json_encode($insertReturn); //return data to the application page!
 
 ?>

@@ -194,7 +194,7 @@ final class ApplicationsTest extends TestCase
         $thirdApplicantMostRecent = getMostRecentApprovedApplication($this->pdo, $thirdApplicant);
         $newApplicantMostRecent = getMostRecentApprovedApplication($this->pdo, $newApplicant);
 
-        $this->assertEquals("2017-05-20", $firstApplicantMostRecent->dateS);
+        $this->assertEquals("2017-05-20", $firstApplicantMostRecent->dateSubmitted);
         $this->assertEquals(null, $secondApplicantMostRecent);
         $this->assertEquals(null, $thirdApplicantMostRecent);
         $this->assertEquals(null, $newApplicantMostRecent);

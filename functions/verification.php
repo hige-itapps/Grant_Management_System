@@ -67,6 +67,8 @@
 	if(!function_exists('getCycleName')){
 		function getCycleName($date, $nextCycle, $showDueDate)
 		{
+			if(!$date){return null;} //escape if no date was given
+
 			//$date = DateTime::createFromFormat('Y/m/d', $dateString);
 			$dateYear = $date->format("Y");
 			$springDate = DateTime::createFromFormat('m-d', '04-03'); //added 2 days to 'real' deadline to allow for weekends

@@ -33,7 +33,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 	
 	<!-- Page Head -->
 	<?php include 'include/head_content.html'; ?>
-	<body ng-app="HIGE-app">
+	<body ng-app="HIGE-app" >
 	
 		<!-- Shared Site Banner -->
 		<?php include 'include/site_banner.html'; ?>
@@ -43,7 +43,9 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 		<?php
 		
 		/*save the current date*/
-		$newDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+		$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+
+		$app = null; //only set app if it exists (if not creating one)
 
 		$submitDate = null; //date this app was submitted, if at all
 		
@@ -54,9 +56,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 		//echo var_dump($appCharMax);
 		
 		$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
-		$maxEmail = $appCharMax[array_search('Email', array_column($appCharMax, 0))][1]; //email char limit
 		$maxDep = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
-		$maxDepEmail = $appCharMax[array_search('DepartmentChairEmail', array_column($appCharMax, 0))][1]; //dep email char limit
 		$maxTitle = $appCharMax[array_search('Title', array_column($appCharMax, 0))][1]; //title char limit
 		$maxDestination = $appCharMax[array_search('Destination', array_column($appCharMax, 0))][1]; //destination char limit
 		$maxOtherEvent = $appCharMax[array_search('IsOtherEventText', array_column($appCharMax, 0))][1]; //other event text char limit
@@ -138,7 +138,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 		if(!$permissionSet && !isset($_GET["id"]))
 		{
 			$isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true); //applicant is creating an application (check latest date possible)
-			$permissionSet = $isCreating; //will set to true if user is 
+			$permissionSet = $isCreating; //will set to true if user is creating a new application
 		}
 		
 		/*Verify that user is allowed to render application*/
@@ -161,10 +161,6 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 
 			$P = array();
 			$S = array();
-
-
-
-			$app = null; //only set app if it exists (if not creating one)
 			
 			/*Initialize variables if application has already been created*/
 			if(!$isCreating)
@@ -250,9 +246,9 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 					</form>
 				<?php } ?>
 
-
-
 				<div ng-controller="appCtrl">
+
+					<button ng-click="toggleAdminUpdate()" class="btn btn-warning">TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
 
 					<!-- SHOW ERROR/SUCCESS MESSAGES -->
 					<div id="messages"></div>
@@ -260,32 +256,16 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<!-- application form -->
 					<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" ng-submit="processForm()">
 
-						<?php /*if(!$isCreating){ //add extra POST parameter to keep track of app ID when updating ?>
-							<input type="hidden" name="updateID" value="<?php echo $idA ?>" />
-						<?php }*/ ?>
-					
-						
-						<?php/*
-							if(isset($insertReturn)) //if we got a return, then there must be an error from inserting/updating the application the first time
-							{
-								echo '<h1 class="warning" id="smsg">Error(Code #'.$insertReturn[0].'): '.$insertReturn[1].'.</h1>';
-							}*/
-						?>
-
 
 						<div class="row">
 							<h1 class="title">APPLICATION:</h1>
 						</div>
 						
-
-						<?php if($isCreating && isWithinWarningPeriod($newDate)){ //only display a warning if creating ?>
-							<!--SUBMISSION CYCLE WARNING-->
-							<div class="row">
-								<h3 class="title warning">WARNING! DO NOT SUBMIT APPLICATION AFTER THE MIDNIGHT OF A CYCLE'S DUE DATE! <br/>
-									<br/>If you do, your application will be automatically moved forward by one cycle!</h3>
-							</div>
-						<?php } ?>
-						
+						<!--SUBMISSION CYCLE WARNING-->
+						<div class="row" ng-show="shouldWarn">
+							<h3 class="title warning">WARNING! DO NOT SUBMIT APPLICATION AFTER THE MIDNIGHT OF A CYCLE'S DUE DATE! <br/>
+								<br/>If you do, your application will be automatically moved forward by one cycle!</h3>
+						</div>
 					
 						<!--SUBMISSION CYCLE-->
 						<div class="row">
@@ -294,12 +274,12 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 								<fieldset>
 								<legend>Submission Cycle:</legend>
 									<div class="checkbox">
-										<p>Current date: <?php echo $newDate->format('Y/m/d'); ?></p>
+										<p>{{isCreating || isAdminUpdating ? "Current date: "+currentDate : "Date Submitted: "+dateSubmitted}}</p>
 										<div class="radio">
-										<label><input ng-disabled="!allowedFirstCycle" type="radio" value="this" ng-model="formData.cycleChoice" name="cycleChoice">Submit For This Cycle (<?php echo getCycleName($newDate, false, true); ?>)</label>
+										<label><input ng-disabled="!allowedFirstCycle || appFieldsDisabled" type="radio" value="this" ng-model="formData.cycleChoice" name="cycleChoice">Submit For This Cycle ({{thisCycle}})</label>
 										</div>
 										<div class="radio">
-										<label><input type="radio" value="next" ng-model="formData.cycleChoice" name="cycleChoice">Submit For Next Cycle (<?php echo getCycleName($newDate, true, true); ?>)</label>
+										<label><input ng-disabled="appFieldsDisabled" type="radio" value="next" ng-model="formData.cycleChoice" name="cycleChoice">Submit For Next Cycle ({{nextCycle}})</label>
 										</div>
 									</div>
 								</fieldset>
@@ -320,16 +300,15 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<!--NAME-->
 							<div class="col-md-5">
 								<div class="form-group">
-									<label for="name">Name ({{maxName-formData.name.length}} characters remaining):</label>
-									<input type="text" class="form-control" maxlength="{{maxName}}" ng-model="formData.name" ng-disabled="formData.isNameDisabled" id="name" name="name" placeholder="Enter Name" />
+									<label for="name">Name{{isCreating || isAdminUpdating ? " ("+(maxName-formData.name.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxName}}" ng-model="formData.name" ng-disabled="appFieldsDisabled" id="name" name="name" placeholder="Enter Name" />
 								</div>
 							</div>
-
 						<!--EMAIL-->
 							<div class="col-md-7">
 								<div class="form-group">
-									<label for="email">Email Address ({{maxEmail-formData.email.length}} characters remaining):</label>
-									<input type="email" class="form-control" maxlength="{{maxEmail}}" ng-model="formData.email" ng-disabled="formData.isEmailDisabled" id="email" name="email" placeholder="Enter Email Address" />
+									<label for="email">Email Address:</label>
+									<input type="email" class="form-control" maxlength="{{maxEmail}}" ng-model="formData.email" ng-disabled="appFieldsDisabled" id="email" name="email" placeholder="Enter Email Address" />
 								</div>
 							</div>
 						</div>
@@ -340,17 +319,15 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<!--DEPARTMENT-->
 						<div class="col-md-5">
 								<div class="form-group">
-									<label for="department">Department ({{maxDep-formData.department.length}} characters remaining):</label>
-									<input type="text" class="form-control" maxlength="{{maxDep}}" ng-model="formData.department" ng-disabled="formData.isDepartmentDisabled" id="department" name="department" placeholder="Enter Department" />
+									<label for="department">Department{{isCreating || isAdminUpdating ? " ("+(maxDep-formData.department.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxDep}}" ng-model="formData.department" ng-disabled="appFieldsDisabled" id="department" name="department" placeholder="Enter Department" />
 								</div>
 							</div>
-
-							
 						<!--DEPT CHAIR EMAIL-->
 							<div class="col-md-7">
 								<div class="form-group">
-									<label for="deptChairEmail">Department Chair's WMU Email Address ({{maxDepEmail-formData.deptChairEmail.length}} characters remaining):</label>
-									<input type="email" class="form-control" maxlength="{{maxDepEmail}}" ng-model="formData.deptChairEmail" ng-disabled="formData.isDeptChairEmailDisabled" id="deptChairEmail" name="deptChairEmail" placeholder="Enter Department Chair's Email Address" />
+									<label for="deptChairEmail">Department Chair's WMU Email Address:</label>
+									<input type="email" class="form-control" maxlength="{{maxDepEmail}}" ng-model="formData.deptChairEmail" ng-disabled="appFieldsDisabled" id="deptChairEmail" name="deptChairEmail" placeholder="Enter Department Chair's Email Address" />
 								</div>
 							</div>
 						</div>
@@ -369,50 +346,28 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="travelFrom">Travel Date From:</label>
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" ng-model="formData.travelFrom" id="travelFrom" name="travelFrom" <?php if($isAdminUpdating){echo 'value="'.$app->travelFrom.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" ng-model="formData.travelFrom" id="travelFrom" name="travelFrom" disabled="true" value="<?php echo $app->travelFrom; ?>" />
-									<?php } ?>
+									<input type="date" class="form-control" ng-model="formData.travelFrom" ng-disabled="appFieldsDisabled" id="travelFrom" name="travelFrom" />
 								</div>
 							</div>
-							
-						
 						<!--TRAVEL DATE TO-->
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="travelTo">Travel Date To:</label>
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" ng-model="formData.travelTo" id="travelTo" name="travelTo" <?php if($isAdminUpdating){echo 'value="'.$app->travelTo.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" ng-model="formData.travelTo" id="travelTo" name="travelTo" disabled="true" value="<?php echo $app->travelTo; ?>" />
-									<?php } ?>
+									<input type="date" class="form-control" ng-model="formData.travelTo" ng-disabled="appFieldsDisabled" id="travelTo" name="travelTo" />
 								</div>
 							</div>
-							
-							
 						<!--ACTIVITY DATE FROM-->
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="activityFrom">Activity Date From:</label>
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" ng-model="formData.activityFrom" id="activityFrom" name="activityFrom" <?php if($isAdminUpdating){echo 'value="'.$app->activityFrom.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" ng-model="formData.activityFrom" id="activityFrom" name="activityFrom" disabled="true" value="<?php echo $app->activityFrom; ?>" />
-									<?php } ?>
+									<input type="date" class="form-control" ng-model="formData.activityFrom"ng-disabled="appFieldsDisabled"  id="activityFrom" name="activityFrom" />
 								</div>
 							</div>
-							
-							
 						<!--ACTIVITY DATE TO-->
 							<div class="col-md-3">
 								<div class="form-group">
 									<label for="activityTo">Activity Date To:</label>
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="date" class="form-control" ng-model="formData.activityTo" id="activityTo" name="activityTo" <?php if($isAdminUpdating){echo 'value="'.$app->activityTo.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<input type="date" class="form-control" ng-model="formData.activityTo" id="activityTo" name="activityTo" disabled="true" value="<?php echo $app->activityTo; ?>" />
-									<?php } ?>
+									<input type="date" class="form-control" ng-model="formData.activityTo" ng-disabled="appFieldsDisabled" id="activityTo" name="activityTo" />
 								</div>
 							</div>
 						</div>
@@ -423,41 +378,22 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<!--TITLE-->
 							<div class="col-md-4">
 								<div class="form-group">
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<label for="title">Project Title ({{maxTitle-formData.title.length}} characters remaining):</label>
-										<input type="text" class="form-control" maxlength="{{maxTitle}}" ng-model="formData.title" id="title" name="title" placeholder="Enter Title of Research" <?php if($isAdminUpdating){echo 'value="'.$app->title.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<label for="title">Project Title:</label>
-										<input type="text" class="form-control" ng-model="formData.title" id="title" name="title" placeholder="Enter Title of Research" disabled="true" value="<?php echo $app->title; ?>" />
-									<?php } ?>
+									<label for="title">Project Title{{isCreating || isAdminUpdating ? " ("+(maxTitle-formData.title.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxTitle}}" ng-model="formData.title" ng-disabled="appFieldsDisabled" id="title" name="title" placeholder="Enter Title of Research" />
 								</div>
 							</div>
-							
-							
 						<!--DESTINATION-->
 							<div class="col-md-4">
 								<div class="form-group">
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<label for="destination">Destination ({{maxDestination-formData.destination.length}} characters remaining):</label>
-										<input type="text" class="form-control" maxlength="{{maxDestination}}" ng-model="formData.destination" id="destination" name="destination" placeholder="Enter Destination" <?php if($isAdminUpdating){echo 'value="'.$app->destination.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<label for="destination">Destination:</label>
-										<input type="text" class="form-control" ng-model="formData.destination" id="destination" name="destination" placeholder="Enter Destination" disabled="true" value="<?php echo $app->destination; ?>" />
-									<?php } ?>
+									<label for="destination">Destination{{isCreating || isAdminUpdating ? " ("+(maxDestination-formData.destination.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxDestination}}" ng-model="formData.destination" ng-disabled="appFieldsDisabled" id="destination" name="destination" placeholder="Enter Destination" />
 								</div>
 							</div>
-							
-							
 						<!--AMOUNT REQ-->
 							<div class="col-md-4">
 								<div class="form-group">
 									<label for="amountRequested">Amount Requested($):</label>
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<input type="text" class="form-control" ng-model="formData.amountRequested" id="amountRequested" name="amountRequested" placeholder="Enter Amount Requested($)" onkeypress='return (event.which >= 48 && event.which <= 57) 
-											|| event.which == 8 || event.which == 46' <?php if($isAdminUpdating){echo 'value="'.$app->amountRequested.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<input type="text" class="form-control" ng-model="formData.amountRequested" id="amountRequested" name="amountRequested" placeholder="Enter Amount Requested($)" disabled="true" value="<?php echo $app->amountRequested; ?>" />
-									<?php } ?>
+									<input type="text" class="form-control" ng-model="formData.amountRequested" ng-disabled="appFieldsDisabled" id="amountRequested" name="amountRequested" placeholder="Enter Amount Requested($)" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
 								</div>
 							</div>
 						</div>
@@ -472,68 +408,38 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.purpose1" name="purpose1" type="checkbox" value="purpose1">Research</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.purpose1" name="purpose1" type="checkbox" value="purpose1" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->purpose1 == 1) echo "checked"; ?>>Research</label>
-										<?php } ?>
+										<label><input ng-model="formData.purpose1" ng-disabled="appFieldsDisabled" name="purpose1" type="checkbox" value="purpose1">Research</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--PURPOSE:CONFERENCE-->
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.purpose2" name="purpose2" type="checkbox" value="purpose2">Conference</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.purpose2" name="purpose2" type="checkbox" value="purpose2" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->purpose2 == 1) echo "checked"; ?>>Conference</label>
-										<?php } ?>
+										<label><input ng-model="formData.purpose2" ng-disabled="appFieldsDisabled" name="purpose2" type="checkbox" value="purpose2">Conference</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--PURPOSE:CREATIVE ACTIVITY-->
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating  applications ?>
-											<label><input ng-model="formData.purpose3" name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.purpose3" name="purpose3" type="checkbox" value="purpose3" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->purpose3 == 1) echo "checked"; ?>>Creative Activity</label>
-										<?php } ?>
+										<label><input ng-model="formData.purpose3" ng-disabled="appFieldsDisabled" name="purpose3" type="checkbox" value="purpose3">Creative Activity</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--PURPOSE:OTHER-->
 							<div class="row">
 								<div class="col-md-2">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.purpose4OtherDummy" name="purpose4OtherDummy" id="purpose4OtherDummy" type="checkbox" value="purpose4OtherDummy">Other, explain.</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.purpose4OtherDummy" name="purpose4OtherDummy" id="purpose4OtherDummy" type="checkbox" value="purpose4OtherDummy" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->purpose4 != "") echo "checked"; ?>>Other, explain.</label>
-										<?php } ?>
+										<label><input ng-model="formData.purpose4OtherDummy" ng-disabled="appFieldsDisabled" name="purpose4OtherDummy" id="purpose4OtherDummy" type="checkbox" value="purpose4OtherDummy">Other, explain.</label>
 									</div>
 								</div>
-								
+								<!-- OTHER PURPOSE TEXT BOX -->
 								<div class="col-md-10">
 									<div class="form-group">
-										<?php if($isCreating){ //for creating applications ?>
-											<label for="purpose4Other">Explain other purpose ({{maxOtherEvent-formData.purpose4Other.length}} characters remaining):</label>
-											<input type="text" class="form-control" maxlength="{{maxOtherEvent}}" ng-model="formData.purpose4Other" id="purpose4Other" name="purpose4Other" disabled="true" placeholder="Enter Explanation" />
-										<?php }else if($isAdminUpdating){ //for updating applications ?>
-											<label for="purpose4Other">Explain other purpose ({{maxOtherEvent-formData.purpose4Other.length}} characters remaining):</label>
-											<input type="text" class="form-control" maxlength="{{maxOtherEvent}}" ng-model="formData.purpose4Other" id="purpose4Other" name="purpose4Other" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->purpose4; ?>"/>
-										<?php }else{ //for viewing applications ?>
-											<label for="purpose4Other">Explain other purpose:</label>
-											<input type="text" class="form-control" ng-model="formData.purpose4Other" id="purpose4Other" name="purpose4Other" disabled="true" placeholder="Enter Explanation" disabled="true" value="<?php echo $app->purpose4; ?>"/>
-										<?php } ?>
+										<label for="purpose4Other">Explain other purpose{{isCreating || isAdminUpdating ? " ("+(maxOtherEvent-formData.purpose4Other.length)+" characters remaining)" : ""}}:</label>
+										<input type="text" class="form-control" maxlength="{{maxOtherEvent}}" ng-model="formData.purpose4Other" ng-disabled="appFieldsDisabled || !formData.purpose4OtherDummy" id="purpose4Other" name="purpose4Other" placeholder="Enter Explanation" />
 									</div>
 								</div>
 							</div>
@@ -545,13 +451,8 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<label for="otherFunding">Are you receiving other funding? Who is providing the funds? How much? ({{maxOtherFunding-formData.otherFunding.length}} characters remaining):</label>
-										<input type="text" class="form-control" maxlength="{{maxOtherFunding}}" ng-model="formData.otherFunding" id="otherFunding" name="otherFunding" placeholder="Explain here" <?php if($isAdminUpdating){echo 'value="'.$app->otherFunding.'"';} ?>/>
-									<?php }else{ //for viewing applications ?>
-										<label for="otherFunding">Are you receiving other funding? Who is providing the funds? How much?:</label>
-										<input type="text" class="form-control" ng-model="formData.otherFunding" id="otherFunding" name="otherFunding" placeholder="Explain here" disabled="true" value="<?php echo $app->otherFunding; ?>"/>
-									<?php } ?>
+									<label for="otherFunding">Are you receiving other funding? Who is providing the funds? How much?{{isCreating || isAdminUpdating ? " ("+(maxOtherFunding-formData.otherFunding.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxOtherFunding}}" ng-model="formData.otherFunding" ng-disabled="appFieldsDisabled" id="otherFunding" name="otherFunding" placeholder="Explain here" />	
 								</div>
 							</div>
 						</div>
@@ -562,13 +463,8 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
-									<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-										<label for="proposalSummary">Proposal Summary ({{maxProposalSummary-formData.proposalSummary.length}} characters remaining) (We recommend up to 150 words):</label>
-										<textarea class="form-control" maxlength="{{maxProposalSummary}}" ng-model="formData.proposalSummary" id="proposalSummary" name="proposalSummary" placeholder="Enter Proposal Summary" rows="10"><?php if($isAdminUpdating){echo $app->proposalSummary;} ?></textarea>
-									<?php }else{ //for viewing applications ?>
-										<label for="proposalSummary">Proposal Summary:</label>
-										<textarea class="form-control" ng-model="formData.proposalSummary" id="proposalSummary" name="proposalSummary" placeholder="Enter Proposal Summary" rows="10" disabled="true"><?php echo $app->proposalSummary; ?></textarea>
-									<?php } ?>
+									<label for="proposalSummary">Proposal Summary{{isCreating || isAdminUpdating ? " ("+(maxProposalSummary-formData.proposalSummary.length)+" characters remaining)" : ""}} (We recommend up to 150 words):</label>
+									<textarea class="form-control" maxlength="{{maxProposalSummary}}" ng-model="formData.proposalSummary" ng-disabled="appFieldsDisabled" id="proposalSummary" name="proposalSummary" placeholder="Enter Proposal Summary" rows="10"> </textarea>
 								</div>
 							</div>
 						</div>
@@ -583,63 +479,36 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.goal1" name="goal1" type="checkbox" value="goal1">
-											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.goal1" name="goal1" type="checkbox" value="goal1" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->goal1 == 1) echo "checked"; ?>>
-											Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
-										<?php } ?>
+										<label><input ng-model="formData.goal1" ng-disabled="appFieldsDisabled" name="goal1" type="checkbox" value="goal1">
+										Support for international collaborative research and creative activities, or for international research, including archival and field work.</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--GOAL 2-->
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.goal2" name="goal2" type="checkbox" value="goal2">
-											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.goal2" name="goal2" type="checkbox" value="goal2" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->goal2 == 1) echo "checked"; ?>>
-											Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
-										<?php } ?>
+										<label><input ng-model="formData.goal2" ng-disabled="appFieldsDisabled" name="goal2" type="checkbox" value="goal2">
+										Support for presentation at international conferences, seminars or workshops (presentation of papers will have priority over posters)</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--GOAL 3-->
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.goal3" name="goal3" type="checkbox" value="goal3">
-											Support for attendance at international conferences, seminars or workshops.</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.goal3" name="goal3" type="checkbox" value="goal3" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->goal3 == 1) echo "checked"; ?>>
-											Support for attendance at international conferences, seminars or workshops.</label>
-										<?php } ?>
+										<label><input ng-model="formData.goal3" ng-disabled="appFieldsDisabled" name="goal3" type="checkbox" value="goal3">
+										Support for attendance at international conferences, seminars or workshops.</label>
 									</div>
 								</div>
 							</div>
-							
-							
 							<!--GOAL 4-->
 							<div class="row">
 								<div class="col-md-12">
 									<div class="checkbox">
-										<?php if($isCreating){ //for creating applications ?>
-											<label><input ng-model="formData.goal4" name="goal4" type="checkbox" value="goal4">
-											Support for scholarly international travel in order to enrich international knowledge, which will directly
-											contribute to the internationalization of the WMU curricula.</label>
-										<?php }else{ //for viewing or updating applications ?>
-											<label><input ng-model="formData.goal4" name="goal4" type="checkbox" value="goal4" <?php if(!$isAdminUpdating){echo 'disabled="true"';} ?> <?php if($app->goal4 == 1) echo "checked"; ?>>
-											Support for scholarly international travel in order to enrich international knowledge, which will directly
-											contribute to the internationalization of the WMU curricula.</label>
-										<?php } ?>
+										<label><input ng-model="formData.goal4" ng-disabled="appFieldsDisabled" name="goal4" type="checkbox" value="goal4">
+										Support for scholarly international travel in order to enrich international knowledge, which will directly
+										contribute to the internationalization of the WMU curricula.</label>
 									</div>
 								</div>
 							</div>
@@ -669,58 +538,31 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 									<thead>
 										<tr>
 											<th>Expense:</th>
-											
-											<?php if($isCreating || $isAdminUpdating){ //for creating or updating applications ?>
-												<th>Comments (up to {{maxBudgetComment}} characters):</th>
-											<?php }else{ //for viewing applications ?>
-												<th>Comments:</th>
-											<?php } ?>
-											
+											<th>Comments (up to {{maxBudgetComment}} characters each):</th>
 											<th>Amount($):</th>
 										</tr>
 									</thead>
-									
-									
 								<!--BUDGET:TABLE BODY-->
 									<tbody>
 										<tr class="row" ng-repeat="budgetItem in formData.budgetItems">
 										<!--BUDGET:EXPENSE-->
 											<td>
 												<div class="form-group">
-													<?php if($isCreating){ //for creating applications ?>
-														<select ng-model="budgetItem.expense" class="form-control" name="{{budgetItem.expense}}" value="{{budgetItem.expense}}" >
-															<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
-														</select>
-													<?php }else{ //for viewing or updating applications ?>
-														<select ng-model="budgetItem.expense" class="form-control" name="{{budgetItem.expense}}" value="{{budgetItem.expense}}" <?php if(!$isAdminUpdating){echo 'disabled';} ?>>
-															<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
-														</select>
-													<?php } ?>
+													<select class="form-control" ng-model="budgetItem.expense" ng-disabled="appFieldsDisabled" name="{{budgetItem.expense}}" value="{{budgetItem.expense}}" >
+														<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
+													</select>
 												</div>
 											</td>
-								
-								
-										
 										<!--BUDGET:COMMENTS-->
 											<td>
 												<div class="form-group">
-													<?php if($isCreating){ //for creating applications ?>
-														<input type="text" class="form-control" maxlength="{{maxBudgetComment}}" name="{{budgetItem.comment}}" ng-model="budgetItem.comment" placeholder="Explain..." />
-													<?php }else{ //for viewing or updating applications ?>
-														<input type="text" class="form-control" name="{{budgetItem.comment}}" ng-model="budgetItem.comment" placeholder="Explain..." <?php if(!$isAdminUpdating){echo 'disabled';} ?> value="{{budgetItem.comment}}" />
-													<?php } ?>
+													<input type="text" class="form-control" ng-model="budgetItem.comment" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetComment}}" name="{{budgetItem.comment}}" placeholder="Explain..." />
 												</div>
 											</td>
-											
-											
 										<!--BUDGET:AMOUNT-->
 											<td>
 												<div class="form-group">
-													<?php if($isCreating || $isAdminUpdating){ //for creating applications ?>
-														<input type="text" class="form-control" name="{{budgetItem.amount}}" ng-model="budgetItem.amount" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
-													<?php }else{ //for viewing or updating applications ?>
-														<input type="text" class="form-control" name="{{budgetItem.amount}}" ng-model="budgetItem.amount" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' <?php if(!$isAdminUpdating){echo 'disabled';} ?> value="{{budgetItem.amount}}" />
-													<?php } ?>
+													<input type="text" class="form-control" ng-model="budgetItem.amount" ng-disabled="appFieldsDisabled" name="{{budgetItem.amount}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
 												</div>
 											</td>
 										</tr>
@@ -785,39 +627,27 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						
 						
 						
-						<br><br>
 						<div class="row">
 						<!--DEPARTMENT CHAIR APPROVAL-->
 							<div class="col-md-3"></div>
 							<div class="col-md-6">
 								<h3 class="title">Note: Applications received without the approval of the chair will not be considered.</h3>
 								<div class="form-group">
-									<?php if($isChair){ //for department chair to sign ?>
-											<label for="deptChairApproval">Your Approval (up to <?php echo $maxDepChairSig ?> characters):</label>
-											<input type="text" class="form-control" ng-model="formData.deptChairApproval" id="deptChairApproval" name="deptChairApproval" placeholder="Type Your Full Name Here" required/>
-									<?php }else{ //not department chair
-											if($isCreating){ //for when user is creating application ?>
-												<label for="deptChairApproval">Department Chair Approval:</label>
-												<input type="text" class="form-control" ng-model="formData.deptChairApproval" id="deptChairApproval" name="deptChairApproval" placeholder="Department Chair Must Type Name Here" disabled="true"/>
-											<?php }else if(isApplicationSigned($conn, $idA) > 0){ //application is signed, so show signature ?>
-												<label for="deptChairApproval">Department Chair Approval:</label>
-												<input type="text" class="form-control" ng-model="formData.deptChairApproval" id="deptChairApproval" name="deptChairApproval" placeholder="Department Chair Must Type Name Here" disabled="true" value="<?php echo $app->deptChairApproval; ?>"/>
-										<?php }else{ //application isn't signed, so show default message ?>
-												<label for="deptChairApproval">Department Chair Approval:</label>
-												<input type="text" class="form-control" ng-model="formData.deptChairApproval" id="deptChairApproval" name="deptChairApproval" placeholder="Department Chair Must Type Name Here" disabled="true"/>
-									<?php }
-										} ?>
+									<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxProposalSummary-formData.proposalSummary.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
+									<input type="text" class="form-control" ng-model="formData.deptChairApproval" ng-disabled="{{!isChair ? true : false}}" id="deptChairApproval" name="deptChairApproval" placeholder="{{isChair ? 'Type Your Full Name Here' : 'Department Chair Must Type Name Here'}}" />
 								</div>
 							</div>
 							<div class="col-md-3"></div>
 						</div>
+
+
 						<?php if($isApprover || $isAdmin) { ?>
 						<div class="row">
 						<!--EMAIL EDIT-->
 							<div class="col-md-12">
 								<div class="form-group">
 									<label for="finalE">EMAIL TO BE SENT:</label>
-									<textarea class="form-control" ng-model="formData.finalE" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 required /></textarea>
+									<textarea class="form-control" ng-model="formData.finalE" id="finalE" name="finalE" placeholder="Enter email body, with greetings." rows=20 /></textarea>
 								</div>
 							</div>
 						</div>
@@ -861,8 +691,6 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 						</div>
 					</form>
 					
-					<span id="loadSpinner" class="lt" style="visibility: hidden;">Submitting... <i class="fa fa-spinner fa-spin" style="font-size:35px !important;"></i></span>
-					
 					<!-- SHOW DATA FROM INPUTS AS THEY ARE BEING TYPED -->
 					<pre>
 						{{ formData }}
@@ -897,7 +725,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 		
 		var myApp = angular.module('HIGE-app', []);
 		
-		myApp.controller('appCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce){
+		myApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce, $filter){
 
 			/*Functions*/
 
@@ -905,10 +733,13 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 			$scope.processForm = function() {
 
 				$sendData = JSON.parse(JSON.stringify($scope.formData)); //create a deep copy of the formdata to send. This almost formats the dates to a good format, but also tacks on a timestamp such as T04:00:00.000Z, which still needs to be removed.
-				$sendData.travelTo = $sendData.travelTo.substr(0,$sendData.travelTo.indexOf('T')); //Remove everything starting from 'T'
-				$sendData.travelFrom = $sendData.travelFrom.substr(0,$sendData.travelFrom.indexOf('T')); //Remove everything starting from 'T'
-				$sendData.activityTo = $sendData.activityTo.substr(0,$sendData.activityTo.indexOf('T')); //Remove everything starting from 'T'
-				$sendData.activityFrom = $sendData.activityFrom.substr(0,$sendData.activityFrom.indexOf('T')); //Remove everything starting from 'T'
+				//alert("date null? " + ($sendData.travelTo == null));
+				//alert($sendData.travelTo);
+				
+				if($sendData.travelTo != null){		$sendData.travelTo = $sendData.travelTo.substr(0,$sendData.travelTo.indexOf('T'));} //Remove everything starting from 'T'
+				if($sendData.travelFrom != null){	$sendData.travelFrom = $sendData.travelFrom.substr(0,$sendData.travelFrom.indexOf('T'));} //Remove everything starting from 'T'
+				if($sendData.activityTo != null){	$sendData.activityTo = $sendData.activityTo.substr(0,$sendData.activityTo.indexOf('T'));} //Remove everything starting from 'T'
+				if($sendData.activityFrom != null){	$sendData.activityFrom = $sendData.activityFrom.substr(0,$sendData.activityFrom.indexOf('T'));} //Remove everything starting from 'T'
 				
 				$http({
 					method  : 'POST',
@@ -954,7 +785,12 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 				return (total).toFixed(2);
 			}
 
-
+			//function to turn on/off admin updating
+			$scope.toggleAdminUpdate = function(){
+				$scope.isAdmin = !$scope.isAdmin; //toggle the isAdmin permission
+				$scope.isAdminUpdating = !$scope.isAdmin; //set the isAdminUpdating permission to the opposite of isAdmin
+				$scope.appFieldsDisabled = $scope.isAdmin; //update the fields to be editable or non-editable
+			}
 
 
 			/*On startup*/
@@ -971,18 +807,23 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 								{ name: "Per Diem"},
 								{ name: "Other"}];
 
+			//current date
+			$scope.currentDate = <?php echo json_encode($currentDate->format('Y-m-d')); ?>;
 
+			//init vars false
 			$scope.allowedFirstCycle = false;
+			$scope.shouldWarn = false;
 
+			//get names of this and next cycle
+			$scope.thisCycle = <?php echo json_encode(getCycleName($currentDate, false, true)); ?>;
+			$scope.nextCycle = <?php echo json_encode(getCycleName($currentDate, true, true)); ?>;
 
 			/*Get user's email address*/
 			$CASemail = <?php echo json_encode($CASemail); ?>;
 
 			/*Get character limits from php code*/				
 			$scope.maxName = <?php echo json_encode($maxName); ?>;
-			$scope.maxEmail = <?php echo json_encode($maxEmail); ?>;
 			$scope.maxDep = <?php echo json_encode($maxDep); ?>;
-			$scope.maxDepEmail = <?php echo json_encode($maxDepEmail); ?>;
 			$scope.maxTitle = <?php echo json_encode($maxTitle); ?>;
 			$scope.maxDestination = <?php echo json_encode($maxDestination); ?>;
 			$scope.maxOtherEvent = <?php echo json_encode($maxOtherEvent); ?>;
@@ -993,31 +834,72 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 			
 			
 			/*Get user permissions from php code*/
-			$isCreating = <?php echo json_encode($isCreating); ?>;
-			$isReviewing = <?php echo json_encode($isReviewing); ?>;
-			$isAdmin = <?php echo json_encode($isAdmin); ?>;
-			$isAdminUpdating = <?php echo json_encode($isAdminUpdating); ?>;
-			$isCommittee = <?php echo json_encode($isCommittee); ?>;
-			$isChair = <?php echo json_encode($isChair); ?>;
-			$isChairReviewing = <?php echo json_encode($isChairReviewing); ?>;
-			$isApprover = <?php echo json_encode($isApprover); ?>;
+			$scope.isCreating = <?php echo json_encode($isCreating); ?>;
+			$scope.isReviewing = <?php echo json_encode($isReviewing); ?>;
+			$scope.isAdmin = <?php echo json_encode($isAdmin); ?>;
+			$scope.isAdminUpdating = <?php echo json_encode($isAdminUpdating); ?>;
+			$scope.isCommittee = <?php echo json_encode($isCommittee); ?>;
+			$scope.isChair = <?php echo json_encode($isChair); ?>;
+			$scope.isChairReviewing = <?php echo json_encode($isChairReviewing); ?>;
+			$scope.isApprover = <?php echo json_encode($isApprover); ?>;
 
 			/*If not creating, get app data and populate entire form*/
-			if(!$isCreating)
+			if(!$scope.isCreating)
 			{
 				$app = <?php echo json_encode($app); ?>; //app data from php code
 				$scope.formData.updateID = $app.id; //set the update id for the server
+				$scope.dateSubmitted = $app.dateSubmitted; //set the submission date
 
-				//populate the form with the app data, and disable inputs!
-				$scope.formData.name = $app.name;						$scope.formData.isNameDisabled = true;
-				$scope.formData.email = $app.email;						$scope.formData.isEmailDisabled = true;
-				$scope.formData.department = $app.department;			$scope.formData.isDepartmentDisabled = true;
-				$scope.formData.deptChairEmail = $app.deptChairEmail;	$scope.formData.isDeptChairEmailDisabled = true;
+				//overwrite the cycle & nextCycle based off the date submitted, not the current date
+				$scope.thisCycle = <?php echo json_encode(getCycleName($submitDate, false, true)); ?>;
+				$scope.nextCycle = <?php echo json_encode(getCycleName($submitDate, true, true)); ?>;
+
+				//disable app inputs
+				$scope.appFieldsDisabled = true;
+
+				//populate the form with the app data
+				$scope.formData.cycleChoice = $app.nextCycle ? "next" : "this";
+				$scope.formData.name = $app.name;
+				$scope.formData.email = $app.email;
+				$scope.formData.department = $app.department;
+				$scope.formData.deptChairEmail = $app.deptChairEmail;
+				//dates require a bit of extra work to convert properly! Javascript offsets the dates based on timezones, and one way to combat that is by replacing hyphens with slashes (don't ask me why)
+				/*alert(new Date($app.travelFrom));
+				alert(new Date($app.travelFrom.replace(/-/g, '\/')));*/
+				$scope.formData.travelFrom = new Date($app.travelFrom.replace(/-/g, '\/'));
+				$scope.formData.travelTo = new Date($app.travelTo.replace(/-/g, '\/'));
+				$scope.formData.activityFrom = new Date($app.activityFrom.replace(/-/g, '\/'));
+				$scope.formData.activityTo = new Date($app.activityTo.replace(/-/g, '\/'));
+				$scope.formData.title = $app.title;
+				$scope.formData.destination = $app.destination;
+				$scope.formData.amountRequested = $app.amountRequested;
+				//check boxes using conditional (saved as numbers; need to be converted to true/false)
+				$scope.formData.purpose1 = $app.purpose1 ? true : false;
+				$scope.formData.purpose2 = $app.purpose2 ? true : false;
+				$scope.formData.purpose3 = $app.purpose3 ? true : false;
+				$scope.formData.purpose4OtherDummy = $app.purpose4 ? true : false; //set to true if any value exists
+				$scope.formData.purpose4Other = $app.purpose4;
+				$scope.formData.otherFunding = $app.otherFunding;
+				$scope.formData.proposalSummary = $app.proposalSummary;
+				$scope.formData.goal1 = $app.goal1 ? true : false;
+				$scope.formData.goal2 = $app.goal2 ? true : false;
+				$scope.formData.goal3 = $app.goal3 ? true : false;
+				$scope.formData.goal4 = $app.goal4 ? true : false;
+
+				//add the budget items
+				for($i = 0; $i < $app.budget.length; $i++) {
+					$scope.addInput($app.budget[$i][2], $app.budget[$i][4], $app.budget[$i][3]);
+				}
+	
+				$scope.formData.deptChairApproval = $app.deptChairApproval;
 			}
 			else //otherwise, only fill in a few fields
 			{
 				//find out if user is allowed to create application for the first available cycle
 				$scope.allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, false)); ?>;
+				
+				//find out if the submission warning should display
+				$scope.shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
 
 				if($scope.allowedFirstCycle)
 				{
@@ -1029,44 +911,15 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 				}
 				//by default, set the email field to this user's email
 				$scope.formData.email = $CASemail;
+
+				//add a few blank budget items
+				$scope.addInput();
+				$scope.addInput();
+				$scope.addInput();
 			}
 
-
-			//add a few empty budget items in by default if creating application. Otherwise, load all the existing items
-			<?php if($isCreating){ ?>
-				$scope.addInput();
-				$scope.addInput();
-				$scope.addInput();
-			<?php }else{ 
-				for($i = 0; $i < count($app->budget); $i++) { ?>
-					$scope.addInput("<?php echo $app->budget[$i][2]; ?>" , "<?php echo $app->budget[$i][4]; ?>" , <?php echo $app->budget[$i][3]; ?>);
-				<?php }
-			 } ?>
-
 		}]);
-		
-		
-		function onSubmission() {
-			$("#loadSpinner").css("visibility", "visible");
-		}
-		
-		/*Messages disabled*/
-		/*var c = 6;
-		setInterval(function() {
-			if(c != 0)
-				c--;
-			if(c == 0)
-				if(document.getElementById("smsg") != null)
-					$("#smsg").remove();
-		}, 1000);*/
-		
-		/*FIN DATES*/
-		/*OTHER ACTIVITY CHECK*/
-		/*activate 'other purpose' box when corresponding checkbox is checked*/
-		document.getElementById('purpose4OtherDummy').onchange = function() {
-			document.getElementById('purpose4Other').disabled = !this.checked;
-		};
-		
+	
 	</script>
 	<!-- End Script -->
 </html>

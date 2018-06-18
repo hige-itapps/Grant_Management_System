@@ -1465,12 +1465,7 @@
 				{
 					try
 					{
-						//Get dates
 						$curDate = date("Y/m/d");
-						$travelFromDate = date("Y-m-d", $travelFrom);
-						$travelToDate = date("Y-m-d", $travelTo);
-						$activityFromDate = date("Y-m-d", $activityFrom);
-						$activityToDate = date("Y-m-d", $activityTo);
 						
 						$conn->beginTransaction(); //begin atomic transaction
 						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
@@ -1486,10 +1481,10 @@
 						//$sql->bindParam(':mailstop', $departmentMailStop);
 						$sql->bindParam(':email', $email);
 						$sql->bindParam(':title', $title);
-						$sql->bindParam(':travelstart', $travelFromDate);
-						$sql->bindParam(':travelend', $travelToDate);
-						$sql->bindParam(':eventstart', $activityFromDate);
-						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':travelstart', $travelFrom);
+						$sql->bindParam(':travelend', $travelTo);
+						$sql->bindParam(':eventstart', $activityFrom);
+						$sql->bindParam(':eventend', $activityTo);
 						$sql->bindParam(':destination', $destination);
 						$sql->bindParam(':amountrequested', $amountRequested);
 						$sql->bindParam(':isresearch', $purpose1);
@@ -1507,7 +1502,7 @@
 						
 						if ($sql->execute() === TRUE) //query executed correctly
 						{
-							$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+							//$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
 							
 							/*get the application ID of the just-added application*/
 							$sql = $conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
@@ -1515,28 +1510,47 @@
 							$sql->execute();
 							$newAppID = $sql->fetchAll(PDO::FETCH_NUM)[0][0];//now we have the current ID!
 							
-							/*go through budget array*/
-							foreach($budgetArray as $i)
+							try
 							{
-								if(!empty($i))
+								foreach($budgetArray as $i)//go through budget array
 								{
-									$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
-									$sql->bindParam(':appID', $newAppID);
-									$sql->bindParam(':name', $i[0]);
-									$sql->bindParam(':cost', $i[2]);
-									$sql->bindParam(':comment', $i[1]);
-									
-									if ($sql->execute() === TRUE) //query executed correctly
+									if(!empty($i))
 									{
-										$conn->commit(); //commit next part of transaction
-									}
-									else //query failed
-									{
-										$conn->rollBack(); //rollBack the transaction
-										$errors["other"] = "Query failed to insert budget items";
-										break;
+										echo "going to insert:";
+										var_dump($i);
+
+										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+										$sql->bindParam(':appID', $newAppID);
+										$sql->bindParam(':name', $i['expense']);
+										$sql->bindParam(':cost', $i['amount']);
+										$sql->bindParam(':comment', $i['comment']);
+										
+										if ($sql->execute() === TRUE) //query executed correctly
+										{
+											//$conn->commit(); //commit next part of transaction
+										}
+										else //query failed
+										{
+											//$conn->rollBack(); //rollBack the transaction
+											$errors["other"] = "Query failed to insert budget items";
+											break;
+										}
 									}
 								}
+
+								//at this point, if there are no errors, we should be able to commit to the database. Otherwise we should rollback.
+								if(empty($errors))
+								{
+									$conn->commit();
+								}
+								else
+								{
+									$conn->rollBack();
+								}
+							}
+							catch(Exception $e)
+							{
+								$errors["other"] = "Exception when trying to insert application budget items into database: ".$e->getMessage();
 							}
 						} 
 						else //query failed
@@ -1546,19 +1560,13 @@
 					}
 					catch(Exception $e)
 					{
-						$errors["other"] = "Exception when trying to insert application into database";
+						$errors["other"] = "Exception when trying to insert application into database: ".$e->getMessage();
 					}
 				}
 				else //just updating
 				{
 					try
 					{
-						//Get relevant dates
-						$travelFromDate = date("Y-m-d", $travelFrom);
-						$travelToDate = date("Y-m-d", $travelTo);
-						$activityFromDate = date("Y-m-d", $activityFrom);
-						$activityToDate = date("Y-m-d", $activityTo);
-						
 						$conn->beginTransaction(); //begin atomic transaction
 						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
 						/*Prepare the query*/
@@ -1573,10 +1581,10 @@
 						//$sql->bindParam(':mailstop', $departmentMailStop);
 						$sql->bindParam(':email', $email);
 						$sql->bindParam(':title', $title);
-						$sql->bindParam(':travelstart', $travelFromDate);
-						$sql->bindParam(':travelend', $travelToDate);
-						$sql->bindParam(':eventstart', $activityFromDate);
-						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':travelstart', $travelFrom);
+						$sql->bindParam(':travelend', $travelTo);
+						$sql->bindParam(':eventstart', $activityFrom);
+						$sql->bindParam(':eventend', $activityTo);
 						$sql->bindParam(':destination', $destination);
 						$sql->bindParam(':amountrequested', $amountRequested);
 						$sql->bindParam(':isresearch', $purpose1);
@@ -1595,7 +1603,7 @@
 						
 						if ($sql->execute() === TRUE) //query executed correctly
 						{
-							$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
+							//$conn->commit();//commit first part of transaction (we can still rollback if something ahead fails)
 							
 							/*delete previous budget items*/
 							$sql = $conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID=:id");
@@ -1603,7 +1611,7 @@
 
 							if ($sql->execute() === TRUE) //query executed correctly
 							{
-								$conn->commit();//commit second part of transaction
+								//$conn->commit();//commit second part of transaction
 
 								/*go through budget array*/
 								foreach($budgetArray as $i)
@@ -1612,26 +1620,36 @@
 									{
 										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
 										$sql->bindParam(':appID', $updateID);
-										$sql->bindParam(':name', $i[0]);
-										$sql->bindParam(':cost', $i[2]);
-										$sql->bindParam(':comment', $i[1]);
+										$sql->bindParam(':name', $i['expense']);
+										$sql->bindParam(':cost', $i['amount']);
+										$sql->bindParam(':comment', $i['comment']);
 										
 										if ($sql->execute() === TRUE) //query executed correctly
 										{
-											$conn->commit(); //commit next part of transaction
+											//$conn->commit(); //commit next part of transaction
 										}
 										else //query failed
 										{
-											$conn->rollBack(); //rollBack the transaction
+											//$conn->rollBack(); //rollBack the transaction
 											$errors["other"] = "Query failed to insert new budget items";
 											break;
 										}
 									}
 								}
+
+								//at this point, if there are no errors, we should be able to commit to the database. Otherwise we should rollback.
+								if(empty($errors))
+								{
+									$conn->commit();
+								}
+								else
+								{
+									$conn->rollBack();
+								}
 							}
 							else
 							{
-								$conn->rollBack(); //rollBack the transaction
+								//$conn->rollBack(); //rollBack the transaction
 								$errors["other"] = "Query failed to delete old budget items";
 							}
 						} 
@@ -1642,7 +1660,7 @@
 					}
 					catch(Exception $e)
 					{
-						$errors["other"] = "Exception when trying to update application in database";
+						$errors["other"] = "Exception when trying to update application in database: ".$e->getMessage();
 					}
 				}
 			}
@@ -1667,6 +1685,7 @@
 				}
 			}
 			
+			$data["temp"] = "just a test";
 			return $data; //return both the return code and status
 		}
 	}
