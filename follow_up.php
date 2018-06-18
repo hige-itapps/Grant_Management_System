@@ -123,7 +123,7 @@
 		$isAdminUpdating = false; //user is an administrator who is updating the report
 		$isCommittee = false; //user is a committee member
 		$isChairReviewing = false; //user is the associated department chair, but cannot do anything (just for reviewing purposes)
-		$isFUApprover = false; //user is a follow-up report approver
+		$isFollowUpReportApprover = false; //user is a follow-up report approver
 		
 		$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
 		
@@ -145,8 +145,8 @@
 			//application approver check
 			if(!$permissionSet)
 			{
-				$isFUApprover = isFollowUpReportApprover($conn, $CASbroncoNetID); //application approver(director) can write notes, choose awarded amount, and generate email text
-				$permissionSet = $isFUApprover;
+				$isFollowUpReportApprover = isFollowUpReportApprover($conn, $CASbroncoNetID); //application approver(director) can write notes, choose awarded amount, and generate email text
+				$permissionSet = $isFollowUpReportApprover;
 			}
 
 			//department chair reviewing check
@@ -228,7 +228,7 @@
 				/*User wants to approve this report*/
 				if(isset($_POST["approveA"]))
 				{
-					if(approveFU($conn, $idA))
+					if(approveFollowUpReport($conn, $idA))
 					{
 						customEmail(trim($app->email), nl2br($_POST["finalE"]), "");
 						header('Location: index.php'); //redirect to homepage
@@ -238,7 +238,7 @@
 				/*User wants to deny this report*/
 				if(isset($_POST["denyA"]))
 				{
-					if(denyFU($conn, $idA))
+					if(denyFollowUpReport($conn, $idA))
 					{
 						customEmail(trim($app->email), nl2br($_POST["finalE"]), "");
 						header('Location: index.php'); //redirect to hommepage
@@ -464,7 +464,7 @@
 						
 						
 						<br><br>
-						<?php if($isFUApprover || $isAdmin) { ?>
+						<?php if($isFollowUpReportApprover || $isAdmin) { ?>
 						<div class="row">
 						<!--EMAIL EDIT-->
 							<div class="col-md-12">
@@ -485,7 +485,7 @@
 									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT FOLLOW-UP REPORT" />
 								<?php }else if($isAdminUpdating){ //show submit edits button and cancel button if editing?>
 									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
-								<?php }else if($isAdmin || $isFUApprover){ //show update, approve, and deny buttons if admin or approver ?>
+								<?php }else if($isAdmin || $isFollowUpReportApprover){ //show update, approve, and deny buttons if admin or approver ?>
 									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to approve this follow-up report?')" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE FOLLOW-UP REPORT" />
 									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to deny this follow-up report?')" class="btn btn-danger" id="denyApp" name="denyA" value="DENY FOLLOW-UP REPORT" />
 								<?php }else if($isReviewing){ ?>
@@ -493,7 +493,7 @@
 								<?php } ?>
 							</div>
 							<div class="col-md-2">
-								<a href="index.php" <?php if($isCreating || $isAdminUpdating || $isAdmin || $isFUApprover){ ?> onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" <?php } ?> class="btn btn-info">LEAVE PAGE</a>
+								<a href="index.php" <?php if($isCreating || $isAdminUpdating || $isAdmin || $isFollowUpReportApprover){ ?> onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" <?php } ?> class="btn btn-info">LEAVE PAGE</a>
 							</div>
 							<div class="col-md-2"></div>
 						</div>

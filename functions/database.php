@@ -1148,9 +1148,9 @@
 	
 	
 
-	/*Update a FU Report to be approved*/
-	if(!function_exists('approveFU')){
-		function approveFU($conn, $id)
+	/*Update a Follow Up Report to be approved*/
+	if(!function_exists('approveFollowUpReport')){
+		function approveFollowUpReport($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
@@ -1167,9 +1167,9 @@
 		}
 	}
 	
-	/*Update a FU Report to be denied*/
-	if(!function_exists('denyFU')){
-		function denyFU($conn, $id)
+	/*Update a Follow Up Report to be denied*/
+	if(!function_exists('denyFollowUpReport')){
+		function denyFollowUpReport($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
