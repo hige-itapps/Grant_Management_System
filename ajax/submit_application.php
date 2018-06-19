@@ -1,24 +1,19 @@
 <?php
-//For AJAX access
-header('Access-Control-Allow-Origin: *');
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-
-	/*Debug user validation*/
-	//include "include/debugAuthentication.php";
-	include_once(dirname(__FILE__) . "/include/CAS_login.php");
+	/*User validation*/
+	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/functions/database.php");
+	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
 	
 	/*Verification functions*/
-	include_once(dirname(__FILE__) . "/functions/verification.php");
+	include_once(dirname(__FILE__) . "/../functions/verification.php");
 	
 	/*Document functions*/
-	include_once(dirname(__FILE__) . "/functions/documents.php");
+	include_once(dirname(__FILE__) . "/../functions/documents.php");
 
 	/*For sending custom emails*/
-	include_once(dirname(__FILE__) . "/functions/customEmail.php");
+	include_once(dirname(__FILE__) . "/../functions/customEmail.php");
 
 
 	/*for dept. chair email message*/
@@ -27,20 +22,18 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 ?>
 
 <?php
-//ob_start();
-
-/*************FOR ADDING OR UPDATING APPLICATION VIA SUMBISSION***************/
+/************* FOR ADDING OR UPDATING APPLICATION VIA SUMBISSION ***************/
 
 $insertReturn = null; //will be an array with return code and status, or an array of errors
 //$data = array();    // array to pass back data
 
 
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/PHPMAILER/src/Exception.php';
+    require_once dirname(__FILE__) . '/../PHPMAILER/src/Exception.php';
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/PHPMAILER/src/PHPMailer.php';
+    require_once dirname(__FILE__) . '/../PHPMAILER/src/PHPMailer.php';
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/PHPMAILER/src/SMTP.php';
+    require_once dirname(__FILE__) . '/../PHPMAILER/src/SMTP.php';
 
 // Please specify your Mail Server - Example: mail.example.com.
 ini_set("SMTP","mail.example.com");
@@ -61,19 +54,6 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
     
     try
     {
-        //$budgetItems = [[]]; //array of budget items
-        //$count = 0; //budget items index. Use this +1 to find name of current index (see below)
-        /*while(true) //loop until no more budget items remaining
-        {
-            if(isset($_POST["amount" . ($count+1)])) {//make sure this index is used
-                $budgetItems[$count][0] = $_POST["expense" . ($count+1)];
-                $budgetItems[$count][1] = $_POST["comment" . ($count+1)];
-                $budgetItems[$count][2] = $_POST["amount" . ($count+1)];
-            }else{
-                break;
-            }
-            $count++;
-        }*/
         /*Get the budget items*/
         $budgetItems = null;
         if(isset($_POST["budgetItems"])){$budgetItems = $_POST["budgetItems"];}
@@ -189,7 +169,7 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
     }
     catch(Exception $e)
     {
-        //echo "Error adding application: " . $e->getMessage();
+        echo "Error adding application: " . $e->getMessage();
     }
     
 }

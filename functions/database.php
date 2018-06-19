@@ -1275,6 +1275,7 @@
 				if($name === '')
 				{
 					$errors["name"] = "Name field is required.";
+					$errors["other"] = "This is an example other error!";
 				}
 
 				if($email === '')
@@ -1416,31 +1417,31 @@
 					print_r($i);
 					var_dump($i);*/
 
-					if(!empty($i))
+					if(!empty($item))
 					{
-						if(!isset($i["expense"]))
+						if(!isset($item["expense"]))
 						{
 							$errors["budgetArray ".($index+1)." expense"] = "Budget expense is required.";
 						}
-						else if($i["expense"] === '')
+						else if($item["expense"] === '')
 						{
 							$errors["budgetArray ".($index+1)." expense"] = "Budget expense is required.";
 						}
 
-						if(!isset($i["comment"]))
+						if(!isset($item["comment"]))
 						{
 							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
 						}
-						else if($i["comment"] === '')
+						else if($item["comment"] === '')
 						{
 							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
 						}
 
-						if(!isset($i["amount"]))
+						if(!isset($item["amount"]))
 						{
 							$errors["budgetArray ".($index+1)." amount"] = "Budget amount is required.";
 						}
-						else if($i["amount"] <= 0)
+						else if($item["amount"] <= 0)
 						{
 							$errors["budgetArray ".($index+1)." amount"] = "Budget amount must be greater than $0";
 						}
@@ -1685,7 +1686,7 @@
 				}
 			}
 			
-			$data["temp"] = "just a test";
+			//$data["temp"] = "just a test";
 			return $data; //return both the return code and status
 		}
 	}

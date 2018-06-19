@@ -117,8 +117,8 @@ caption{
 	overflow:hidden;
 }
 
-/*format Update forms*/
-#updateForm{
+/*format button groups*/
+.buttons-group{
 	text-align: center;
 }
 
@@ -160,25 +160,33 @@ caption{
 	word-wrap: break-word; /*prevent them from overlapping other elements*/
 }
 
-/*plus and minus buttons*/#addBudget, #removeBudget{
-	display: inline;
-}
-#addBudget{
-	color: blue;
-}
-#removeBudget{
-	color: red;
-}
 #budgetButtons{
 	text-align: center;
 }
 
 /*Format budget list*/
+
 #budgetList .form-group{
 	margin-left: 0; /*remove negative margin*/
 	margin-right: 0;
 }
-
-#budgetList tr::before{
-	content: none; /*remove blank space before table rows*/
+#budgetList li div{
+	margin: 0;
+	padding: 0px 5px;
 }
+
+/*format error help blocks*/
+.help-block{
+	color: red!important;
+}
+
+/*By default, have alerts be fixed at the bottom of the screen. Increase the z-index a bit to render in front of some other elements that might otherwise get in the way*/
+.alert{
+	position: fixed;
+	bottom: 0;
+	min-width: 80%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
