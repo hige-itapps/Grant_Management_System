@@ -41,8 +41,8 @@
 		$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
 
 		$app = null; //only set app if it exists (if not creating one)
-
-		$submitDate = null; //date this app was submitted, if at all
+		$submitDate = null; //^
+		$appStatus = null; //^
 		
 		/*get initial character limits for text fields*/
 		$appCharMax = getApplicationsMaxLengths($conn);
@@ -51,13 +51,13 @@
 		//echo var_dump($appCharMax);
 		
 		$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
-		$maxDep = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
+		$maxDepartment = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
 		$maxTitle = $appCharMax[array_search('Title', array_column($appCharMax, 0))][1]; //title char limit
 		$maxDestination = $appCharMax[array_search('Destination', array_column($appCharMax, 0))][1]; //destination char limit
 		$maxOtherEvent = $appCharMax[array_search('IsOtherEventText', array_column($appCharMax, 0))][1]; //other event text char limit
 		$maxOtherFunding = $appCharMax[array_search('OtherFunding', array_column($appCharMax, 0))][1]; //other funding char limit
 		$maxProposalSummary = $appCharMax[array_search('ProposalSummary', array_column($appCharMax, 0))][1]; //proposal summary char limit
-		$maxDepChairSig = $appCharMax[array_search('DepartmentChairSignature', array_column($appCharMax, 0))][1];//signature char limit
+		$maxDeptChairApproval = $appCharMax[array_search('DepartmentChairSignature', array_column($appCharMax, 0))][1];//signature char limit
 		
 		$maxBudgetComment = $appBudgetCharMax[array_search('Comment', array_column($appBudgetCharMax, 0))][1]; //budget comment char limit
 		
@@ -83,52 +83,20 @@
 		For everything besides application creation, the app ID MUST BE SET*/
 		if(isset($_GET["id"]))
 		{
-			//admin check
-			$isAdmin = isAdministrator($conn, $CASbroncoNetID); //admin is viewing page
-			$permissionSet = $isAdmin;
-			
-			//application approver check
-			if(!$permissionSet)
-			{
-				$isApprover = isApplicationApprover($conn, $CASbroncoNetID); //application approver(director) can write notes, choose awarded amount, and generate email text
-				$permissionSet = $isApprover;
-			}
-			
-			//department chair check
-			if(!$permissionSet)
-			{
-				$isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id']); //chair member; can sign application
-				$permissionSet = $isChair;
-			}
-
-			//department chair reviewing check
-			if(!$permissionSet)
-			{
-				$isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id']); //chair member; can view the application, but cannot sign
-				$permissionSet = $isChairReviewing;
-			}
-			
-			//committee member check
-			if(!$permissionSet)
-			{
-				$isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //committee member; can only view!
-				$permissionSet = $isCommittee;
-			}
-			
-			//applicant reviewing check
-			if(!$permissionSet)
-			{
-				$isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id']); //applicant is reviewing their application
-				$permissionSet = $isReviewing;
-			}
+			if($permissionSet = $isAdmin = isAdministrator($conn, $CASbroncoNetID)){} //admin check
+			else if($permissionSet = $isApprover = isApplicationApprover($conn, $CASbroncoNetID)){} //application approver check
+			else if($permissionSet = $isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id'])){} //department chair check
+			else if($permissionSet = $isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id'])){} //department chair reviewing check
+			else if($permissionSet = $isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetID)){} //committee member check
+			else if($permissionSet = $isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id'])){} //applicant reviewing check
 		}
-		//applicant creating check. Note- if the app id is set, then by default the application cannot be created
-		if(!$permissionSet && !isset($_GET["id"]))
+		if(!$permissionSet && !isset($_GET["id"])) //applicant creating check. Note- if the app id is set, then by default the application cannot be created
 		{
-			$isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true); //applicant is creating an application (check latest date possible)
-			$permissionSet = $isCreating; //will set to true if user is creating a new application
+			$permissionSet = $isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true); //applicant is creating an application (check latest date possible)
 		}
-		
+
+		//echo "permissions: isAdmin? ".$isAdmin.", isApprover? ".$isApprover.", isChair? ".$isChair.", isChairReviewing? ".$isChairReviewing.", isCommittee? ".$isCommittee.", isReviewing? ".$isReviewing.", isCreating? ".$isCreating.".";
+
 		/*Verify that user is allowed to render application*/
 		if($permissionSet)
 		{
@@ -156,9 +124,8 @@
 				$appID = $_GET["id"];
 				
 				$app = getApplication($conn, $appID); //get application Data
-
 				$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
-				
+				$appStatus = $app->getStatus();
 
 				/*
 				$docs = listDocs($appID); //get documents
@@ -168,55 +135,7 @@
 						array_push($P, "<a href='?id=" . $appID . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
 					if(substr($docs[$i], 0, 1) == 'S')
 						array_push($S, "<a href='?id=" . $appID . "&doc=" . $docs[$i] . "' target='_blank'>" . $docs[$i] . "</a>");
-				}
-				
-				/*Admin wants to update application*/
-				if($isAdminUpdating && isset($_POST["cancelUpdateApp"]))
-				{
-					header('Location: ?id=' . $appID); //reload page as admin
-				}
-
-				/*Admin wants to cancel updating this application*/
-				if($isAdmin && isset($_POST["updateApp"]))
-				{
-					header('Location: ?id=' . $appID . '&updating'); //reload page as admin updating
-				}
-				
-				/*User wants to approve this application*/
-				if(isset($_POST["approveA"]))
-				{
-					if(approveApplication($conn, $appID, $_POST["amountAwarded"]))
-					{
-						customEmail(trim($app->email), nl2br($_POST["approverEmail"]), "");
-						header('Location: index.php'); //redirect
-					}
-				}
-				
-				/*User wants to deny this application*/
-				if(isset($_POST["denyA"]))
-				{
-					if(denyApplication($conn, $appID))
-					{
-						customEmail(trim($app->email), nl2br($_POST["approverEmail"]), "");
-						header('Location: index.php'); //redirect
-					}
-				}
-				/*User wants to HOLD this application*/
-				if(isset($_POST["holdA"]))
-				{
-					if(holdApplication($conn, $appID))
-					{
-						customEmail(trim($app->email), nl2br($_POST["approverEmail"]), "");
-						header('Location: index.php'); //redirect
-					}
-				}
-				
-				/*Check for trying to sign application*/
-				if($isChair && isset($_POST["signApp"]))
-				{
-					signApplication($conn, $appID, $_POST["deptChairApproval"]);
-					header('Location: index.php'); //redirect to homepage
-				}
+				}*/
 			}
 		?>
 		<!--HEADER-->
@@ -225,6 +144,8 @@
 			<div class="container-fluid">
 
 				<div ng-controller="appCtrl">
+
+					<h1 ng-cloak ng-show="!isCreating" class="{{appStatus}}-background status-bar">Application Status: {{appStatus}}</h1>
 
 					<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group"> 
 						<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning">TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
@@ -288,7 +209,7 @@
 							<div class="col-md-7">
 								<div class="form-group">
 									<label for="email">Email Address{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-									<input type="email" class="form-control" maxlength="{{maxEmail}}" ng-model="formData.email" ng-disabled="appFieldsDisabled" id="email" name="email" placeholder="Enter Email Address" />
+									<input type="email" class="form-control" ng-model="formData.email" ng-disabled="appFieldsDisabled" id="email" name="email" placeholder="Enter Email Address" />
 									<span class="help-block" ng-show="errors.email" aria-live="polite">{{ errors.email }}</span> 
 								</div>
 							</div>
@@ -300,8 +221,8 @@
 						<!--DEPARTMENT-->
 						<div class="col-md-5">
 								<div class="form-group">
-									<label for="department">Department{{isCreating || isAdminUpdating ? " (Required) ("+(maxDep-formData.department.length)+" characters remaining)" : ""}}:</label>
-									<input type="text" class="form-control" maxlength="{{maxDep}}" ng-model="formData.department" ng-disabled="appFieldsDisabled" id="department" name="department" placeholder="Enter Department" />
+									<label for="department">Department{{isCreating || isAdminUpdating ? " (Required) ("+(maxDepartment-formData.department.length)+" characters remaining)" : ""}}:</label>
+									<input type="text" class="form-control" maxlength="{{maxDepartment}}" ng-model="formData.department" ng-disabled="appFieldsDisabled" id="department" name="department" placeholder="Enter Department" />
 									<span class="help-block" ng-show="errors.department" aria-live="polite">{{ errors.department }}</span> 
 								</div>
 							</div>
@@ -309,7 +230,7 @@
 							<div class="col-md-7">
 								<div class="form-group">
 									<label for="deptChairEmail">Department Chair's WMU Email Address{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-									<input type="email" class="form-control" maxlength="{{maxDepEmail}}" ng-model="formData.deptChairEmail" ng-disabled="appFieldsDisabled" id="deptChairEmail" name="deptChairEmail" placeholder="Enter Department Chair's Email Address" />
+									<input type="email" class="form-control" ng-model="formData.deptChairEmail" ng-disabled="appFieldsDisabled" id="deptChairEmail" name="deptChairEmail" placeholder="Enter Department Chair's Email Address" />
 									<span class="help-block" ng-show="errors.deptChairEmail" aria-live="polite">{{ errors.deptChairEmail }}</span> 
 								</div>
 							</div>
@@ -611,8 +532,8 @@
 							<div class="col-md-6">
 								<h3 class="title">Note: Applications received without the approval of the chair will not be considered.</h3>
 								<div class="form-group">
-									<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxProposalSummary-formData.proposalSummary.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
-									<input type="text" class="form-control" ng-model="formData.deptChairApproval" ng-disabled="{{!isChair ? true : false}}" id="deptChairApproval" name="deptChairApproval" placeholder="{{isChair ? 'Type Your Full Name Here' : 'Department Chair Must Type Name Here'}}" />
+									<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxDeptChairApproval-formData.deptChairApproval.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
+									<input type="text" class="form-control" maxlength="{{maxDeptChairApproval}}" ng-model="formData.deptChairApproval" ng-disabled="{{!isChair ? true : false}}" id="deptChairApproval" name="deptChairApproval" placeholder="{{isChair ? 'Type Your Full Name Here' : 'Department Chair Must Type Name Here'}}" />
 								</div>
 							</div>
 							<div class="col-md-3"></div>
@@ -628,15 +549,17 @@
 								</div>
 							</div>
 						</div>
-						<div class="row" ng-cloak ng-show="isAdmin || isApprover">
+
+						<div class="row" ng-cloak ng-show="!isCreating">
 						<!--AMOUNT AWARDED-->
-							<div class="col-md-12">
+							<div class="col-md-5"></div>
+							<div class="col-md-2">
 								<div class="form-group">
 									<label for="amountAwarded">AMOUNT AWARDED($):</label>
-									<input type="text" class="form-control" ng-model="formData.amountAwarded" id="amountAwarded" name="amountAwarded" placeholder="AMOUNT AWARDED" value="<?php echo $app->amountAwarded; ?>" onkeypress='return (event.which >= 48 && event.which <= 57) 
-									|| event.which == 8 || event.which == 46' />
+									<input type="text" class="form-control" ng-model="formData.amountAwarded" ng-disabled="!isAdmin && !isApprover" id="amountAwarded" name="amountAwarded" placeholder="{{isChair ? 'Amount($)' : 'N/A'}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
 								</div>
 							</div>
+							<div class="col-md-5"></div>
 						</div>
 
 
@@ -645,53 +568,16 @@
 						</div>
 
 
-						
-						<div class="row">
-							<div class="col-md-2"></div>
-						<!--SUBMIT BUTTONS-->
-							<div class="col-md-6">
-								<?php if($isCreating){ //show submit application button if creating ?>
-									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT APPLICATION" />
-								<?php }else if($isAdminUpdating){ //show submit edits button if editing?>
-									<input type="submit" onclick="return confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')" class="btn btn-success" id="submitApp" name="submitApp" value="SUBMIT EDITS" />
-								<?php }else if($isAdmin || $isApprover){ //show approve, hold, and deny buttons if admin or approver ?>
-									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to approve this application?')" class="btn btn-success" id="approveApp" name="approveA" value="APPROVE APPLICATION" <?php if(isApplicationSigned($conn, $appID) == 0) { ?> disabled="true" <?php } ?> />
-									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to place this application on hold?')" class="btn btn-primary" id="holdApp" name="holdA" value="PLACE APPLICATION ON HOLD" />
-									<input type="submit" onclick="return confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to deny this application?')" class="btn btn-danger" id="denyApp" name="denyA" value="DENY APPLICATION" />
-								<?php }else if($isChair){ //show sign button if dep chair ?>
-									<input type="submit" onclick="return confirm ('By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.')" class="btn btn-success" id="signApp" name="signApp" value="APPROVE APPLICATION" />
-								<?php }else if($isReviewing){ ?>
-									<input type="submit" class="btn btn-primary" id="uploadDocs" name="uploadDocs" value="UPLOAD MORE DOCUMENTS" />
-								<?php } ?>
-							</div>
-							<div class="col-md-2">
-								<a href="index.php" <?php if($isCreating || $isAdminUpdating || $isAdmin || $isApprover || $isChair){ ?> onclick="return confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')" <?php } ?> class="btn btn-info">LEAVE PAGE</a>
-							</div>
-							<div class="col-md-2"></div>
-						</div>
-
-						<div class="buttons-group"> 
+						<div class="buttons-group bottom-buttons"> 
 							<button ng-show="isCreating" type="button" ng-click="insertApplication()" class="btn btn-success">SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
-							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication()" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
-							<button ng-show="isApprover || isAdmin" type="button" ng-click="holdApplication()" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
-							<button ng-show="isApprover || isAdmin" type="button" ng-click="denyApplication()" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
+							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('approve')" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
+							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('hold')" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
+							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('deny')" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
 							<button ng-show="isChair" type="button" ng-click="chairApproval()" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
 							<button ng-show="isReviewing" type="button" ng-click="uploadDocs()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
 							<a href="" class="btn btn-info" ng-click="redirectToHomepage(null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 						</div>
 					</form>
-
-					<!-- SHOW DATA FROM INPUTS AS THEY ARE BEING TYPED -->
-					<pre>
-						{{ alertMessage }}
-					</pre>
-					<pre>
-						{{ formData }}
-					</pre>
-					<pre>
-						{{ formData.budgetItems }}
-					</pre>
-
 
 			</div>
 			<!--BODY-->
@@ -757,7 +643,14 @@
 
 			//redirect the user to the homepage; optionally, send a message which will be displayed as a success alert popup on the homepage.
 			$scope.redirectToHomepage = function($message){
-				if(confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.'))
+				if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isApprover || $scope.isChair)
+				{
+					if(confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.'))
+					{
+						window.location.replace("index.php");
+					}
+				}
+				else
 				{
 					window.location.replace("index.php");
 				}
@@ -767,7 +660,7 @@
 			$scope.populateForm = function($existingApp){
 
 				//first, get the application if it doesn't already exist
-				if($existingApp == null)
+				if($existingApp == null || typeof $existingApp === 'undefined')
 				{
 					$http({
 						method  : 'POST',
@@ -781,90 +674,193 @@
 						$scope.populateForm(response.data);//recurse to this function again with a real app
 					},function (error){
 						console.log(error, 'can not get data.');
+						$scope.alertType = "danger";
+						$scope.alertMessage = "There was an unexpected error when trying to retrieve the application: " + error;
 					});
 				}
 				else //if it exists, then populate form
 				{
-					//alert($populating form with:);
-					//console.log($existingApp);
+					try
+					{
+						//alert($populating form with:);
+						//console.log($existingApp);
 
-					$scope.formData.cycleChoice = $existingApp.nextCycle ? "next" : "this";
-					$scope.formData.name = $existingApp.name;
-					$scope.formData.email = $existingApp.email;
-					$scope.formData.department = $existingApp.department;
-					$scope.formData.deptChairEmail = $existingApp.deptChairEmail;
-					//dates require a bit of extra work to convert properly! Javascript offsets the dates based on timezones, and one way to combat that is by replacing hyphens with slashes (don't ask me why)
-					/*alert(new Date($existingApp.travelFrom));
-					alert(new Date($existingApp.travelFrom.replace(/-/g, '\/')));*/
-					$scope.formData.travelFrom = new Date($existingApp.travelFrom.replace(/-/g, '\/'));
-					$scope.formData.travelTo = new Date($existingApp.travelTo.replace(/-/g, '\/'));
-					$scope.formData.activityFrom = new Date($existingApp.activityFrom.replace(/-/g, '\/'));
-					$scope.formData.activityTo = new Date($existingApp.activityTo.replace(/-/g, '\/'));
-					$scope.formData.title = $existingApp.title;
-					$scope.formData.destination = $existingApp.destination;
-					$scope.formData.amountRequested = $existingApp.amountRequested;
-					//check boxes using conditional (saved as numbers; need to be converted to true/false)
-					$scope.formData.purpose1 = $existingApp.purpose1 ? true : false;
-					$scope.formData.purpose2 = $existingApp.purpose2 ? true : false;
-					$scope.formData.purpose3 = $existingApp.purpose3 ? true : false;
-					$scope.formData.purpose4OtherDummy = $existingApp.purpose4 ? true : false; //set to true if any value exists
-					$scope.formData.purpose4Other = $existingApp.purpose4;
-					$scope.formData.otherFunding = $existingApp.otherFunding;
-					$scope.formData.proposalSummary = $existingApp.proposalSummary;
-					$scope.formData.goal1 = $existingApp.goal1 ? true : false;
-					$scope.formData.goal2 = $existingApp.goal2 ? true : false;
-					$scope.formData.goal3 = $existingApp.goal3 ? true : false;
-					$scope.formData.goal4 = $existingApp.goal4 ? true : false;
+						$scope.formData.cycleChoice = $existingApp.nextCycle ? "next" : "this";
+						$scope.formData.name = $existingApp.name;
+						$scope.formData.email = $existingApp.email;
+						$scope.formData.department = $existingApp.department;
+						$scope.formData.deptChairEmail = $existingApp.deptChairEmail;
+						//dates require a bit of extra work to convert properly! Javascript offsets the dates based on timezones, and one way to combat that is by replacing hyphens with slashes (don't ask me why)
+						/*alert(new Date($existingApp.travelFrom));
+						alert(new Date($existingApp.travelFrom.replace(/-/g, '\/')));*/
+						$scope.formData.travelFrom = new Date($existingApp.travelFrom.replace(/-/g, '\/'));
+						$scope.formData.travelTo = new Date($existingApp.travelTo.replace(/-/g, '\/'));
+						$scope.formData.activityFrom = new Date($existingApp.activityFrom.replace(/-/g, '\/'));
+						$scope.formData.activityTo = new Date($existingApp.activityTo.replace(/-/g, '\/'));
+						$scope.formData.title = $existingApp.title;
+						$scope.formData.destination = $existingApp.destination;
+						$scope.formData.amountRequested = $existingApp.amountRequested;
+						//check boxes using conditional (saved as numbers; need to be converted to true/false)
+						$scope.formData.purpose1 = $existingApp.purpose1 ? true : false;
+						$scope.formData.purpose2 = $existingApp.purpose2 ? true : false;
+						$scope.formData.purpose3 = $existingApp.purpose3 ? true : false;
+						$scope.formData.purpose4OtherDummy = $existingApp.purpose4 ? true : false; //set to true if any value exists
+						$scope.formData.purpose4Other = $existingApp.purpose4;
+						$scope.formData.otherFunding = $existingApp.otherFunding;
+						$scope.formData.proposalSummary = $existingApp.proposalSummary;
+						$scope.formData.goal1 = $existingApp.goal1 ? true : false;
+						$scope.formData.goal2 = $existingApp.goal2 ? true : false;
+						$scope.formData.goal3 = $existingApp.goal3 ? true : false;
+						$scope.formData.goal4 = $existingApp.goal4 ? true : false;
 
-					$scope.formData.budgetItems = []; //empty budget items array
-					//add the budget items
-					for($i = 0; $i < $existingApp.budget.length; $i++) {
-						$scope.addBudgetItem($existingApp.budget[$i][2], $existingApp.budget[$i][4], $existingApp.budget[$i][3]);
+						$scope.formData.budgetItems = []; //empty budget items array
+						//add the budget items
+						for($i = 0; $i < $existingApp.budget.length; $i++) {
+							$scope.addBudgetItem($existingApp.budget[$i][2], $existingApp.budget[$i][4], $existingApp.budget[$i][3]);
+						}
+			
+						$scope.formData.deptChairApproval = $existingApp.deptChairApproval;
+						$scope.formData.amountAwarded = $existingApp.amountAwarded;
+						
+						$scope.appStatus = $existingApp.appStatus;//refresh the application's status!
 					}
-		
-					$scope.formData.deptChairApproval = $existingApp.deptChairApproval;
+					catch(e)
+					{
+						console.log(e);
+						$scope.alertType = "danger";
+						$scope.alertMessage = "There was an unexpected error when trying to populate the form: " + e;
+					}
 				}
 			}
 
 			// process the form (AJAX request)
 			$scope.insertApplication = function() {
 
-				$sendData = JSON.parse(JSON.stringify($scope.formData)); //create a deep copy of the formdata to send. This almost formats the dates to a good format, but also tacks on a timestamp such as T04:00:00.000Z, which still needs to be removed.
-				//alert("date null? " + ($sendData.travelTo == null));
-				//alert($sendData.travelTo);
+				if(confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.'))
+				{
+					$sendData = JSON.parse(JSON.stringify($scope.formData)); //create a deep copy of the formdata to send. This almost formats the dates to a good format, but also tacks on a timestamp such as T04:00:00.000Z, which still needs to be removed.
+					//alert("date null? " + ($sendData.travelTo == null));
+					//alert($sendData.travelTo);
 
-				if($sendData.travelTo != null){		$sendData.travelTo = $sendData.travelTo.substr(0,$sendData.travelTo.indexOf('T'));} //Remove everything starting from 'T'
-				if($sendData.travelFrom != null){	$sendData.travelFrom = $sendData.travelFrom.substr(0,$sendData.travelFrom.indexOf('T'));} //Remove everything starting from 'T'
-				if($sendData.activityTo != null){	$sendData.activityTo = $sendData.activityTo.substr(0,$sendData.activityTo.indexOf('T'));} //Remove everything starting from 'T'
-				if($sendData.activityFrom != null){	$sendData.activityFrom = $sendData.activityFrom.substr(0,$sendData.activityFrom.indexOf('T'));} //Remove everything starting from 'T'
+					if($sendData.travelTo != null){		$sendData.travelTo = $sendData.travelTo.substr(0,$sendData.travelTo.indexOf('T'));} //Remove everything starting from 'T'
+					if($sendData.travelFrom != null){	$sendData.travelFrom = $sendData.travelFrom.substr(0,$sendData.travelFrom.indexOf('T'));} //Remove everything starting from 'T'
+					if($sendData.activityTo != null){	$sendData.activityTo = $sendData.activityTo.substr(0,$sendData.activityTo.indexOf('T'));} //Remove everything starting from 'T'
+					if($sendData.activityFrom != null){	$sendData.activityFrom = $sendData.activityFrom.substr(0,$sendData.activityFrom.indexOf('T'));} //Remove everything starting from 'T'
 
-				$http({
-					method  : 'POST',
-					url     : '/ajax/submit_application.php',
-					data    : $.param($sendData),  // pass in data as strings
-					headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
-				})
-				.then(function (response) {
-					console.log(response, 'res');
-					//data = response.data;
-					
-					if(response.data.success)
-					{
-						$scope.errors = []; //clear any old errors
-						$scope.alertType = "success";
-						$scope.alertMessage = "Success! The application has been received.";
-					}
-					else
-					{
-						$scope.errors = response.data.errors;
-						$scope.alertType = "danger";
-						$scope.alertMessage = "There was an error with your submission, please double check your form for errors, then try resubmitting.";
-					}
-					
-				},function (error){
-					console.log(error, 'can not get data.');
-				});
+					$http({
+						method  : 'POST',
+						url     : '/ajax/submit_application.php',
+						data    : $.param($sendData),  // pass in data as strings
+						headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+					})
+					.then(function (response) {
+						console.log(response, 'res');
+						//data = response.data;
+						if(typeof response.data.success === 'undefined') //unexpected result!
+						{
+							console.log(JSON.stringify(response, null, 4));
+							$scope.alertType = "danger";
+							$scope.alertMessage = "There was an unexpected error with your submission! Server response: " + JSON.stringify(response, null, 4);
+						}
+						else if(response.data.success)
+						{
+							$scope.errors = []; //clear any old errors
+							$scope.alertType = "success";
+							$scope.alertMessage = "Success! The application has been received.";
+						}
+						else
+						{
+							$scope.errors = response.data.errors;
+							$scope.alertType = "danger";
+							$scope.alertMessage = "There was an error with your submission, please double check your form for errors, then try resubmitting.";
+						}
+					},function (error){
+						console.log(error, 'can not get data.');
+					});
+				}
 			};
+
+
+			//approve, hold, or deny application with the status parameter
+			$scope.approveApplication = function($status){
+
+				if(confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to ' + $status + ' this application?'))
+				{
+					$http({
+						method  : 'POST',
+						url     : '/ajax/approve_application.php',
+						data    : $.param({appID: $scope.formData.updateID, status: $status, amount: $scope.formData.amountAwarded}),  // pass in data as strings
+						headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+					})
+					.then(function (response) {
+						console.log(response, 'res');
+						if(typeof response.data.error === 'undefined') //ran function as expected
+						{
+							response.data = response.data.trim();//remove blankspace around data
+							if(response.data === "true")//updated
+							{
+								$scope.populateForm(); //refresh the form again
+								$scope.alertType = "success";
+								$scope.alertMessage = "Success! The application's status has been updated to: \"" + $status + "\".";
+							}
+							else//didn't update
+							{
+								$scope.alertType = "warning";
+								$scope.alertMessage = "Warning: The application was not updated from its previous state.";
+							}
+						}
+						else //failure!
+						{
+							console.log(response.data.error);
+							$scope.alertType = "danger";
+							$scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
+						}
+					},function (error){
+						console.log(error, 'can not get data.');
+					});
+				}
+			};
+
+
+			//let the department chair approve this application
+			$scope.chairApproval = function(){
+
+				if(confirm ('By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.'))
+				{
+					$http({
+						method  : 'POST',
+						url     : '/ajax/chair_approval.php',
+						data    : $.param({appID: $scope.formData.updateID, deptChairApproval: $scope.formData.deptChairApproval}),  // pass in data as strings
+						headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+					})
+					.then(function (response) {
+						console.log(response, 'res');
+						if(typeof response.data.error === 'undefined') //ran function as expected
+						{
+							response.data = response.data.trim();//remove blankspace around data
+							if(response.data === "true")//updated
+							{
+								$scope.alertType = "success";
+								$scope.alertMessage = "Success! You have approved this application.";
+							}
+							else//didn't update
+							{
+								$scope.alertType = "warning";
+								$scope.alertMessage = "Warning: The application was not updated from its previous state.";
+							}
+						}
+						else //failure!
+						{
+							console.log(response.data.error);
+							$scope.alertType = "danger";
+							$scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
+						}
+					},function (error){
+						console.log(error, 'can not get data.');
+					});
+				}
+			};
+
 
 
 
@@ -902,13 +898,13 @@
 
 			/*Get character limits from php code*/				
 			$scope.maxName = <?php echo json_encode($maxName); ?>;
-			$scope.maxDep = <?php echo json_encode($maxDep); ?>;
+			$scope.maxDepartment = <?php echo json_encode($maxDepartment); ?>;
 			$scope.maxTitle = <?php echo json_encode($maxTitle); ?>;
 			$scope.maxDestination = <?php echo json_encode($maxDestination); ?>;
 			$scope.maxOtherEvent = <?php echo json_encode($maxOtherEvent); ?>;
 			$scope.maxOtherFunding = <?php echo json_encode($maxOtherFunding); ?>;
 			$scope.maxProposalSummary = <?php echo json_encode($maxProposalSummary); ?>;
-			$scope.maxDepChairSig = <?php echo json_encode($maxDepChairSig); ?>;
+			$scope.maxDeptChairApproval = <?php echo json_encode($maxDeptChairApproval); ?>;
 			$scope.maxBudgetComment = <?php echo json_encode($maxBudgetComment); ?>;
 			
 			
@@ -921,11 +917,16 @@
 			$scope.isChair = <?php echo json_encode($isChair); ?>;
 			$scope.isChairReviewing = <?php echo json_encode($isChairReviewing); ?>;
 			$scope.isApprover = <?php echo json_encode($isApprover); ?>;
-
+			
+			//$scope.appStatus = null;
 			/*If not creating, get app data and populate entire form*/
+
 			if(!$scope.isCreating)
 			{
 				$app = <?php echo json_encode($app); ?>; //app data from php code
+				$app.appStatus = <?php echo json_encode($appStatus); ?>; //the current status of the application
+				//alert("starting appStatus: " + $scope.appStatus);
+
 				$scope.formData.updateID = $app.id; //set the update id for the server
 				$scope.dateSubmitted = $app.dateSubmitted; //set the submission date
 

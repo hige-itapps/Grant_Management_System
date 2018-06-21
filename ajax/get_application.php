@@ -20,7 +20,7 @@
 
 /************* FOR RETRIEVING AN APPLICATION AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 
-$app = null; //will be the application data if successful
+$getReturn = null; //will be the application data if successful
 
 if(isset($_POST["appID"]))
 {
@@ -31,18 +31,27 @@ if(isset($_POST["appID"]))
 	{
 		try
 		{
-			$app = getApplication($conn, $appID); //get application Data
+			$getReturn = getApplication($conn, $appID); //get application Data
+			$getReturn->appStatus = $getReturn->getStatus(); //save the application's current status
 		}
 		catch(Exception $e)
 		{
-			echo "Error retrieving application: " . $e->getMessage();
+			$getReturn["error"] = "Unable to retrieve application: " . $e->getMessage();
 		}
 	}
+	else
+	{
+		$getReturn["error"] = "Permission denied";
+	}
+}
+else
+{
+	$getReturn["error"] = "AppID is not set!";
 }
 
 
 $conn = null; //close connection
 
-echo json_encode($app); //return data to the application page!
+echo json_encode($getReturn); //return data to the application page!
 
 ?>

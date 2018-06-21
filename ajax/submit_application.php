@@ -169,7 +169,7 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
     }
     catch(Exception $e)
     {
-        echo "Error adding application: " . $e->getMessage();
+        $insertReturn = "Error adding application: " . $e->getMessage();
     }
     
 }

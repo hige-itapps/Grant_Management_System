@@ -30,27 +30,22 @@
 			$signedAppsNumber = getNumberOfSignedApplications($conn, $CASemail);
 			$appsToSignNumber = getNumberOfApplicationsToSign($conn, $CASemail);
 
-			$isAllowedToSeeApplications = false; //permission for whether or not user is allowed to see everyone's applications
+			$isAllowedToSeeApplications = (isUserAllowedToSeeApplications($conn, $CASbroncoNetID) ? true : false); //permission for whether or not user is allowed to see everyone's applications
 
-			if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
+			if($isAllowedToSeeApplications || $signedAppsNumber > 0 || $appsToSignNumber > 0|| count($totalPrevApps) > 0) //user is allowed to see SOMETHING
 			{
 				$apps = [];
 				//use user permission to get specific set of applications
-				if($signedAppsNumber > 0 && isset($_GET["previousApproval"])) //department chair- already signed
-				{
+				if($signedAppsNumber > 0 && isset($_GET["previousApproval"])){ //department chair- already signed
 					$apps = getSignedApplications($conn, $CASemail);//get all signed applications only
 				}
-				else if($appsToSignNumber > 0 && isset($_GET["approval"])) //department chair- to sign
-				{
+				else if($appsToSignNumber > 0 && isset($_GET["approval"])){ //department chair- to sign
 					$apps = getApplicationsToSign($conn, $CASemail);//get all applications to sign only
 				}
-				else if(count($totalPrevApps) > 0 && isset($_GET["previousSubmit"])) //normal applicant viewing previous applications
-				{
+				else if(count($totalPrevApps) > 0 && isset($_GET["previousSubmit"])){ //normal applicant viewing previous applications
 					$apps = $totalPrevApps;
 				}
-				else if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID))//default privileges (for HIGE staff)
-				{
-					$isAllowedToSeeApplications = true;
+				else if($isAllowedToSeeApplications){//default privileges (for HIGE staff)
 					$apps = getApplications($conn, "");//get all applications
 				}
 
@@ -58,7 +53,7 @@
 				
 				foreach($apps as $curApp)
 				{
-					$curApp->statusText = $curApp->getStatus();
+					$curApp->statusText = $curApp->getStatus(); //retrieve the current status for each application
 
 					//If this is a user's own application and they are allowed, let them create a follow-up report
 					if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $curApp->id))
@@ -68,14 +63,13 @@
 					else
 					{
 						$curApp->FollowUpReport = getFollowUpReport($conn, $curApp->id); //load up an existing follow up report if possible
-						if($curApp->FollowUpReport)
+						if($curApp->FollowUpReport) //if they have one
 						{
-							$curApp->reportStatusText = $curApp->FollowUpReport->getStatus();
+							$curApp->reportStatusText = $curApp->FollowUpReport->getStatus(); //retrieve the current status of the follow-up report
 						}
 					}
 
-					//echo $curApp->dateSubmitted;
-					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false);
+					$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false); //retrieve the cycle this application was submitted during
 					if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
 						$appCycles[] = $curApp->cycle;
 					}
@@ -127,7 +121,7 @@
 						<div class="form-group">
 							<label for="filterStatus">Filter by status:</label><br>
 							<select ng-model="filterStatus" class="listInput" id="filterStatus" name="filterStatus">
-								<option value=""></option>
+								<option value="">All</option>
 								<option value="Approved">Approved</option>
 								<option value="Pending">Pending</option>
 								<option value="Denied">Denied</option>
@@ -140,7 +134,7 @@
 				<div class="row">
 					<div class="col-md-1"></div>
 					<div class="col-md-10">
-						<table class="table" id="appTable">
+						<table class="table table-striped" id="appTable">
 							<caption>Selected Applications:</caption>
 							<thead>
 								<tr>
@@ -157,31 +151,19 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-if="filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus, cycle: filterCycle}">
-									<td>{{ x.id }}</td>
-									<td>{{ x.name }}</td>
-									<td>{{ x.title }}</td>
-									<td>{{ x.cycle }}</td>
-									<td>{{ x.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
-									<td class="{{x.statusText}}">{{ x.statusText }}</td>
-									<td>{{x.deptChairApproval}}</td>
-									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td ng-if="x.FollowUpReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FollowUpReport">{{x.reportStatusText}}</td>
-										<td ng-if="x.FollowUpReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FollowUpReportCreate">N/A</td>
-										<td ng-if="!x.FollowUpReport && !x.FollowUpReportCreate">N/A</td>									<td ng-if="!x.FollowUpReport && !x.FollowUpReportCreate">N/A</td>
-								</tr>
-								<tr ng-if="!filterCycle" ng-repeat="x in applications | dateFilter:filterFrom:filterTo | filter: {name: filterName, statusText: filterStatus}">
-									<td>{{ x.id }}</td>
-									<td>{{ x.name }}</td>
-									<td>{{ x.title }}</td>
-									<td>{{ x.cycle }}</td>
-									<td>{{ x.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
-									<td class="{{x.statusText}}">{{ x.statusText }}</td>
-									<td>{{x.deptChairApproval}}</td>
-									<td><a href="application.php?id={{x.id}}">Application</a></td>
-									<td ng-if="x.FollowUpReport"><a href="follow_up.php?id={{x.id}}">Follow-Up Report</a></td>				<td class="{{x.reportStatusText}}" ng-if="x.FollowUpReport">{{x.reportStatusText}}</td>
-										<td ng-if="x.FollowUpReportCreate"><a href="follow_up.php?id={{x.id}}">Create Follow-Up Report</a>	</td><td ng-if="x.FollowUpReportCreate">N/A</td>
-										<td ng-if="!x.FollowUpReport && !x.FollowUpReportCreate">N/A</td>									<td ng-if="!x.FollowUpReport && !x.FollowUpReportCreate">N/A</td>
+								<!-- Apply all filters to the list based on: dates, cycles, name, and status -->
+								<tr ng-repeat="application in (filteredApplications = (applications | dateFilter:filterFrom:filterTo | filter: (!!filterCycle || undefined)&&{cycle: filterCycle} | filter: {name: filterName, statusText: filterStatus}))">
+									<td>{{ application.id }}</td>
+									<td>{{ application.name }}</td>
+									<td>{{ application.title }}</td>
+									<td>{{ application.cycle }}</td>
+									<td>{{ application.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
+									<td class="{{application.statusText}}">{{ application.statusText }}</td>
+									<td>{{application.deptChairApproval}}</td>
+									<td><a href="application.php?id={{application.id}}">Application</a></td>
+									<td ng-if="application.FollowUpReport"><a href="follow_up.php?id={{application.id}}">Follow-Up Report</a></td>					<td class="{{application.reportStatusText}}" ng-if="application.FollowUpReport">{{x.reportStatusText}}</td>
+										<td ng-if="application.FollowUpReportCreate"><a href="follow_up.php?id={{application.id}}">Create Follow-Up Report</a></td>	<td ng-if="application.FollowUpReportCreate">N/A</td>
+										<td ng-if="!application.FollowUpReport && !application.FollowUpReportCreate">N/A</td>										<td ng-if="!application.FollowUpReport && !application.FollowUpReportCreate">N/A</td>
 								</tr>
 							</tbody>
 						</table>
@@ -189,19 +171,11 @@
 					<div class="col-md-1"></div>
 				</div>
 
-				<div class="row">
-					<div class="col-md-5"></div>
-					<div class="col-md-2">
-						<?php if($isAllowedToSeeApplications){ //if the user can see all applications, give them the option to download an excel summary sheet of them ?>
-							<a href="" class="btn btn-success" ng-click="exportExcelSheet()">
-								Download Excel Summary Sheet
-							</a>
-						<?php } ?>
-
-						<a href="index.php" class="btn btn-info">LEAVE PAGE</a>
-					</div>
-					<div class="col-md-5"></div>
+				<div class="buttons-group bottom-buttons"> 
+					<button type="button" ng-click="exportExcelSheet()" class="btn btn-success">DOWNLOAD SUMMARY SHEET</button> <!-- For anyone to download excel sheet of current data -->
+					<a href="index.php" class="btn btn-info">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 				</div>
+
 			</div>
 			<?php
 				}
@@ -216,9 +190,10 @@
 	</body>
 	
 	<!-- AngularJS Script -->
-	<script>
+	<script type="module">
 
-		//import saveAs from "FileSaver.js";
+		//import saveAs function from FileSaver.js library so that user can download as excel sheet;
+		import { saveAs } from '/FileSaver.js-master/src/FileSaver.js';
 
 		var myApp = angular.module('HIGE-app', []);
 		
@@ -229,18 +204,56 @@
 		myApp.controller('listCtrl', function($scope, $filter) {
 			$scope.applications = <?php echo json_encode($apps) ?>;
 			$scope.appCycles = <?php echo json_encode($appCycles) ?>;
-			//$scope.curDate = $filter("date")(currentDate, 'yyyy-MM-dd');
-			//$scope.oldDate = $filter("date")(olderDate, 'yyyy-MM-dd');
+
 			$scope.exportExcelSheet = function () {
-				alert("Exporting to excel!");
-				var blob = new Blob(["Hello World!"], {
+				//console.log($scope.filteredApplications); //the current selection of applications to be exported
+				var exportList = "Application ID\tName\tDepartment\tPrevious Approved Cycles\tPurpose(s)\tDestination\tProject Title\tTravel From\tTravel To\tActivity From\tActivity To\tTotal Budget\tRequested Award\tAmount Awarded\tComments\n"; //initialize final export data, also set the header line
+				
+				$scope.filteredApplications.forEach(function(app){ //append each row onto the exportList
+					exportList += app['id'] + "\t";
+					exportList += app['name'] + "\t";
+					exportList += app['department'] + "\t";
+					exportList += (app['pastApprovedCycles'] != null ? app['pastApprovedCycles'].join(", ") : "") + "\t"; //turn into comma separated list, or empty string if null
+					
+					var purposesArray = new Array(); //array of purposes as strings
+					if(app['purpose1'] === 1) {purposesArray.push("Research");}
+					if(app['purpose2'] === 1) {purposesArray.push("Conference");}
+					if(app['purpose3'] === 1) {purposesArray.push("Creative Activity");}
+					if(app['purpose4'] !== '') {purposesArray.push("Other");}
+					exportList += purposesArray.join(", ") + "\t"; //turn into comma separated list
+
+					exportList += app['destination'] + "\t";
+					exportList += app['title'] + "\t";
+					exportList += app['travelFrom'] + "\t";
+					exportList += app['travelTo'] + "\t";
+					exportList += app['activityFrom'] + "\t";
+					exportList += app['activityTo'] + "\t";
+
+					var totalBudget = 0; //the total budget for this app
+					app['budget'].forEach(function(budgetItem){
+						totalBudget += budgetItem[3]*100; //add this cost to the total (AS CENTS TO AVOID FLOATING POINT ISSUES)
+					});
+					var totalBudgetString = totalBudget.toString();//format as string
+					exportList += "$" + totalBudgetString.substr(0, totalBudgetString.length-2) + "." + totalBudgetString.substr(totalBudgetString.length-2) + "\t"; //splice in a decimal point in the correct spot
+
+					exportList += "$" + app['amountRequested'] + "\t";
+					exportList += (app['amountAwarded'] != null ? "$"+app['amountAwarded'] : "") + "\t";//amount awarded; if something has already been awarded, mention it, but otherwise leave it blank
+					exportList += "\n"; //empty comments row
+				});
+				
+				//console.log(exportList);
+
+				var blob = new Blob([exportList], {
 					type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
 				});
 				saveAs(blob, "SummarySheet.xls");
-
-				 /*window.open('data:application/vnd.ms-excel,' + $('#appTable').html());
-   				 e.preventDefault();*/
 			};
+
+
+			/*On startup*/
+
+			/*User permissions*/
+			$scope.isAllowedToSeeApplications = <?php echo json_encode($isAllowedToSeeApplications); ?>;
 		});
 		
 		/*Custom filter used to filter within a date range*/
@@ -248,21 +261,13 @@
 			//alert("running date filter");
 			return function(items, dateFrom, dateTo) {
 				var result = [];  
-				/*alert("First date: " + new Date(items[0].dateSubmitted));
-				alert("Date from: " + dateFrom);
-				alert("Date to: " + dateTo);*/
-				
-				/*var testFrom = dateFrom;
-				if(dateFrom == null){testFrom = olderDate;}
-				var testTo = dateTo;
-				if(dateTo == null){testTo = currentDate;}*/
-				
+
 				for (var i=0; i<items.length; i++){
 					var dateSubmittedub = new Date(items[i].dateSubmitted);
 					if(dateFrom == null && dateTo == null)		{result.push(items[i]);} //if neither filter date is defined
 					else if(dateFrom != null && dateTo != null)	{if (dateSubmittedub >= dateFrom && dateSubmittedub <= dateTo){result.push(items[i]);}} //if both filter dates are defined
 					else if(dateFrom != null) 					{if (dateSubmittedub >= dateFrom){result.push(items[i]);}} //if only from date is defined
-					else if(dateTo != null)						{if (dateSubmittedub <= dateTo){result.push(items[i]);}} //if only date to is defined
+					else if(dateTo != null)						{if (dateSubmittedub <= dateTo){result.push(items[i]);}} //if only to date to is defined
 				}
 				
 				return result;
