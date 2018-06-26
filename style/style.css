@@ -142,7 +142,7 @@ caption{
 }
 
 /*headings*/
-#submitApp h2, #submitApp h3, #approvalF h2, #approvalF h3, #applicationForm h2, #applicationForm h3{
+h1, h2, h3, h4, h5{
 	font-weight: bold; /*make them bold*/
 	text-align: center;
 }
@@ -187,3 +187,22 @@ caption{
     z-index: 2;
 }
 
+/*hide elements that have the hidden tag*/
+[hidden] {
+	display: none !important;
+}
+
+/*style remove-file links*/
+.remove-file{
+	color: red!important;
+}
+
+/*Style the divs that hold the upload buttons*/
+.upload-button-holder{
+	text-align: center;
+}
+
+/*style horizontal rules*/
+hr{
+	border-color:#a0a0a0!important; /*darker grey than default*/
+}

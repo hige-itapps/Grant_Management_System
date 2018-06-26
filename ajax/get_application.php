@@ -33,6 +33,7 @@ if(isset($_POST["appID"]))
 		{
 			$getReturn = getApplication($conn, $appID); //get application Data
 			$getReturn->appStatus = $getReturn->getStatus(); //save the application's current status
+			$getReturn->appFiles = getFileNames($appID); //get the list of file names associated with this application
 		}
 		catch(Exception $e)
 		{

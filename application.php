@@ -40,9 +40,10 @@
 		/*save the current date*/
 		$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
 
-		$app = null; //only set app if it exists (if not creating one)
+		$app = null; //only set app if it exists (when not creating a new one)
 		$submitDate = null; //^
 		$appStatus = null; //^
+		$appFiles = null; //^
 		
 		/*get initial character limits for text fields*/
 		$appCharMax = getApplicationsMaxLengths($conn);
@@ -126,6 +127,7 @@
 				$app = getApplication($conn, $appID); //get application Data
 				$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
 				$appStatus = $app->getStatus();
+				$appFiles = getFileNames($appID);
 
 				/*
 				$docs = listDocs($appID); //get documents
@@ -507,23 +509,43 @@
 						<!--UPLOADS-->
 						<div class="row">
 							<div class="col-md-6">
-								<?php if($isCreating || $isReviewing || $isAdminUpdating){ //for uploading documents; both admins and applicants ?>
-									<label for="fD">UPLOAD PROPOSAL NARRATIVE:</label><input type="file" name="fD" id="fD" accept=".txt, .rtf, .doc, .docx, 
-									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
-								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED PROPOSAL NARRATIVE: <?php if(count($P > 0)) { echo "<table>"; foreach($P as $ip) { echo "<tr><td>" . $ip . "</td></tr>"; } echo "</table>"; } else echo "none"; ?> </p>
+								<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating">
+									<div class="upload-button-holder">
+										<label class="btn btn-default">
+											UPLOAD PROPOSAL NARRATIVE<input type="file" hidden readproposalnarrative="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+										</label>
+									</div>
+									<h4>Your selected proposal narrative:</h4>
+									<ul>
+										<li ng-repeat="file in uploadProposalNarrative">{{file.name}} <a href="" ng-click="removeProposalNarrative($index)" class="remove-file">REMOVE</a> </li>
+									</ul>
 								</div>
-							
+								<hr>
+								<h4 class="title">UPLOADED PROPOSAL NARRATIVE (Click file to download): </h4>
+								<ul>
+									<li ng-repeat="file in appFiles" ng-if="file.indexOf('PN') == 0"><a href="" ng-click="downloadFile(file)">{{file}}</a></li>
+								</ul>
+							</div>
 							
 							<div class="col-md-6">
-								<?php if($isCreating || $isReviewing || $isAdminUpdating){ //for uploading documents; both admins and applicants ?>
-									<label for="sD">UPLOAD SUPPORTING DOCUMENTS:</label><input type="file" name="sD[]" id="sD" accept=".txt, .rtf, .doc, .docx, 
-									.xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif" multiple />
-								<?php } //for viewing uploaded documents; ANYONE can ?>
-								<p class="title">UPLOADED SUPPORTING DOCUMENTS: <?php if(count($S > 0)) { echo "<table>"; foreach($S as $is) { echo "<tr><td>" . $is . "</td></tr>"; } echo "</table>"; } else echo "none"; ?> </p>
+								<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating">
+									<div class="upload-button-holder">
+										<label class="btn btn-default">
+											UPLOAD SUPPORTING DOCUMENTS<input type="file" hidden readsupportingdocs="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+										</label>
+									</div>
+									<h4>Your selected supporting documents:</h4>
+									<ul>
+										<li ng-repeat="file in uploadSupportingDocs">{{file.name}} <a href="" ng-click="removeSupportingDoc($index)" class="remove-file">REMOVE</a> </li>
+									</ul>
+								</div>
+								<hr>
+								<h4 class="title">UPLOADED SUPPORTING DOCUMENTS (Click file to download): </h4>
+								<ul>
+									<li ng-repeat="file in appFiles" ng-if="file.indexOf('SD') == 0"><a href="" ng-click="downloadFile(file)">{{file}}</a></li>
+								</ul>
 							</div>
 						</div>
-						
 						
 						
 						<div class="row">
@@ -574,10 +596,23 @@
 							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('hold')" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
 							<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('deny')" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
 							<button ng-show="isChair" type="button" ng-click="chairApproval()" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
-							<button ng-show="isReviewing" type="button" ng-click="uploadDocs()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
+							<button ng-show="isReviewing" type="button" ng-click="uploadFiles()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
 							<a href="" class="btn btn-info" ng-click="redirectToHomepage(null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 						</div>
 					</form>
+
+					<!-- SHOW DATA FROM INPUTS AS THEY ARE BEING TYPED -->
+					<pre>
+						{{ formData }}
+					</pre>
+
+					<pre>
+						{{ appFiles }}
+					</pre>
+
+					<pre>
+						{{ uploadSupportingDocs }}
+					</pre>
 
 			</div>
 			<!--BODY-->
@@ -656,6 +691,16 @@
 				}
 			}
 
+			//Remove a file from the supporting docs array
+			$scope.removeSupportingDoc = function(index){
+				$scope.uploadSupportingDocs.splice(index, 1); //splice element from array
+			}
+
+			//Remove the chosen proposal narrative
+			$scope.removeProposalNarrative = function(){
+				$scope.uploadProposalNarrative = []; //empty array
+			}
+
 			//fill in the form with app data; send existing data in to be populated, or if nothing is given, attempt to retrieve the most up-to-date app data with an AJAX call
 			$scope.populateForm = function($existingApp){
 
@@ -723,6 +768,7 @@
 						$scope.formData.amountAwarded = $existingApp.amountAwarded;
 						
 						$scope.appStatus = $existingApp.appStatus;//refresh the application's status!
+						$scope.appFiles = $existingApp.appFiles;//refresh the associated files
 					}
 					catch(e)
 					{
@@ -862,6 +908,74 @@
 			};
 
 
+			//let the creator or admin upload files for this application
+			$scope.uploadFiles = function(){
+
+				if(confirm ('Are you sure you want to upload the selected files? You will not be able to delete them afterwards.')) //placeholder for a confirm box
+				{
+					var fd = new FormData();
+					var totalUploads = 0; //iterate for each new file
+					Object.keys($scope.uploadSupportingDocs).forEach(function (key){ //iterate over supporting documents
+						fd.append('supportingDoc'+key, $scope.uploadSupportingDocs[key]); //save files in FormData object
+						totalUploads++;
+					});
+					Object.keys($scope.uploadProposalNarrative).forEach(function (key){ //iterate over proposal narratives (should be limited to just 1 by default)
+						fd.append('proposalNarrative'+key, $scope.uploadProposalNarrative[key]); //save files in FormData object
+						totalUploads++;
+					});
+					fd.append('appID', $scope.formData.updateID);
+
+					if(totalUploads > 0) //at least 1 new file
+					{
+						$http({
+							method  : 'POST',
+							url     : '/ajax/upload_file.php',
+							data    : fd,  // pass in data as strings
+							transformRequest: angular.identity,
+							headers: {'Content-Type': undefined,'Process-Data': false} //allow for file upload
+						})
+						.then(function (response) {
+							console.log(response, 'res');
+							if(typeof response.data.error === 'undefined') //ran function as expected
+							{
+								response.data = response.data.trim();//remove blankspace around data
+								if(response.data === "true")//updated
+								{
+									$scope.alertType = "success";
+									$scope.alertMessage = "Success! Your files have been uploaded.";
+									$scope.uploadProposalNarrative = []; //empty array
+									$scope.uploadSupportingDocs = []; //empty array
+								}
+								else//didn't update
+								{
+									$scope.alertType = "warning";
+									$scope.alertMessage = "Warning: At least 1 selected file was not uploaded.";
+								}
+								$scope.populateForm(null);//refresh form so that new files show up
+							}
+							else //failure!
+							{
+								console.log(response.data.error);
+								$scope.alertType = "danger";
+								$scope.alertMessage = "There was an error with your upload! Error: " + response.data.error;
+							}
+						},function (error){
+							console.log(error, 'can not get data.');
+						});
+					}
+					else
+					{
+						$scope.alertType = "warning";
+						$scope.alertMessage = "Warning: No new files selected to upload.";
+					}
+				}
+			};
+
+
+			//let anyone on the page download one of the associated files. NOTE- this technically isn't AJAX, just a php redirection, since AJAX file downloads from the server aren't possible.
+			$scope.downloadFile = function(filename){
+				window.location.href = "/ajax/download_file.php?appID="+$scope.formData.updateID+"&filename="+filename; //redirect to download script
+			};
 
 
 
@@ -871,8 +985,9 @@
 			// $scope will allow this to pass between controller and view
 			$scope.formData = {};
 			$scope.formData.budgetItems = []; //array of budget items
-
 			$scope.errors = {};//all current errors
+			$scope.uploadSupportingDocs = []; //array of new supporting docs
+			$scope.uploadProposalNarrative = []; //array new proposal narratives
 
 			//expense types
 			$scope.options = [{ name: "Air Travel"}, 
@@ -925,7 +1040,9 @@
 			{
 				$app = <?php echo json_encode($app); ?>; //app data from php code
 				$app.appStatus = <?php echo json_encode($appStatus); ?>; //the current status of the application
+				$app.appFiles = <?php echo json_encode($appFiles); ?>; //the associated uploaded files
 				//alert("starting appStatus: " + $scope.appStatus);
+				//alert("Files: " + $app.appFiles);
 
 				$scope.formData.updateID = $app.id; //set the update id for the server
 				$scope.dateSubmitted = $app.dateSubmitted; //set the submission date
@@ -967,6 +1084,48 @@
 				$scope.addBudgetItem();
 			}
 
+		}]);
+
+
+
+		//Custom directive for files, originally from: https://stackoverflow.com/questions/33534497/file-upload-using-angularjs-with-php-server-script
+		//Needed to encrypt files as multipart/formdata, so that they are sent like other form elements. This eliminates the need to upload over SFTP separately. Modified to work with multiple files at once
+		//This one specifically works for supporting documents and supports many file uploads at once
+		myApp.directive('readsupportingdocs', ['$parse', function ($parse) {
+			return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+				var model = $parse(attrs.readsupportingdocs);
+				var modelSetter = model.assign;
+
+				element.bind('change', function(){
+					scope.$apply(function(){
+						var newFiles = Array.from(element[0].files) //save the new files in an array, not a FileList
+						var allFiles = scope[attrs.readsupportingdocs].concat(newFiles); //add new files to the full array
+						//console.log(allFiles);
+						modelSetter(scope, allFiles); //set to all files
+					});
+				});
+			}
+		};
+		}]);
+		//Custom directive for files, originally from: https://stackoverflow.com/questions/33534497/file-upload-using-angularjs-with-php-server-script
+		//Needed to encrypt files as multipart/formdata, so that they are sent like other form elements. This eliminates the need to upload over SFTP separately. Modified to work with multiple files at once
+		//This one specifically works for proposal narratives and is intended to support a single file at a time
+		myApp.directive('readproposalnarrative', ['$parse', function ($parse) {
+			return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+				var model = $parse(attrs.readproposalnarrative);
+				var modelSetter = model.assign;
+
+				element.bind('change', function(){
+					scope.$apply(function(){
+						modelSetter(scope, element[0].files); //set to only the newly chosen files
+					});
+				});
+			}
+		};
 		}]);
 	
 	</script>

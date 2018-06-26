@@ -1,100 +1,130 @@
 <?php
-	ob_start();
-	include_once(dirname(__FILE__) . "/../Net/SFTP.php");
-	if(isset($_REQUEST["uploadDocs"]) || isset($_REQUEST["uploadDocsF"]))
-		uploadDocs($_REQUEST["updateID"]);
-	/*list documents for a given app ID*/
-	function listDocs($id) {
-		$settings = parse_ini_file(dirname(__FILE__) . '/../config.ini');
-		$ssh = new Net_SFTP($settings["hostname"]);
-		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
-			$success = 0;
-			for($i = 0; $i <= 3 && $success == 0; $i++)
-			{
-				sleep(2);
-				if($ssh->login($settings["host_user"], $settings["host_password"]))
-					$success = 1;
-			}
-			if($success == 0)
-				exit('Auth Failed');
-		}
-		$ret = $ssh->nlist($id);
-		unset($ssh);
-		return $ret;
-	}
-	/*Download a document for a given app ID @ document name*/
-	function downloadDocs($id, $doc) {
-		header("Location: functions/download.php?id=$id&doc=$doc");
-	}
-	/*Upload the documents; return true on success, false on failure*/
-	function uploadDocs($id) {
-		$settings = parse_ini_file(dirname(__FILE__) . '/../config.ini');
-		$ssh = new Net_SFTP($settings["hostname"]);
-		if (!$ssh->login($settings["host_user"], $settings["host_password"])) {
-			$success = 0;
-			for($i = 0; $i <= 3 && $success == 0; $i++)
-			{
-				sleep(2);
-				if($ssh->login($settings["host_user"], $settings["host_password"]))
-					$success = 1;
-			}
-			if($success == 0)
-				return false;
-		}
-		if(isset($_FILES["fD"]))
+	/*Verification functions*/
+	include_once(dirname(__FILE__) . "/../functions/verification.php");
+
+
+	/* Returns array of all associated file names */
+	if(!function_exists('getFileNames')) {
+		function getFileNames($appID)
 		{
-			if ($_FILES['fD']['size'] != 0)
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+			$uploadDir = parse_ini_file($config_url)["uploads_dir"]; //load upload directory
+			$uploadTo = dirname(__FILE__) ."/..".$uploadDir."/".$appID; //get specific directory for this application
+			$fileNames = []; //empty array of filenames
+
+			foreach (new DirectoryIterator($uploadTo) as $file) {
+				if ($file->isFile()) {
+					array_push($fileNames, $file->getFilename());
+				}
+			}
+
+			return $fileNames;
+		}
+	}
+
+	/* Upload files for the associated application */
+	if(!function_exists('uploadDocs')) {
+		function uploadDocs($appID, $files)
+		{
+			$res = null; //return value
+
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+		
+			try
 			{
-				$file = $_FILES["fD"]["tmp_name"];
-				$doc = "P" . $id . "-" . $_FILES["fD"]["name"];
+				$uploadDir = parse_ini_file($config_url)["uploads_dir"]; //load upload directory
+				$uploadTo = dirname(__FILE__) ."/..".$uploadDir."/".$appID; //get specific directory for this application
+
+				if (!file_exists($uploadTo)){ mkdir($uploadTo); } //First, try to make the directory for this file if it doesn't already exist.
+				//$file = $files["tmp_name"];
+				//$doc = "P" . $id . "-" . $files["name"];
 				
-				try
+				foreach ($files as $filename => $file) //try to upload each file
 				{
-					echo $ssh->mkdir($id);
-				}
-				catch (Exception $e) 
-				{
-					echo 'Upload exception: ',  $e->getMessage(), "\n";
-				}
-				$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
-			}
-		}
-		$fsD = $_FILES["sD"];
-		if(!empty($fsD))
-		{
-			for($i = 0; $i < count($fsD["name"]); $i++)
-			{
-				if ($fsD['size'][$i] != 0)
-				{
-					$file = $fsD["tmp_name"][$i];
-					$doc = "S" . $id . "-" . $fsD["name"][$i];
-					$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
-				}
-			}
-		}
-		if(isset($_FILES["followD"]))
-		{
-			$followD = $_FILES["followD"];
-			if(!empty($followD))
-			{
-				for($i = 0; $i < count($followD["name"]); $i++)
-				{
-					if ($followD['size'][$i] != 0)
+					$prefix = null; //set to a valid prefix based on the type of upload (supporting document, proposal narrative, etc.)
+					if(strncmp($filename, "supportingDoc", 13) === 0){
+						$totalExisting = count(preg_grep('~^SD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+						$prefix = "SD".($totalExisting+1)."_";//increment the prefix
+					}
+					else if(strncmp($filename, "proposalNarrative", 17) === 0){
+						$totalExisting = count(preg_grep('~^PN.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+						$prefix = "PN".($totalExisting+1)."_";//increment the prefix
+					}
+					else if(strncmp($filename, "followUpDoc", 11) === 0){
+						$totalExisting = count(preg_grep('~^FD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+						$prefix = "FD".($totalExisting+1)."_";//increment the prefix
+					}
+
+					if($prefix !== null)//upload prefix accepted
 					{
-						$file = $followD["tmp_name"][$i];
-						$doc = "F" . $id . "-" . $followD["name"][$i];
-						
-						$ssh->put(/*$settings["uploads_dir"] . */$id . '/' . $doc, $file, NET_SFTP_LOCAL_FILE);
+						$target = $uploadTo."/".$prefix.$file["name"];
+						$fileType = strtolower(pathinfo($target, PATHINFO_EXTENSION));//get the file's type
+
+						if($fileType == "txt" || $fileType == "rtf" || $fileType == "doc" || $fileType == "docx" || $fileType == "xls" 
+							|| $fileType == "xlsx" || $fileType == "ppt" || $fileType == "pptx" || $fileType == "pdf" || $fileType == "jpg"
+							|| $fileType == "png" || $fileType == "bmp" || $fileType == "tif")//make sure file type is an accepted format
+						{
+							if(!move_uploaded_file($file["tmp_name"], $target))//move file to the uploads directory
+							{
+								$res["error"] = "Unable to move file to uploads directory"; //if it failed to move
+								break; //prematurely exit loop
+							} 
+						}
+						else
+						{
+							$res["error"] = "Filetype: ".$fileType." not accepted";
+							break; //prematurely exit loop
+						}
+					}
+					else //not accepted
+					{
+						$res["error"] = "Upload prefix not accepted";
+						break; //prematurely exit loop
 					}
 				}
+
+				if(!isset($res["error"])){$res = true;} //no errors, so success!
 			}
+			catch(Exception $e)
+			{
+				$res["error"] = "Unable to upload document: " . $e->getMessage();
+			}
+
+			return $res;
 		}
-		unset($ssh);
-		/*everything was successful*/
-		if(isset($_REQUEST["uploadDocs"]))
-			header("Location: ../application.php?id=" . $id);
-		if(isset($_REQUEST["uploadDocsF"]))
-			header("Location: ../follow_up.php?id=" . $id);
-		return true;
 	}
+
+	/* Download a file for the associated application */
+	if(!function_exists('downloadDoc')) {
+		function downloadDoc($appID, $filename)
+		{
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+			$uploadDir = parse_ini_file($config_url)["uploads_dir"]; //load upload directory
+			$uploadTo = dirname(__FILE__) ."/..".$uploadDir."/".$appID; //get specific directory for this application
+			$file = $uploadTo . '/' . $filename;
+			if(file_exists($file))
+			{
+				header('Connection: Keep-Alive');
+				header('Content-Description: File Transfer');
+				header('Content-Type: application/octet-stream');
+				header('Content-Disposition: attachment; filename="'.basename($file).'"');
+				header('Content-Transfer-Encoding: binary');
+				header('Expires: 0');
+				header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+				header('Pragma: public');
+				header('Content-Length: ' . filesize($file));
+				readfile($file);
+				exit;
+			}
+			else
+			{
+				return false;
+			}
+			
+		}
+	}
+	
 ?>

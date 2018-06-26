@@ -2,7 +2,6 @@
 	ob_start();
 	
 	/*Debug user validation*/
-	//include "include/debugAuthentication.php";
 	include "include/CAS_login.php";
 
 	/*get database connection*/

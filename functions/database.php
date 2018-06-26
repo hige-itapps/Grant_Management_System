@@ -589,10 +589,10 @@
 	
 	/*Checks if a user is allowed to create an application
 	Rules:
-	1. Must be in a non-student position
+	1. Must be in a non-student position //currently disabled, see commented out segment below
 	2. Must not have a pending application
-	3. Must not have received funding within the past year
-	4. Must not be an admin, committee member, application approver, or follow-up report approver
+	3. Must not have received funding within the past year (use rules from verification.php)
+	4. Must not be an admin, committee member, application approver, or follow-up report approver (HIGE Staff)
 	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {
 		function isUserAllowedToCreateApplication($conn, $broncoNetID, $positions, $nextCycle)
@@ -1517,8 +1517,8 @@
 								{
 									if(!empty($i))
 									{
-										echo "going to insert:";
-										var_dump($i);
+										//echo "going to insert:";
+										//var_dump($i);
 
 										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
 										$sql->bindParam(':appID', $newAppID);
