@@ -19,9 +19,7 @@
 	/*for dept. chair email message*/
 	use PHPMailer\PHPMailer\PHPMailer;
 	use PHPMailer\PHPMailer\Exception;
-?>
 
-<?php
 /************* FOR ADDING OR UPDATING APPLICATION VIA SUMBISSION ***************/
 
 $insertReturn = null; //will be an array with return code and status, or an array of errors
@@ -50,72 +48,58 @@ $isAdmin = isAdministrator($conn, $CASbroncoNetID);
 if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true) || $isAdmin)
 {
     //echo "User is allowed to create an application!";
-    //print_r($_POST);
+   // echo var_dump($_POST);
     
     try
     {
+        $files = null; //get files to upload, if any
+        if(isset($_FILES)){$files = $_FILES;}
         /*Get the budget items*/
         $budgetItems = null;
-        if(isset($_POST["budgetItems"])){$budgetItems = $_POST["budgetItems"];}
+        if(isset($_POST["budgetItems"])){$budgetItems = json_decode($_POST["budgetItems"], true);}
         
-        /*get the 4 purposes and 4 goals*/
+        /*get the 4 purposes and 4 goals, set to 1 or 0*/
         $purpose1 = 0; $purpose2 = 0; $purpose3 = 0; $purpose4Other = ""; 
         $goal1 = 0; $goal2 = 0; $goal3 = 0; $goal4 = 0;
-        if(isset($_POST["purpose1"])){$purpose1 = 1;}
-        if(isset($_POST["purpose2"])){$purpose2 = 1;}
-        if(isset($_POST["purpose3"])){$purpose3 = 1;}
-        if(isset($_POST["purpose4Other"])){$purpose4Other = $_POST["purpose4Other"];}
-        if(isset($_POST["goal1"])){$goal1 = 1;}
-        if(isset($_POST["goal2"])){$goal2 = 1;}
-        if(isset($_POST["goal3"])){$goal3 = 1;}
-        if(isset($_POST["goal4"])){$goal4 = 1;}
+        if(isset($_POST["purpose1"])){$purpose1 = $_POST["purpose1"] === "true" ? 1 : 0;}
+        if(isset($_POST["purpose2"])){$purpose2 = $_POST["purpose2"] === "true" ? 1 : 0;}
+        if(isset($_POST["purpose3"])){$purpose3 = $_POST["purpose3"] === "true" ? 1 : 0;}
+        if(isset($_POST["purpose4Other"])){$purpose4Other = json_decode($_POST["purpose4Other"]);}
+        if(isset($_POST["goal1"])){$goal1 = $_POST["goal1"] === "true" ? 1 : 0;}
+        if(isset($_POST["goal2"])){$goal2 = $_POST["goal2"] === "true" ? 1 : 0;}
+        if(isset($_POST["goal3"])){$goal3 = $_POST["goal3"] === "true" ? 1 : 0;}
+        if(isset($_POST["goal4"])){$goal4 = $_POST["goal4"] === "true" ? 1 : 0;}
+
+        /*Get the dates & properly format*/
+        $travelFrom = null; $travelTo = null; $activityFrom = null; $activityTo = null;
+        if(isset($_POST["travelFrom"])){$travelFrom = date('Y-m-d h:i:s', $_POST["travelFrom"]);}
+        if(isset($_POST["travelTo"])){$travelTo = date('Y-m-d h:i:s', $_POST["travelTo"]);}
+        if(isset($_POST["activityFrom"])){$activityFrom = date('Y-m-d h:i:s', $_POST["activityFrom"]);}
+        if(isset($_POST["activityTo"])){$activityTo = date('Y-m-d h:i:s', $_POST["activityTo"]);}
 
         /*get other data*/
-        $updateID = null; $name = null; $email = null; $department = null; $deptChairEmail = null;
-        $travelFrom = null; $travelTo = null; $activityFrom = null; $activityTo = null; $title = null;
+        $updateID = null; $name = null; $email = null; $department = null; $deptChairEmail = null; $title = null;
         $destination = null; $amountRequested = null; $otherFunding = null; $proposalSummary = null;
-        if(isset($_POST["updateID"])){$updateID = $_POST["updateID"];}
-        if(isset($_POST["name"])){$name = $_POST["name"];}
-        if(isset($_POST["email"])){$email = $_POST["email"];}
-        if(isset($_POST["department"])){$department = $_POST["department"];}
-        if(isset($_POST["deptChairEmail"])){$deptChairEmail = $_POST["deptChairEmail"];}
-        if(isset($_POST["travelFrom"])){$travelFrom = $_POST["travelFrom"];}
-        if(isset($_POST["travelTo"])){$travelTo = $_POST["travelTo"];}
-        if(isset($_POST["activityFrom"])){$activityFrom = $_POST["activityFrom"];}
-        if(isset($_POST["activityTo"])){$activityTo = $_POST["activityTo"];}
-        if(isset($_POST["title"])){$title = $_POST["title"];}
-        if(isset($_POST["destination"])){$destination = $_POST["destination"];}
-        if(isset($_POST["amountRequested"])){$amountRequested = $_POST["amountRequested"];}
-        if(isset($_POST["otherFunding"])){$otherFunding = $_POST["otherFunding"];}
-        if(isset($_POST["proposalSummary"])){$proposalSummary = $_POST["proposalSummary"];}
-
-
-        /*echo "application_form Travel From:";
-        var_dump($travelFrom);*/
-        
-        //split unnecessary day of the week from rest of strings
-        /*$travelFromParts = explode(' ', $travelFrom, 2);
-        $travelToParts = explode(' ', $travelTo, 2);
-        $activityFromParts = explode(' ', $activityFrom, 2);
-        $activityToParts = explode(' ', $activityTo, 2);
-
-        //remove unnecessary day of week off the front of the string
-        $travelFrom = $travelFromParts[1];
-        $travelTo = $travelToParts[1];
-        $activityFrom = $activityFromParts[1];
-        $activityTo = $activityToParts[1];
-
-        echo "2: application_form Travel From:";
-        var_dump($travelFrom);*/
+        if(isset($_POST["updateID"])){$updateID = json_decode($_POST["updateID"]);}
+        if(isset($_POST["name"])){$name = json_decode($_POST["name"]);}
+        if(isset($_POST["email"])){$email = json_decode($_POST["email"]);}
+        if(isset($_POST["department"])){$department = json_decode($_POST["department"]);}
+        if(isset($_POST["deptChairEmail"])){$deptChairEmail = json_decode($_POST["deptChairEmail"]);}
+        if(isset($_POST["title"])){$title = json_decode($_POST["title"]);}
+        if(isset($_POST["destination"])){$destination = json_decode($_POST["destination"]);}
+        if(isset($_POST["amountRequested"])){$amountRequested = json_decode($_POST["amountRequested"]);}
+        if(isset($_POST["otherFunding"])){$otherFunding = json_decode($_POST["otherFunding"]);}
+        if(isset($_POST["proposalSummary"])){$proposalSummary = json_decode($_POST["proposalSummary"]);}
 
         /*get nextCycle or currentCycle*/
         $nextCycle = null;
 
         if(isset($_POST["cycleChoice"]))
         {
-            if(strcmp($_POST["cycleChoice"], "next") == 0) //user chose to submit next cycle
+            $chosen = json_decode($_POST["cycleChoice"]);
+            if($chosen === "next") //user chose to submit next cycle
             {$nextCycle = 1;}
-            else if (strcmp($_POST["cycleChoice"], "this") == 0) //user chose to submit this cycle
+            else if ($chosen === "this") //user chose to submit this cycle
             {$nextCycle = 0;}
         }
         
@@ -135,35 +119,34 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
                 $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
         }
         
-        /*echo "<br>Insert status: ".$insertReturn[1].".<br>";
-        
-        $successUpload = 0; //initialize value to 0, should be made to something > 0 if upload is successful
-        
-        if($insertReturn[0] > 0) //if insert into DB was successful, continue
+        if(isset($insertReturn["success"]))//returned normally
         {
-            echo "<br>Uploading docs...<br>";
-            $successUpload = uploadDocs($insertReturn[0]); //upload the documents
-            
-            echo "<br>Upload status: ".$successUpload.".<br>";
+            if($insertReturn["success"] === true)//if it was successful
+            {
+                $insertReturn["fileSuccess"] = null; //variable to tell whether file upload was successful. If not, this will be set to false, and ["fileError"] will hold a detailed error message
+
+                if($files != null) //user is uploading files as well
+                {
+                    $uploadReturn = uploadDocs($insertReturn["appID"], $files);
+
+                    if($uploadReturn !== true)//if there was an error with the upload
+                    {
+                        $insertReturn["fileSuccess"] = false; 
+                        $insertReturn["fileError"] = $$uploadReturn["error"];
+                    }
+                    else {$insertReturn["fileSuccess"] = true;} //it was successful
+                }
+                else {$insertReturn["fileSuccess"] = true;} //not uploading files
+            }
+            else {$insertReturn["fileSuccess"] = true;} //not uploading files
         }
-        else
-        {
-            echo "<br>ERROR: could not insert application, app status: ".$insertReturn[0]."!<br>";
-        }
+
         
-        if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
+        /*if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
         {
             chairApprovalEmail($_POST["inputDeptCE"], $_POST["inputName"], $_POST["inputEmail"]); //send the email
             
             header('Location: ../index.php'); //redirect back to homepage
-        }
-        else if($successUpload > 0 && $isAdmin) //upload was successful for admin, so reload page
-        {
-            header('Location: ?id=' . $_POST["updateID"]); //reload page as admin
-        }
-        else
-        {
-            echo "<br>ERROR: could not upload application documents, upload status: ".$successUpload."!<br>";
         }*/
         
     }
@@ -172,6 +155,10 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
         $insertReturn = "Error adding application: " . $e->getMessage();
     }
     
+}
+else
+{
+    $insertReturn = "Permission denied";
 }
 
 $conn = null; //close connection

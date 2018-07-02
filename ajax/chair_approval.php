@@ -14,9 +14,6 @@
 
 	/*For sending custom emails*/
 	include_once(dirname(__FILE__) . "/../functions/customEmail.php");
-?>
-
-<?php
 
 /************* FOR A DEPARTMENT CHAIR CHAIR TO APPROVE AN APPLICATION AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 

@@ -147,17 +147,18 @@
 		}
 	}
 	/* Returns array of all applications that still need to be signed by a specific user(via email address)
-	Note: don't include ones that have already been signed, and ones that have the same email as the submitter
+	Note: don't include ones that have already been signed, and ones that have the same broncoNetID as the submitter
 	(you shouldn't be able to sign your own application)
 	*/
 	if(!function_exists('getApplicationsToSign')) {
-		function getApplicationsToSign($conn, $email)
+		function getApplicationsToSign($conn, $email, $broncoNetID)
 		{
 			if ($email != "") //valid email
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
 				$sql->bindParam(':dEmail', $email);
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
 				/* run the prepared query */
 				$sql->execute();
@@ -236,20 +237,19 @@
 
 	/* Returns number of applications that this user(via email address) needs to sign (for department chairs) */
 	if(!function_exists('getNumberOfApplicationsToSign')){
-		function getNumberOfApplicationsToSign($conn, $email)
+		function getNumberOfApplicationsToSign($conn, $email, $broncoNetID)
 		{
 			if ($email != "") //valid email
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
 				$sql->bindParam(':dEmail', $email);
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
 				/* Close finished query and connection */
 				$sql = null;
-				
-				//echo 'Count: '.$res[0][0].".";
 				
 				return $res[0][0];
 			}
@@ -271,8 +271,6 @@
 				/* Close finished query and connection */
 				$sql = null;
 				
-				//echo 'Count: '.$res[0][0].".";
-				
 				return $res[0][0];
 			}
 		}
@@ -281,13 +279,13 @@
 	
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	if(!function_exists('getApplications')) {
-		function getApplications($conn, $bNetID)
+		function getApplications($conn, $broncoNetID)
 		{
-			if ($bNetID != "") //valid username
+			if ($broncoNetID != "") //valid username
 			{
 				/* Select only applications that this user has has submitted */
-				$sql = $conn->prepare("Select * FROM applications WHERE Applicant = :bNetID");
-				$sql->bindParam(':bNetID', $bNetID);
+				$sql = $conn->prepare("Select * FROM applications WHERE Applicant = :broncoNetID");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 			}
 			else //no username
 			{
@@ -323,6 +321,31 @@
 			
 			/* return array */
 			return $applicationsArray;
+		}
+	}
+	/* Returns number of all applications for a specified BroncoNetID, or number of ALL applications if no ID is provided */
+	if(!function_exists('getNumberOfApplications')) {
+		function getNumberOfApplications($conn, $broncoNetID)
+		{
+			if ($broncoNetID != "") //valid username
+			{
+				/* Select only applications that this user has has submitted */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Applicant = :broncoNetID");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
+			}
+			else //no username
+			{
+				/* Select all applications */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM FROM applications");
+			}
+			/* run the prepared query */
+			$sql->execute();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			
+			/* Close finished query and connection */
+			$sql = null;
+			
+			return $res[0][0];
 		}
 	}
 	
@@ -381,9 +404,10 @@
 				$sql = $conn->prepare("INSERT INTO administrators(BroncoNetID, Name) VALUES(:id, :name)");
 				$sql->bindParam(':id', $broncoNetID);
 				$sql->bindParam(':name', $name);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -398,9 +422,10 @@
 				$sql = $conn->prepare("INSERT INTO committee(BroncoNetID, Name) VALUES(:id, :name)");
 				$sql->bindParam(':id', $broncoNetID);
 				$sql->bindParam(':name', $name);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -415,9 +440,10 @@
 				$sql = $conn->prepare("INSERT INTO follow_up_approval(BroncoNetID, Name) VALUES(:id, :name)");
 				$sql->bindParam(':id', $broncoNetID);
 				$sql->bindParam(':name', $name);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -432,9 +458,10 @@
 				$sql = $conn->prepare("INSERT INTO application_approval(BroncoNetID, Name) VALUES(:id, :name)");
 				$sql->bindParam(':id', $broncoNetID);
 				$sql->bindParam(':name', $name);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -449,9 +476,10 @@
 				/* Prepare & run the query */
 				$sql = $conn->prepare("DELETE FROM administrators WHERE BroncoNetID = :id");
 				$sql->bindParam(':id', $broncoNetID);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -465,9 +493,10 @@
 				/* Prepare & run the query */
 				$sql = $conn->prepare("DELETE FROM committee WHERE BroncoNetID = :id");
 				$sql->bindParam(':id', $broncoNetID);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -481,9 +510,10 @@
 				/* Prepare & run the query */
 				$sql = $conn->prepare("DELETE FROM follow_up_approval WHERE BroncoNetID = :id");
 				$sql->bindParam(':id', $broncoNetID);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -497,9 +527,10 @@
 				/* Prepare & run the query */
 				$sql = $conn->prepare("DELETE FROM application_approval WHERE BroncoNetID = :id");
 				$sql->bindParam(':id', $broncoNetID);
-				$sql->execute();
+				$ret = $sql->execute();
 				/* Close finished query and connection */
 				$sql = null;
+				return $ret;//return result
 			}
 		}
 	}
@@ -699,16 +730,17 @@
 
 	/* Returns true if the given email == the deptChairEmail for a given app ID, or false otherwise */
 	if(!function_exists('isUserAllowedToSignApplication')){
-		function isUserAllowedToSignApplication($conn, $email, $appID)
+		function isUserAllowedToSignApplication($conn, $email, $appID, $broncoNetID)
 		{
 			$is = false; //initialize boolean to false
 			
 			if ($email != "" && $appID != "") //valid email & ID
 			{
-				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND DepartmentChairEmail != Email AND Approved IS NULL");
+				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's broncoNetID == this broncoNetID*/
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
@@ -755,16 +787,17 @@
 
 	/* Returns true if this user is the department chair specified by an application */
 	if(!function_exists('isUserDepartmentChair')){
-		function isUserDepartmentChair($conn, $email, $appID)
+		function isUserDepartmentChair($conn, $email, $appID, $broncoNetID)
 		{
 			$is = false; //initialize boolean to false
 			
 			if ($email != "" && $appID != "") //valid email & ID
 			{
 				/* Only count applications meant for this person */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND Applicant != :broncoNetID");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
@@ -790,9 +823,9 @@
 			if ($broncoNetID != "" && $appID != "") //valid broncoNetID & appID
 			{
 				/* Only count applications with the right ID that this user has submitted */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND Applicant = :bNetID");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND Applicant = :broncoNetID");
 				$sql->bindParam(':appID', $appID);
-				$sql->bindParam(':bNetID', $broncoNetID);
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
@@ -872,15 +905,15 @@
 	
 	/* Returns true if this applicant has a pending application, or false otherwise */
 	if(!function_exists('hasPendingApplication')){
-		function hasPendingApplication($conn, $bNetID)
+		function hasPendingApplication($conn, $broncoNetID)
 		{
 			$is = false;
 			
-			if ($bNetID != "") //valid username
+			if ($broncoNetID != "") //valid username
 			{
 				/* Select only pending applications that this user has has submitted */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Approved IS NULL AND Applicant = :bNetID");
-				$sql->bindParam(':bNetID', $bNetID);
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Approved IS NULL AND Applicant = :broncoNetID");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 				
@@ -930,15 +963,15 @@
 	
 	/*Get the most recently approved application of a user- return null if none*/
 	if(!function_exists('getMostRecentApprovedApplication')){
-		function getMostRecentApprovedApplication($conn, $bNetID)
+		function getMostRecentApprovedApplication($conn, $broncoNetID)
 		{
 			$mostRecent = null;
 			
-			if ($bNetID != "") //valid username
+			if ($broncoNetID != "") //valid username
 			{
 				/* Select the most recent from this applicant */
-				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :bNetID AND Approved = 1 ORDER BY Date DESC LIMIT 1");
-				$sql->bindParam(':bNetID', $bNetID);
+				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :broncoNetID AND Approved = 1 ORDER BY Date DESC LIMIT 1");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
 					/* run the prepared query */
 				$sql->execute();
@@ -977,15 +1010,15 @@
 
 	/*Get all past approved cycles for this user- return null if none*/
 	if(!function_exists('getPastApprovedCycles')){
-		function getPastApprovedCycles($conn, $bNetID)
+		function getPastApprovedCycles($conn, $broncoNetID)
 		{
 			$pastCycles = null;
 			
-			if ($bNetID != "") //valid username
+			if ($broncoNetID != "") //valid username
 			{
 				/* Select all dates from past approved applications */
-				$sql = $conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :bNetID AND Approved = 1");
-				$sql->bindParam(':bNetID', $bNetID);
+				$sql = $conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :broncoNetID AND Approved = 1");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
 					/* run the prepared query */
 				$sql->execute();
@@ -1204,17 +1237,10 @@
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray)
 		{
 
-			//$returnCode = -1; //default error code
-			//$returnStatus = "Unspecified error";
-
-			$errors = array();  // array to hold validation errors
-			$data = array();        // array to pass back data
-
+			$errors = array(); // array to hold validation errors
+			$data = array(); // array to pass back data
 
 			$newAppID = 0; //set this to the new application's ID if successful
-
-			/*echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
-			echo "inserting app";*/
 
 			if(!$updating)
 			{
@@ -1275,7 +1301,6 @@
 				if($name === '')
 				{
 					$errors["name"] = "Name field is required.";
-					$errors["other"] = "This is an example other error!";
 				}
 
 				if($email === '')
@@ -1322,23 +1347,22 @@
 					}
 				}
 
-				if($travelFrom === '')
+				if($travelFrom == null || $travelFrom === '')
 				{
 					$errors["travelFrom"] = "Travel From field is required.";
 				}
-				if($travelTo === '')
+				if($travelTo == null || $travelTo === '')
 				{
 					$errors["travelTo"] = "Travel To field is required.";
 				}
-				if($activityFrom === '')
+				if($activityFrom == null || $activityFrom === '')
 				{
 					$errors["activityFrom"] = "Activity From field is required.";
 				}
-				if($activityTo === '')
+				if($activityTo == null || $activityTo === '')
 				{
 					$errors["activityTo"] = "Activity To field is required.";
 				}
-
 
 
 				if($nextCycle === '')
@@ -1346,26 +1370,25 @@
 					$errors["cycleChoice"] = "Must choose a cycle.";
 				}
 
+
 				/*Make sure dates are acceptable*/
 				if(!isset($errors["travelFrom"]) && !isset($errors["activityFrom"]))//making sure dates were set
 				{
-					if(DateTime::createFromFormat("Y-m-d", $travelFrom) > DateTime::createFromFormat("Y-m-d", $activityFrom))
+					if($travelFrom > $activityFrom)
 					{
 						$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
 					}
-				}
-				
+				}	
 				if(!isset($errors["activityFrom"]) && !isset($errors["activityTo"]))//making sure dates were set
 				{
-					if(DateTime::createFromFormat("Y-m-d", $activityFrom) > DateTime::createFromFormat("Y-m-d", $activityTo))
+					if($activityFrom > $activityTo)
 					{
 						$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
 					}
 				}
-
 				if(!isset($errors["activityTo"]) && !isset($errors["travelTo"]))//making sure dates were set
 				{
-					if(DateTime::createFromFormat("Y-m-d", $activityTo) > DateTime::createFromFormat("Y-m-d", $travelTo))
+					if($activityTo > $travelTo)
 					{
 						$errors["activityTo"] = "Travel dates are impossible (travel cannot end before activity ends!).";
 					}
@@ -1694,75 +1717,100 @@
 	
 	
 	/*
-	Insert a follow-up-report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use.
-	Fields: DB connection, application ID, travel start & end dates, activity start & end dates, project summary, and total award spent
-	return 1 if insert is successful, 0 otherwise
+	Insert a follow-up report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
+
+	This function returns a data array; If the report is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
+	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the report's fields.
 	*/
 	if(!function_exists('insertFollowUpReport')){
 		function insertFollowUpReport($conn, $updating, $updateID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
 		{
-			/*Server-Side validation!*/
-			$valid = true; //start valid, turn false if anything is wrong!
+			$errors = array(); // array to hold validation errors
+			$data = array(); // array to pass back data
 			
 			/*Sanitize everything*/
 			try
 			{
-				$travelFrom = strtotime($travelFrom);
-				$travelTo = strtotime($travelTo);
-				$activityFrom = strtotime($activityFrom);
-				$activityTo = strtotime($activityTo);
 				$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING));
-				//$totalAwardSpent = filter_var($totalAwardSpent, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
-				
-				//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
 			}
 			catch(Exception $e)
 			{
-				echo "Follow-Up Report Sanitization Error: " . $e->getMessage();
-				$valid = false;
+				$errors["other"] = "Exception when sanitizing fields!";
 			}
 			
 			/*Now validate everything that needs it*/
-			if($valid)
+			if(empty($errors)) //no errors yet
 			{
-				/*Make sure necessary strings aren't empty*/
 				if($projectSummary === '')
 				{
-					echo "Follow-Up Report Validation Error: Empty String Given!";
-					$valid = false;
+					$errors["projectSummary"] = "Project Summary field is required.";
 				}
-				/*Make sure dates are acceptable*/
-				if($travelTo < $travelFrom || $activityTo < $activityFrom || $activityFrom < $travelFrom || $activityTo > $travelTo)
+
+				if($totalAwardSpent == null)
 				{
-					echo "Follow-Up Report Validation Error: Invalid Date Given!";
-					$valid = false;
+					$errors["amountAwardedSpent"] = "Awarded Amount Spent field is required.";
+				}
+
+				if($travelFrom == null || $travelFrom === '')
+				{
+					$errors["travelFrom"] = "Travel From field is required.";
+				}
+				if($travelTo == null || $travelTo === '')
+				{
+					$errors["travelTo"] = "Travel To field is required.";
+				}
+				if($activityFrom == null || $activityFrom === '')
+				{
+					$errors["activityFrom"] = "Activity From field is required.";
+				}
+				if($activityTo == null || $activityTo === '')
+				{
+					$errors["activityTo"] = "Activity To field is required.";
+				}
+
+				/*Make sure dates are acceptable*/
+				if(!isset($errors["travelFrom"]) && !isset($errors["activityFrom"]))//making sure dates were set
+				{
+					if($travelFrom > $activityFrom)
+					{
+						$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
+					}
+				}
+				if(!isset($errors["activityFrom"]) && !isset($errors["activityTo"]))//making sure dates were set
+				{
+					if($activityFrom > $activityTo)
+					{
+						$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
+					}
+				}
+				if(!isset($errors["activityTo"]) && !isset($errors["travelTo"]))//making sure dates were set
+				{
+					if($activityTo > $travelTo)
+					{
+						$errors["activityTo"] = "Travel dates are impossible (travel cannot end before activity ends!).";
+					}
 				}
 			}
 			
-			/*Now insert new follow-up report into database*/
-			if($valid)
+			/*Now insert new follow up report into database*/
+			if(empty($errors)) //no errors yet
 			{
 				if(!$updating) //adding, not updating
 				{
 					try
 					{
-						//Get dates
+						//Get current date
 						$curDate = date("Y/m/d");
-						$travelFromDate = date("Y-m-d", $travelFrom);
-						$travelToDate = date("Y-m-d", $travelTo);
-						$activityFromDate = date("Y-m-d", $activityFrom);
-						$activityToDate = date("Y-m-d", $activityTo);
 
 						$conn->beginTransaction(); //begin atomic transaction
-						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
-						/*Prepare the query*/
+
 						$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date) 
 							VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date)");
 						$sql->bindParam(':applicationid', $updateID);
-						$sql->bindParam(':travelstart', $travelFromDate);
-						$sql->bindParam(':travelend', $travelToDate);
-						$sql->bindParam(':eventstart', $activityFromDate);
-						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':travelstart', $travelFrom);
+						$sql->bindParam(':travelend', $travelTo);
+						$sql->bindParam(':eventstart', $activityFrom);
+						$sql->bindParam(':eventend', $activityTo);
 						$sql->bindParam(':projectsummary', $projectSummary);
 						$sql->bindParam(':totalawardspent', $totalAwardSpent);
 						$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
@@ -1773,33 +1821,27 @@
 						} 
 						else //query failed
 						{
-							$valid = false;
+							$errors["other"] = "Query failed to insert follow up report";
+							$conn->rollBack();
 						}
 					}
 					catch(Exception $e)
 					{
-						echo "Error inserting follow-up report into database: " . $e->getMessage();
-						$valid = false;
+						$errors["other"] = "Exception when trying to insert follow up report into database: ".$e->getMessage();
 					}
 				}
 				else //just updating
 				{
 					try
 					{
-						//Get dates
-						$travelFromDate = date("Y-m-d", $travelFrom);
-						$travelToDate = date("Y-m-d", $travelTo);
-						$activityFromDate = date("Y-m-d", $activityFrom);
-						$activityToDate = date("Y-m-d", $activityTo);
-
 						$conn->beginTransaction(); //begin atomic transaction
 
 						$sql = $conn->prepare("UPDATE follow_up_reports SET TravelStart = :travelstart, TravelEnd = :travelend, EventStart = :eventstart, EventEnd = :eventend,
 							ProjectSummary = :projectsummary, TotalAwardSpent = :totalawardspent WHERE ApplicationID = :applicationid");
-						$sql->bindParam(':travelstart', $travelFromDate);
-						$sql->bindParam(':travelend', $travelToDate);
-						$sql->bindParam(':eventstart', $activityFromDate);
-						$sql->bindParam(':eventend', $activityToDate);
+						$sql->bindParam(':travelstart', $travelFrom);
+						$sql->bindParam(':travelend', $travelTo);
+						$sql->bindParam(':eventstart', $activityFrom);
+						$sql->bindParam(':eventend', $activityTo);
 						$sql->bindParam(':projectsummary', $projectSummary);
 						$sql->bindParam(':totalawardspent', $totalAwardSpent);
 						$sql->bindParam(':applicationid', $updateID);
@@ -1810,25 +1852,37 @@
 						} 
 						else //query failed
 						{
-							$valid = false;
+							$errors["other"] = "Query failed to insert follow up report";
+							$conn->rollBack();
 						}
 					}
 					catch(Exception $e)
 					{
-						echo "Error updating follow-up report in database: " . $e->getMessage();
-						$valid = false;
+						$errors["other"] = "Exception when trying to insert follow up report into database: ".$e->getMessage();
 					}
 				}
 			}
 			
-			if($valid) //if successful, return 1
-			{
-				return $updateID;
+			// response if there are errors
+			if ( ! empty($errors)) {
+				// if there are items in our errors array, return those errors
+				$data['success'] = false;
+				$data['errors']  = $errors;
+			} else {
+				// if there are no errors, return a message
+				$data['success'] = true;
+				if(!$updating)
+				{
+					$data['message'] = "Successfully inserted follow up report into database";
+				}
+				else
+				{
+					$data['message'] = "Successfully updated follow up report in database";
+				}
 			}
-			else //otherwise return 0
-			{
-				return 0;
-			}
+			
+			//$data["temp"] = "just a test";
+			return $data; //return both the return code and status
 		}
 	}
 	

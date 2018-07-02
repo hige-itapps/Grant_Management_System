@@ -116,11 +116,20 @@ caption{
 	text-align: center;
 }
 .bottom-buttons{
+	margin-top: 20px;
 	margin-bottom: 20px;
 }
 
-/*Format admin page*/#adminPage h2{
-	margin-top: 60px;
+/*Format admin page*/
+#adminCtrl h2{
+	margin-top: 100px;
+}
+#adminCtrl form{
+	text-align: center;
+}
+#adminCtrl table{
+	margin: auto;
+	width: auto;
 }
 
 #applicantTableButton, #applicationTableButton{	
@@ -131,13 +140,13 @@ caption{
 	margin-bottom: 60px;
 }
 
-/*Format application_builder.php form*//*the form itself*/
-#submitApp, #approvalF, #applicationForm{
+/*Format forms*/
+#applicationForm, #reportForm{
 	margin: 0 5%; /*5% margin on left and right side*/
 }
 
 /*bootstrap rows*/
-#submitApp div.row, #approvalF div.row, #applicationForm div.row{
+#applicationForm div.row, #reportForm div.row{
 	margin: 10px 0; /*10px gap above and below rows*/
 }
 
@@ -148,12 +157,12 @@ h1, h2, h3, h4, h5{
 }
 
 /*input text boxes*/
-#submitApp input[type="text"], #submitApp input[type="email"], #approvalF input[type="text"], #approvalF input[type="email"], #applicationForm input[type="text"], #applicationForm input[type="email"]{
+#applicationForm input[type="text"], #applicationForm input[type="email"], #reportForm input[type="text"], #reportForm input[type="email"]{
 	text-overflow: ellipsis; /*show '...' if text is too long for field*/
 }
 
 /*checkbox labels*/
-#submitApp div.checkbox label, #approvalF div.checkbox label, #applicationForm div.checkbox label{
+#applicationForm div.checkbox label, #reportForm div.checkbox label{
 	word-wrap: break-word; /*prevent them from overlapping other elements*/
 }
 
@@ -202,7 +211,41 @@ h1, h2, h3, h4, h5{
 	text-align: center;
 }
 
+/*Style the uploaded files lists*/
+.uploadedList{
+	text-align: center;
+}
+.uploadedList ul{
+	display: inline-block;
+	text-align: left;
+	padding: 0;
+}
+
 /*style horizontal rules*/
 hr{
 	border-color:#a0a0a0!important; /*darker grey than default*/
+}
+
+/*style the site-error div that appears when the browser it detected as outdated*/
+#site-error{
+    width: 100%;
+    background-color: #fc3737;
+    color: #ffffff;
+    text-align: center;
+	font-size: 20px;
+	padding: 15px 0px;
+}
+
+/*format the home page content*/
+#homeCtrl{
+	text-align: center;
+}
+
+/*format the page list on the home page*/
+#pageList{
+	margin: 25px 0px;
+}
+#pageList li{
+	text-align: left;
+	padding-top: 5px;
 }
