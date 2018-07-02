@@ -5,15 +5,16 @@
 		<column>ID</column>
 		<column>Applicant</column>
 		<column>Date</column>
+		<column>NextCycle</column>
 		<column>Name</column>
-		<column>Department</column>
-		<column>MailStop</column>
 		<column>Email</column>
-		<column>Title</column>
+		<column>Department</column>
+		<column>DepartmentChairEmail</column>
 		<column>TravelStart</column>
 		<column>TravelEnd</column>
 		<column>EventStart</column>
 		<column>EventEnd</column>
+		<column>Title</column>
 		<column>Destination</column>
 		<column>AmountRequested</column>
 		<column>IsResearch</column>
@@ -26,12 +27,9 @@
 		<column>FulfillsGoal2</column>
 		<column>FulfillsGoal3</column>
 		<column>FulfillsGoal4</column>
-		<column>DepartmentChairEmail</column>
 		<column>DepartmentChairSignature</column>
-		<column>Approved</column>
 		<column>AmountAwarded</column>
-		<column>OnHold</column>
-		<column>NextCycle</column>
+		<column>Status</column>
 
 
 
@@ -39,15 +37,16 @@
 			<value>1</value>
 			<value>abc1234</value>
 			<value>2012-05-20</value>
+			<value>1</value>
 			<value>Alphy</value>
-			<value>Literature</value>
-			<null />
 			<value>abc@wmich.edu</value>
-			<value>Lorum Ipsum</value>
+			<value>Literature</value>
+			<value>samuel.j.kison@wmich.edu</value>
 			<value>2012-06-05</value>
 			<value>2012-06-23</value>
 			<value>2012-06-08</value>
 			<value>2012-06-13</value>
+			<value>Lorum Ipsum</value>
 			<value>Cambridge University</value>
 			<value>700</value>
 			<value>0</value>
@@ -60,12 +59,9 @@
 			<value>1</value>
 			<value>0</value>
 			<value>1</value>
-			<value>samuel.j.kison@wmich.edu</value>
 			<value>Sam</value>
-			<value>1</value>
 			<value>700</value>
-			<value>0</value>
-			<value>1</value>
+			<value>Approved</value>
 		</row>
 
 
@@ -74,15 +70,16 @@
 			<value>2</value>
 			<value>abc1234</value>
 			<value>2018-05-20</value>
+			<value>0</value>
 			<value>Alphy</value>
-			<value>Literature</value>
-			<null />
 			<value>abc@wmich.edu</value>
-			<value>Lorum Ipsum mk.2</value>
+			<value>Literature</value>
+			<value>samuel.j.kison@wmich.edu</value>
 			<value>2018-06-05</value>
 			<value>2018-06-23</value>
 			<value>2018-06-08</value>
 			<value>2018-06-13</value>
+			<value>Lorum Ipsum mk.2</value>
 			<value>Cambridge University</value>
 			<value>800</value>
 			<value>1</value>
@@ -95,12 +92,9 @@
 			<value>0</value>
 			<value>1</value>
 			<value>0</value>
-			<value>samuel.j.kison@wmich.edu</value>
 			<value>Sam</value>
-			<value>0</value>
 			<null />
-			<value>0</value>
-			<value>0</value>
+			<value>Denied</value>
 		</row>
 
 
@@ -109,15 +103,16 @@
 			<value>3</value>
 			<value>zyx4321</value>
 			<value>2018-04-28</value>
+			<value>1</value>
 			<value>Xeno</value>
-			<value>Political Science</value>
-			<null />
 			<value>zyx@wmich.edu</value>
-			<value>Politics in South America</value>
+			<value>Political Science</value>
+			<value>samuel.j.kison@wmich.edu</value>
 			<value>2018-05-05</value>
 			<value>2018-05-23</value>
 			<value>2018-05-08</value>
 			<value>2018-05-13</value>
+			<value>Politics in South America</value>
 			<value>Alberta Township</value>
 			<value>650</value>
 			<value>0</value>
@@ -130,12 +125,9 @@
 			<value>0</value>
 			<value>0</value>
 			<value>1</value>
-			<value>samuel.j.kison@wmich.edu</value>
 			<null />
 			<null />
-			<null />
-			<value>0</value>
-			<value>1</value>
+			<value>Pending</value>
 		</row>
 
 
@@ -144,15 +136,16 @@
 			<value>4</value>
 			<value>bbb7777</value>
 			<value>2018-05-06</value>
+			<value>0</value>
 			<value>Barry</value>
-			<value>CS</value>
-			<null />
 			<value>bbb@wmich.edu</value>
-			<value>Learning about quadratic formula algorithms</value>
+			<value>CS</value>
+			<value>samuel.j.kison@wmich.edu</value>
 			<value>2018-11-05</value>
 			<value>2018-11-23</value>
 			<value>2018-11-08</value>
 			<value>2018-11-13</value>
+			<value>Learning about quadratic formula algorithms</value>
 			<value>Bletchly Park</value>
 			<value>1000</value>
 			<value>1</value>
@@ -165,12 +158,9 @@
 			<value>0</value>
 			<value>0</value>
 			<value>0</value>
-			<value>samuel.j.kison@wmich.edu</value>
 			<value>Sam</value>
 			<null />
-			<null />
-			<value>1</value>
-			<value>0</value>
+			<value>Hold</value>
 		</row>
 
 
@@ -179,15 +169,16 @@
 			<value>5</value>
 			<value>abc1234</value>
 			<value>2017-05-20</value>
+			<value>0</value>
 			<value>Alphy</value>
-			<value>Literature</value>
-			<null />
 			<value>abc@wmich.edu</value>
-			<value>Lorum Ipsum mk.1.5</value>
+			<value>Literature</value>
+			<value>samuel.j.kison@wmich.edu</value>
 			<value>2017-06-05</value>
 			<value>2017-06-23</value>
 			<value>2017-06-08</value>
 			<value>2017-06-13</value>
+			<value>Lorum Ipsum mk.1.5</value>
 			<value>Cambridge University</value>
 			<value>800</value>
 			<value>1</value>
@@ -200,12 +191,9 @@
 			<value>0</value>
 			<value>1</value>
 			<value>0</value>
-			<value>samuel.j.kison@wmich.edu</value>
 			<value>Sam</value>
-			<value>1</value>
 			<null />
-			<value>0</value>
-			<value>0</value>
+			<value>Approved</value>
 		</row>
 	</table>
 

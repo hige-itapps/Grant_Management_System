@@ -55,12 +55,12 @@ final class ApplicationsTest extends TestCase
     {
         $exisitingAppID = 1;
         $existingAppArray = array(
-            0 => "1", 1 => "abc1234", 2 => "2012-05-20", 3 => "Alphy", 4 => "Literature",
-            /*5 => NULL,*/ 6 => "abc@wmich.edu", 7 => "Lorum Ipsum", 8 => "2012-06-05", 9 => "2012-06-23",
-            10 => "2012-06-08", 11 => "2012-06-13", 12 => "Cambridge University", 13 => number_format((float)700, 2, '.', ''), 14 => 0, //format budget as decimal to 2 places
-            15 => 1, 16 => 0, 17 => "This is also a barbeque", 18 => "No other funding", 19 => "Lorum Ipsum Lorum Ipsum etc.",
-            20 => 0, 21 => 1, 22 => 0, 23 => 1, 24 => "samuel.j.kison@wmich.edu",
-            25 => "Sam", 26 => 1, 27 => number_format((float)700, 2, '.', ''), 28 => 0, 29 => 1
+            0 => "1", 1 => "abc1234", 2 => "2012-05-20", 3 => 1, 4 => "Alphy", 5 => "abc@wmich.edu", 
+            6 => "Literature", 7 => "samuel.j.kison@wmich.edu", 8 => "2012-06-05", 9 => "2012-06-23",
+            10 => "2012-06-08", 11 => "2012-06-13", 12 => "Lorum Ipsum", 13 => "Cambridge University", 14 => number_format((float)700, 2, '.', ''), //format budget as decimal to 2 places
+            15 => 0, 16 => 1, 17 => 0, 18 => "This is also a barbeque", 19 => "No other funding", 20 => "Lorum Ipsum Lorum Ipsum etc.",
+            21 => 0, 22 => 1, 23 => 0, 24 => 1, 
+            25 => "Sam", 26 => number_format((float)700, 2, '.', ''), 27 => "Approved"
         );
         $existingApp = new Application($existingAppArray);
         $existingApp->budget = array(
@@ -82,11 +82,13 @@ final class ApplicationsTest extends TestCase
     public function testGetApplicationsToSign()
     {
         $existingDeptChairEmail = "samuel.j.kison@wmich.edu";
+        $existingDeptChairID = "test3249";
         $newDeptChairEmail = "mrDerp@wmich.edu";
+        $newDeptChairID = "good3445";
 
-        $this->assertEquals(1, count(getApplicationsToSign($this->pdo, $existingDeptChairEmail)));
+        $this->assertEquals(1, count(getApplicationsToSign($this->pdo, $existingDeptChairEmail, $existingDeptChairID)));
 
-        $this->assertEquals(0, count(getApplicationsToSign($this->pdo, $newDeptChairEmail)));
+        $this->assertEquals(0, count(getApplicationsToSign($this->pdo, $newDeptChairEmail, $newDeptChairID)));
     }
 
     //test for previously signed applications
@@ -104,11 +106,13 @@ final class ApplicationsTest extends TestCase
     public function testGetNumberOfApplicationsToSign()
     {
         $existingDeptChairEmail = "samuel.j.kison@wmich.edu";
+        $existingDeptChairID = "test3249";
         $newDeptChairEmail = "mrDerp@wmich.edu";
+        $newDeptChairID = "good3445";
 
-        $this->assertEquals(1, getNumberOfApplicationsToSign($this->pdo, $existingDeptChairEmail));
+        $this->assertEquals(1, getNumberOfApplicationsToSign($this->pdo, $existingDeptChairEmail, $existingDeptChairID));
 
-        $this->assertEquals(0, getNumberOfApplicationsToSign($this->pdo, $newDeptChairEmail));
+        $this->assertEquals(0, getNumberOfApplicationsToSign($this->pdo, $newDeptChairEmail, $newDeptChairID));
     }
 
     //test for number of previously signed applications
@@ -224,7 +228,7 @@ final class ApplicationsTest extends TestCase
     //Check the max lengths of the applications columns (no point in testing specific numbers since this could easily change depending on MySQL/schema configuration)
     public function testGetApplicationsMaxLengths()
     {
-        $this->assertEquals(30, count(getApplicationsMaxLengths($this->pdo)));
+        $this->assertEquals(28, count(getApplicationsMaxLengths($this->pdo)));
     }
 
     //Check the max lengths of the applications_budgets columns (no point in testing specific numbers since this could easily change depending on MySQL/schema configuration)

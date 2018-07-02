@@ -18,7 +18,6 @@
 	$maxProjectSummary = $reportCharMax[array_search('ProjectSummary', array_column($reportCharMax, 0))][1]; //project summary char limit
 	
 	$report = null; //only set report if it exists (when not creating a new one)
-	$reportStatus = null; //^
 	$reportFiles = null; //^
 
 	/*Initialize all user permissions to false*/
@@ -53,7 +52,6 @@
 		if(!$isCreating)
 		{
 			$report = getFollowUpReport($conn, $appID); //get follow up report data
-			$reportStatus = $report->getStatus();
 			$reportFiles = getFileNames($appID);
 		} 
 ?>
@@ -86,7 +84,6 @@
 			var scope_isFollowUpApprover = <?php echo json_encode($isFollowUpApprover); ?>;
 			var var_app = <?php echo json_encode($app); ?>; //application data
 			var var_report = <?php echo json_encode($report); ?>; //report data
-			var var_reportStatus = <?php echo json_encode($reportStatus); ?>; //the report's current status
 			var var_reportFiles = <?php echo json_encode($reportFiles); ?>; //the associated uploaded files
 		</script>
 		<!-- AngularJS Script -->
@@ -311,10 +308,10 @@
 
 					<div class="buttons-group bottom-buttons"> 
 						<button ng-show="isCreating" type="button" ng-click="insertReport()" class="btn btn-success">SUBMIT FOLLOW UP REPORT</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('approve')" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('deny')" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
+						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('Approved')" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
+						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('Denied')" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
 						<button ng-show="isReviewing" type="button" ng-click="uploadFiles()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
-						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
+						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>
 

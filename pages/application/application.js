@@ -28,7 +28,6 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     $scope.isApprover = scope_isApprover;
     //for when not creating application
     var app = var_app;
-    if(app != null){app.appStatus = var_appStatus;}
     if(app != null){app.appFiles = var_appFiles;}
     //for when creating application
     var CASemail = var_CASemail;
@@ -79,18 +78,26 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         $scope.appFieldsDisabled = $scope.isAdmin; //update the fields to be editable or non-editable
     }
 
-    //redirect the user to the homepage
-    $scope.redirectToHomepage = function(){
-        if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isApprover || $scope.isChair)
+    //redirect the user to the homepage. Optionally, send an alert which will show up on the next page, consisting of a type(success, warning, danger, etc.) and message
+    $scope.redirectToHomepage = function(alert_type, alert_message){
+        var homeURL = '../home/home.php'; //url to homepage
+
+        if(alert_type == null) //if no alert message to send, simply redirect
         {
-            if(confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.'))
+            if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isApprover || $scope.isChair)
             {
-                window.location.replace("../home/home.php");
+                if(!confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')){return;} //don't leave page if user decides not to
             }
+            window.location.replace(homeURL);
         }
-        else
+        else //if there IS an alert message to send, fill out an invisible form & submit so the data can be sent as POST
         {
-            window.location.replace("../home/home.php");
+            var form = $('<form type="hidden" action="' + homeURL + '" method="post">' +
+                '<input type="text" name="alert_type" value="' + alert_type + '" />' +
+                '<input type="text" name="alert_message" value="' + alert_message + '" />' +
+            '</form>');
+            $('body').append(form);
+            form.submit();
         }
     }
 
@@ -119,7 +126,12 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             .then(function (response) {
                 console.log(response, 'res');
                 //data = response.data;
-                $scope.populateForm(response.data);//recurse to this function again with a real app
+                if(typeof response["error"] !== 'undefined'){ //there was an error
+                    $scope.alertType = "danger";
+                    $scope.alertMessage = "There was an error when trying to retrieve the application: " + response["error"];
+                }else{ //no error
+                    $scope.populateForm(response.data);//recurse to this function again with a real app
+                }
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
@@ -130,6 +142,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         {
             try
             {
+                //console.log(existingApp);
                 $scope.formData.cycleChoice = existingApp.nextCycle ? "next" : "this";
                 $scope.formData.name = existingApp.name;
                 $scope.formData.email = existingApp.email;
@@ -167,8 +180,8 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 $scope.formData.deptChairApproval = existingApp.deptChairApproval;
                 $scope.formData.amountAwarded = existingApp.amountAwarded;
                 
-                $scope.appStatus = existingApp.appStatus;//refresh the application's status!
                 $scope.appFiles = existingApp.appFiles;//refresh the associated files
+                $scope.appStatus = existingApp.status;//refresh the status
             }
             catch(e)
             {
@@ -247,19 +260,32 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 {
                     //check for fileUpload success too
                     $scope.errors = []; //clear any old errors
+                    var newAlertType = null;
+                    var newAlertMessage = null;
+
                     if(response.data.fileSuccess)
                     {
-                        $scope.alertType = "success";
-                        $scope.alertMessage = "Success! The application has been received with no issues. You can return to your application at any time to upload more documents if necessary.";
-                        $scope.uploadProposalNarrative = []; //empty array
-                        $scope.uploadSupportingDocs = []; //empty array
+                        newAlertType = "success";
+                        newAlertMessage = "Success! The application has been received with no issues. You can return to your application at any time to upload more documents if necessary.";
                     }
                     else
                     {
-                        $scope.alertType = "warning";
-                        $scope.alertMessage = "Warning: The application has been received, but there was an error when trying to upload your documents. You can return to your application to upload more documents. Error: " + response.data.fileError;
+                        newAlertType = "warning";
+                        newAlertMessage = "Warning: The application has been received, but there was an error when trying to upload your documents. You can return to your application to upload more documents. Error: " + response.data.fileError;
                     }
-                    $scope.populateForm(null);//refresh form so that new files show up
+                    if(!$scope.isCreating) //updating
+                    {
+                        $scope.populateForm(null);//refresh form so that new files show up
+                        $scope.uploadProposalNarrative = []; //empty array
+                        $scope.uploadSupportingDocs = []; //empty array
+                        $scope.alertType = newAlertType;
+                        $scope.alertMessage = newAlertMessage;
+                    }
+                    else //creating
+                    {
+                        $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
+                    }
+                   
                 }
                 else
                 {
@@ -282,20 +308,19 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //approve, hold, or deny application with the status parameter
     $scope.approveApplication = function(status){
 
-        if(confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to ' + status + ' this application?'))
+        if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this application's status to " + status + "?"))
         {
             $http({
                 method  : 'POST',
                 url     : '/../../ajax/approve_application.php',
-                data    : $.param({appID: $scope.formData.updateID, status: status, amount: $scope.formData.amountAwarded}),  // pass in data as strings
+                data    : $.param({appID: $scope.formData.updateID, status: status, amount: $scope.formData.amountAwarded, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
                 console.log(response, 'res');
                 if(typeof response.data.error === 'undefined') //ran function as expected
                 {
-                    response.data = response.data.trim();//remove blankspace around data
-                    if(response.data === "true")//updated
+                    if(response.data.success)//updated
                     {
                         $scope.populateForm(); //refresh the form again
                         $scope.alertType = "success";
@@ -459,16 +484,13 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
     if(!$scope.isCreating)
     {
-        //alert("starting appStatus: " + $scope.appStatus);
-        //alert("Files: " + app.appFiles);
-
         $scope.formData.updateID = app.id; //set the update id for the server
         $scope.dateSubmitted = app.dateSubmitted; //set the submission date
+        $scope.appStatus = app.status; //set the application's status
 
         $scope.allowedFirstCycle = true; //allow selection of first cycle- only relevant if user is an admin updating.
+        $scope.appFieldsDisabled = true; //disable app inputs
 
-        //disable app inputs
-        $scope.appFieldsDisabled = true;
 
         //populate the form with the app data
         $scope.populateForm(app);

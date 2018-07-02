@@ -17,30 +17,38 @@
 
 /************* FOR RETRIEVING AN APPLICATION AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 
-$approvalReturn = null; //will be the application data if successful. If unsuccessful, approvalReturn["error"] should be set
+$approvalReturn = array(); //will be the application data if successful. If unsuccessful, approvalReturn["error"] should be set
 
-if(isset($_POST["appID"]) && isset($_POST["status"]))
+if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"]))
 {
 	$appID = $_POST["appID"];
 	$status = $_POST["status"];
+	$emailAddress = $_POST["emailAddress"];
+	$emailMessage = $_POST["emailMessage"];
 
 	/*Verify that user is allowed to approve an application*/
 	if(isApplicationApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
 	{
 		try
 		{
-			if($status === 'approve') 
+			if($status === 'Approved') 
 			{ 
 				if(isset($_POST["amount"])) 
 				{
-					if($_POST["amount"] > 0){ $approvalReturn = approveApplication($conn, $appID, $_POST["amount"]); }
+					if($_POST["amount"] > 0){ $approvalReturn["success"] = approveApplication($conn, $appID, $_POST["amount"]); }
 					else {$approvalReturn["error"] = "Amount awarded must be greater than $0";}
 				}
 				else {$approvalReturn["error"] = "No amount specified";}
 			}
-			else if($status === 'hold') { $approvalReturn = holdApplication($conn, $appID); }
-			else if($status === 'deny') { $approvalReturn = denyApplication($conn, $appID); }
+			else if($status === 'Hold') { $approvalReturn["success"] = holdApplication($conn, $appID); }
+			else if($status === 'Denied') { $approvalReturn["success"] = denyApplication($conn, $appID); }
 			else { $approvalReturn["error"] = "Invalid status given"; }
+
+			//if everything has been successful so far, send off the email as well
+			if(!isset($approvalReturn["error"]))
+			{
+				$approvalReturn["email"] = customEmail($appID, $emailAddress, $emailMessage, null);
+			}
 		}
 		catch(Exception $e)
 		{
@@ -54,7 +62,7 @@ if(isset($_POST["appID"]) && isset($_POST["status"]))
 }
 else
 {
-	$approvalReturn["error"] = "AppID and/or status is not set";
+	$approvalReturn["error"] = "AppID, status, and/or email is not set";
 }
 
 $conn = null; //close connection

@@ -13,9 +13,12 @@
 			$uploadTo = dirname(__FILE__) ."/..".$uploadDir."/".$appID; //get specific directory for this application
 			$fileNames = []; //empty array of filenames
 
-			foreach (new DirectoryIterator($uploadTo) as $file) {
-				if ($file->isFile()) {
-					array_push($fileNames, $file->getFilename());
+			if(file_exists($uploadTo))//only check directory if it exists
+			{
+				foreach (new DirectoryIterator($uploadTo) as $file) {
+					if ($file->isFile()) {
+						array_push($fileNames, $file->getFilename());
+					}
 				}
 			}
 

@@ -13,4 +13,15 @@ higeApp.controller('homeCtrl', function($scope, $filter) {
     $scope.isAdmin = scope_isAdmin;                                                     if($scope.isAdmin){$scope.totalViews++;}
     
     $scope.hasPendingApplication = scope_hasPendingApplication;
+
+    $scope.alertType = alert_type; //set the alert type if any
+    $scope.alertMessage = alert_message; //set the alert message if any
+
+
+    /*Functions*/
+
+    //remove the alert from the page
+    $scope.removeAlert = function(){
+        $scope.alertMessage = null;
+    }
 });

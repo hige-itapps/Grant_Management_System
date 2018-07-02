@@ -18,7 +18,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     var app = var_app;
     //for when not creating report
     var report = var_report;
-    if(report != null){report.reportStatus = var_reportStatus;}
     if(report != null){report.reportFiles = var_reportFiles;}
 
     //set admin updating to false by default
@@ -36,21 +35,29 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     $scope.toggleAdminUpdate = function(){
         $scope.isAdmin = !$scope.isAdmin; //toggle the isAdmin permission
         $scope.isAdminUpdating = !$scope.isAdmin; //set the isAdminUpdating permission to the opposite of isAdmin
-        $scope.appFieldsDisabled = $scope.isAdmin; //update the fields to be editable or non-editable
+        $scope.reportFieldsDisabled = $scope.isAdmin; //update the fields to be editable or non-editable
     }
+=
+    //redirect the user to the homepage. Optionally, send an alert which will show up on the next page, consisting of a type(success, warning, danger, etc.) and message
+    $scope.redirectToHomepage = function(alert_type, alert_message){
+        var homeURL = '../home/home.php'; //url to homepage
 
-    //redirect the user to the homepage
-    $scope.redirectToHomepage = function(){
-        if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isFollowUpApprover)
+        if(alert_type == null) //if no alert message to send, simply redirect
         {
-            if(confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.'))
+            if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isFollowUpApprover)
             {
-                window.location.replace("../home/home.php");
+                if(!confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')){return;} //don't leave page if user decides not to
             }
+            window.location.replace(homeURL);
         }
-        else
+        else //if there IS an alert message to send, fill out an invisible form & submit so the data can be sent as POST
         {
-            window.location.replace("../home/home.php");
+            var form = $('<form type="hidden" action="' + homeURL + '" method="post">' +
+                '<input type="text" name="alert_type" value="' + alert_type + '" />' +
+                '<input type="text" name="alert_message" value="' + alert_message + '" />' +
+            '</form>');
+            $('body').append(form);
+            form.submit();
         }
     }
 
@@ -96,7 +103,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 $scope.formData.deptChairApproval = existingReport.deptChairApproval;
                 $scope.formData.amountAwarded = existingReport.amountAwarded;
                 
-                $scope.reportStatus = existingReport.reportStatus;//refresh the report's status!
                 $scope.reportFiles = existingReport.reportFiles;//refresh the associated files
             }
             catch(e)
@@ -157,20 +163,32 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 }
                 else if(response.data.success)
                 {
-                    //check for fileUpload success too
-                    $scope.errors = []; //clear any old errors
-                    if(response.data.fileSuccess)
-                    {
-                        $scope.alertType = "success";
-                        $scope.alertMessage = "Success! The report has been received with no issues. You can return to your report at any time to upload more documents if necessary.";
-                        $scope.uploadDocs = []; //empty array
-                    }
-                    else
-                    {
-                        $scope.alertType = "warning";
-                        $scope.alertMessage = "Warning: The report has been received, but there was an error when trying to upload your documents. You can return to your report to upload more documents. Error: " + response.data.fileError;
-                    }
-                    $scope.populateForm(null);//refresh form so that new files show up
+                     //check for fileUpload success too
+                     $scope.errors = []; //clear any old errors
+                     var newAlertType = null;
+                     var newAlertMessage = null;
+ 
+                     if(response.data.fileSuccess)
+                     {
+                         newAlertType = "success";
+                         newAlertMessage = "Success! The report has been received with no issues. You can return to your report at any time to upload more documents if necessary.";
+                     }
+                     else
+                     {
+                         newAlertType = "warning";
+                         newAlertMessage = "Warning: The report has been received, but there was an error when trying to upload your documents. You can return to your report to upload more documents. Error: " + response.data.fileError;
+                     }
+                     if(!$scope.isCreating) //updating
+                     {
+                         $scope.populateForm(null);//refresh form so that new files show up
+                         $scope.uploadDocs = []; //empty array
+                         $scope.alertType = newAlertType;
+                         $scope.alertMessage = newAlertMessage;
+                     }
+                     else //creating
+                     {
+                         $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
+                     }
                 }
                 else
                 {
@@ -193,7 +211,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     //approve or deny report with the status parameter
     $scope.approveReport = function(status){
 
-        if(confirm ('By confirming, your email will be sent to the applicant! Are you sure you want to ' + status + ' this report?'))
+        if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this report's status to " + status + "?"))
         {
             $http({
                 method  : 'POST',
@@ -321,11 +339,10 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     /*If not creating, get report data and populate entire form*/
     if(!$scope.isCreating)
     {
-        //disable report inputs
-        $scope.reportFieldsDisabled = true;
+        $scope.reportStatus = report.status; //set the report's status
+        $scope.reportFieldsDisabled = true; //disable report inputs
 
-        //populate the form with the report data
-        $scope.populateForm(report);
+        $scope.populateForm(report); //populate the form with the report data
     }
 }]);
 

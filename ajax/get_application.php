@@ -21,12 +21,11 @@ if(isset($_POST["appID"]))
 	$appID = $_POST["appID"];
 
 	/*Verify that user is allowed to retrieve an application*/
-	if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || doesUserOwnApplication($conn, $CASbroncoNetID, $appID) || isUserDepartmentChair($conn, $CASemail, $appID))
+	if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || doesUserOwnApplication($conn, $CASbroncoNetID, $appID) || isUserDepartmentChair($conn, $CASemail, $appID, $CASbroncoNetID))
 	{
 		try
 		{
 			$getReturn = getApplication($conn, $appID); //get application Data
-			$getReturn->appStatus = $getReturn->getStatus(); //save the application's current status
 			$getReturn->appFiles = getFileNames($appID); //get the list of file names associated with this application
 		}
 		catch(Exception $e)

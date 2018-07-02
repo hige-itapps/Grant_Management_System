@@ -1,6 +1,6 @@
 <?php
 
-	ob_start();
+	//ob_start();
 	use PHPMailer\PHPMailer\PHPMailer;
 	use PHPMailer\PHPMailer\Exception;
 	
@@ -15,10 +15,11 @@
 		require_once dirname(__FILE__) . '/../PHPMAILER/src/SMTP.php';
 
 	//Send an email to a specific address, with a custom message and subject. If the subject is left blank, a default one is prepared instead.
-	function customEmail($toAddress, $customMessage, $customSubject) {
+	//NOTE- must save to the database first! Use the appID to save it correctly.
+	function customEmail($appID, $toAddress, $customMessage, $customSubject) {
 			
 		$customSubject = trim($customSubject); //remove surrounding spaces
-		if(!$customSubject === '')//it's blank, so just use a default subject
+		if($customSubject == null || $customSubject === '')//it's blank, so just use a default subject
 		{
 			$customSubject = "IEFDF Application Update";
 		}
@@ -28,7 +29,7 @@
 
 		$mail = new PHPMailer(true); 
 		//Server settings
-		$mail->SMTPDebug = 2;                                 // Enable verbose debug output
+		//$mail->SMTPDebug = 2;                                 // Enable verbose debug output
 		$mail->isSMTP();                                      // Set mailer to use SMTP
 		$mail->Host = 'outlook.office365.com';  // Specify main and backup SMTP servers
 		$mail->SMTPAuth = true;                               // Enable SMTP authentication

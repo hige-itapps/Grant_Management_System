@@ -4,36 +4,25 @@
 /* Holds information for a follow-up report; these fields should be mostly self-explanatory */
 	if(!class_exists('FollowUpReport')){
 		class FollowUpReport{
+			public $appID;
 			public $travelFrom;			// (DATE)
 			public $travelTo;			// (DATE)
 			public $activityFrom;		// (DATE)
 			public $activityTo;			// (DATE)
 			public $projectSummary;		// (STRING)
 			public $amountAwardedSpent; // (DECIMAL)
-			public $status;				// (STRING)
+			public $status;				// approved, denied, on hold, pending, etc. (STRING)
 			
-			/*Constructor(for everything except budget); just pass in the application array received from the database call (SELECT * FROM applications ...)*/
-			public function __construct($appInfo) {
-				$this->travelFrom = $appInfo[1];
-				$this->travelTo = $appInfo[2];
-				$this->activityFrom = $appInfo[3];
-				$this->activityTo = $appInfo[4];
-				$this->projectSummary = $appInfo[5];
-				$this->amountAwardedSpent = $appInfo[6];
-				$this->status = $appInfo[7];
-			}
-
-			/*Return a text representation of the status boolean*/
-			public function getStatus(){
-				$currentStatus = "Pending";
-
-				if(isset($this->status))
-				{
-					if($this->status == 0){$currentStatus = "Denied";}
-					if($this->status == 1){$currentStatus = "Approved";}
-				}
-					
-				return $currentStatus;
+			/*Constructor; just pass in the report array received from the database call*/
+			public function __construct($reportInfo) {
+				$this->appID = $reportInfo[0];
+				$this->travelFrom = $reportInfo[1];
+				$this->travelTo = $reportInfo[2];
+				$this->activityFrom = $reportInfo[3];
+				$this->activityTo = $reportInfo[4];
+				$this->projectSummary = $reportInfo[5];
+				$this->amountAwardedSpent = $reportInfo[6];
+				$this->status = $reportInfo[7];
 			}
 		}
 	}
@@ -43,15 +32,17 @@
 		class Application{
 			public $id; 				// id of application (INT)
 			public $broncoNetID;		// applicant's broncoNetID (STRING)
-			public $name;				// (STRING)
 			public $dateSubmitted;		// date submitted (DATE)
-			public $department;			// (STRING)
+			public $nextCycle; 			// true=submitted for next cycle, false=current (BOOLEAN)
+			public $name;				// (STRING)
 			public $email;				// (STRING)
-			public $title;				// title of activity (STRING)
+			public $department;			// (STRING)
+			public $deptChairEmail;		// (STRING)
 			public $travelFrom;			// (DATE)
 			public $travelTo;			// (DATE)
 			public $activityFrom;		// (DATE)
 			public $activityTo;			// (DATE)
+			public $title;				// title of activity (STRING)
 			public $destination;		// (STRING)
 			public $amountRequested;	// (DECIMAL)	
 			public $purpose1;			// is research (BOOLEAN)
@@ -64,66 +55,42 @@
 			public $goal2;				// (BOOLEAN)
 			public $goal3;				// (BOOLEAN)
 			public $goal4;				// (BOOLEAN)
-			public $deptChairEmail;		// (STRING)
 			public $deptChairApproval;	// (STRING)
-			public $budget; 			// (ARRAY of budget items)
-			public $status;				// true=approved, false=denied, null=pending (BOOLEAN)
 			public $amountAwarded; 		// (DECIMAL)
-			public $onHold; 			// true = on hold (BOOLEAN)
-			public $nextCycle; 			// true=submitted for next cycle, false=current (BOOLEAN)
+			public $status;				// approved, denied, on hold, pending, etc. (STRING)
+
+			public $budget; 			// (ARRAY of budget items), must be received separately
 			
-			/*Constructor(for everything except budget); just pass in the application array received from the database call (SELECT * FROM applications ...)*/
+			/*Constructor(for everything except budget); just pass in the application array received from the database call*/
 			public function __construct($appInfo) {
 				$this->id = $appInfo[0]; 
 				$this->broncoNetID = $appInfo[1];
-				$this->name = $appInfo[3];
 				$this->dateSubmitted = $appInfo[2];
-				$this->department = $appInfo[4];
-				//$this->deptM = $appInfo[5]; //no longer used
-				$this->email = $appInfo[6];
-				$this->title = $appInfo[7];
+				$this->nextCycle = $appInfo[3];
+				$this->name = $appInfo[4];
+				$this->email = $appInfo[5];
+				$this->department = $appInfo[6];
+				$this->deptChairEmail = $appInfo[7];
 				$this->travelFrom = $appInfo[8];
 				$this->travelTo = $appInfo[9];
 				$this->activityFrom = $appInfo[10];
 				$this->activityTo = $appInfo[11];
-				$this->destination = $appInfo[12];
-				$this->amountRequested = $appInfo[13];
-				$this->purpose1 = $appInfo[14];
-				$this->purpose2 = $appInfo[15];
-				$this->purpose3 = $appInfo[16];
-				$this->purpose4 = $appInfo[17];
-				$this->otherFunding = $appInfo[18];
-				$this->proposalSummary = $appInfo[19];
-				$this->goal1 = $appInfo[20];
-				$this->goal2 = $appInfo[21];
-				$this->goal3 = $appInfo[22];
-				$this->goal4 = $appInfo[23];
-				$this->deptChairEmail = $appInfo[24];
+				$this->title = $appInfo[12];
+				$this->destination = $appInfo[13];
+				$this->amountRequested = $appInfo[14];
+				$this->purpose1 = $appInfo[15];
+				$this->purpose2 = $appInfo[16];
+				$this->purpose3 = $appInfo[17];
+				$this->purpose4 = $appInfo[18];
+				$this->otherFunding = $appInfo[19];
+				$this->proposalSummary = $appInfo[20];
+				$this->goal1 = $appInfo[21];
+				$this->goal2 = $appInfo[22];
+				$this->goal3 = $appInfo[23];
+				$this->goal4 = $appInfo[24];
 				$this->deptChairApproval = $appInfo[25];
-				$this->status = $appInfo[26];
-				$this->amountAwarded = $appInfo[27];
-				$this->onHold = $appInfo[28];
-				$this->nextCycle = $appInfo[29];
-			}
-			
-			/*Return a text representation of the status boolean*/
-			public function getStatus(){
-				$currentStatus = "Hold";
-				
-				if($this->onHold == 0)
-				{
-					if(isset($this->status))
-					{
-						if($this->status == 0){$currentStatus = "Denied";}
-						if($this->status == 1){$currentStatus = "Approved";}
-					}
-					else
-					{
-						$currentStatus = "Pending";
-					}
-				}
-				
-				return $currentStatus;
+				$this->amountAwarded = $appInfo[26];
+				$this->status = $appInfo[27];
 			}
 		}
 	}

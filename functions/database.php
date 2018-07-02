@@ -156,7 +156,7 @@
 			if ($email != "") //valid email
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
+				$sql = $conn->prepare("Select * FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Status = 'Pending'");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
@@ -242,7 +242,7 @@
 			if ($email != "") //valid email
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's email == this email*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Status = 'Pending'");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
@@ -737,7 +737,7 @@
 			if ($email != "" && $appID != "") //valid email & ID
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's broncoNetID == this broncoNetID*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Approved IS NULL");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Status = 'Approved'");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->bindParam(':broncoNetID', $broncoNetID);
@@ -855,7 +855,7 @@
 			if ($appID != "") //valid Id
 			{
 				/* Select only applications that this user has has submitted */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Approved = true");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Status = 'Approved'");
 				$sql->bindParam(':id', $appID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
@@ -912,7 +912,7 @@
 			if ($broncoNetID != "") //valid username
 			{
 				/* Select only pending applications that this user has has submitted */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Approved IS NULL AND Applicant = :broncoNetID");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Status = 'Pending' AND Applicant = :broncoNetID");
 				$sql->bindParam(':broncoNetID', $broncoNetID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
@@ -940,7 +940,6 @@
 			
 			if ($appID != "") //valid username
 			{
-				/* Select only pending applications that this user has has submitted */
 				$sql = $conn->prepare("Select COUNT(*) AS Count FROM follow_up_reports WHERE ApplicationID = :appID");
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
@@ -970,7 +969,7 @@
 			if ($broncoNetID != "") //valid username
 			{
 				/* Select the most recent from this applicant */
-				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :broncoNetID AND Approved = 1 ORDER BY Date DESC LIMIT 1");
+				$sql = $conn->prepare("SELECT * FROM applications WHERE Applicant = :broncoNetID AND Status = 'Approved' ORDER BY Date DESC LIMIT 1");
 				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
 					/* run the prepared query */
@@ -1017,7 +1016,7 @@
 			if ($broncoNetID != "") //valid username
 			{
 				/* Select all dates from past approved applications */
-				$sql = $conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :broncoNetID AND Approved = 1");
+				$sql = $conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :broncoNetID AND Status = 'Approved'");
 				$sql->bindParam(':broncoNetID', $broncoNetID);
 				
 					/* run the prepared query */
@@ -1105,7 +1104,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 1, AmountAwarded = :aw, OnHold = 0 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Status = 'Approved', AmountAwarded = :aw WHERE ID = :id");
 				$sql->bindParam(':aw', $amount);
 				$sql->bindParam(':id', $id);
 				$sql->execute();
@@ -1126,7 +1125,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Approved = 0, OnHold = 0 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Status = 'Denied' WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 
@@ -1147,7 +1146,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET OnHold = 1 WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Status = 'Hold' WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 
@@ -1188,7 +1187,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 1 WHERE ApplicationID = :id");
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Status = 'Approved' WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
@@ -1207,7 +1206,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Approved = 0 WHERE ApplicationID = :id");
+				$sql = $conn->prepare("UPDATE follow_up_reports SET Status = 'Denied' WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
@@ -1495,14 +1494,13 @@
 						//echo "Dates: ".date("Y-m-d",$travelFrom).",".date("Y-m-d",$travelTo).",".date("Y-m-d",$activityFrom).",".date("Y-m-d",$activityTo).".";
 						/*Prepare the query*/
 						$sql = $conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
-							IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle) 
+							IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle, Status) 
 							VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
-							:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle)");
+							:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle, 'Pending')");
 						$sql->bindParam(':applicant', $broncoNetID);
 						$sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
 						$sql->bindParam(':name', $name);
 						$sql->bindParam(':department', $department);
-						//$sql->bindParam(':mailstop', $departmentMailStop);
 						$sql->bindParam(':email', $email);
 						$sql->bindParam(':title', $title);
 						$sql->bindParam(':travelstart', $travelFrom);
@@ -1602,7 +1600,6 @@
 						
 						$sql->bindParam(':name', $name);
 						$sql->bindParam(':department', $department);
-						//$sql->bindParam(':mailstop', $departmentMailStop);
 						$sql->bindParam(':email', $email);
 						$sql->bindParam(':title', $title);
 						$sql->bindParam(':travelstart', $travelFrom);

@@ -20,7 +20,6 @@
 
 	$app = null; //only set app if it exists (when not creating a new one)
 	$submitDate = null; //^
-	$appStatus = null; //^
 	$appFiles = null; //^
 	
 	/*get initial character limits for text fields*/
@@ -78,7 +77,6 @@
 			
 			$app = getApplication($conn, $appID); //get application Data
 			$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
-			$appStatus = $app->getStatus();
 			$appFiles = getFileNames($appID);
 
 			$thisCycle = getCycleName($submitDate, false, true);
@@ -130,7 +128,6 @@
 			var scope_isChairReviewing = <?php echo json_encode($isChairReviewing); ?>;
 			var scope_isApprover = <?php echo json_encode($isApprover); ?>;
 			var var_app = <?php echo json_encode($app); ?>; //application data
-			var var_appStatus = <?php echo json_encode($appStatus); ?>; //the current status of the application
 			var var_appFiles = <?php echo json_encode($appFiles); ?>; //the associated uploaded files
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
 			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, false)); ?>;
@@ -617,12 +614,12 @@
 
 					<div class="buttons-group bottom-buttons"> 
 						<button ng-show="isCreating" type="button" ng-click="insertApplication()" class="btn btn-success">SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('approve')" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('hold')" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('deny')" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
+						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Approved')" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
+						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Hold')" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
+						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Denied')" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
 						<button ng-show="isChair" type="button" ng-click="chairApproval()" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
 						<button ng-show="isReviewing" type="button" ng-click="uploadFiles()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
-						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
+						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>
 

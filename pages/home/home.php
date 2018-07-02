@@ -18,6 +18,9 @@
 	$isUserAllowedToSeeApplications = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //Verify that user is allowed to freely see applications
 	$isAdmin = isAdministrator($conn, $CASbroncoNetID); //Verify user as administrator to give link to admin view
 
+	$alertType = isset($_POST["alert_type"]) ? $_POST["alert_type"] : null; //set the alert type if it exists, otherwise set to null
+	$alertMessage = isset($_POST["alert_message"]) ? $_POST["alert_message"] : null; //set the alert type if it exists, otherwise set to null
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,6 +39,8 @@
 			var scope_totalPrevApps = <?php echo json_encode($totalPrevApps); ?>;
 			var scope_isUserAllowedToSeeApplications = <?php echo json_encode($isUserAllowedToSeeApplications); ?>;
 			var scope_isAdmin = <?php echo json_encode($isAdmin); ?>;
+			var alert_type = <?php echo json_encode($alertType); ?>;
+			var alert_message = <?php echo json_encode($alertMessage); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="home.js"></script>
@@ -74,6 +79,10 @@
 				<p ng-if="hasPendingApplication">Your application is pending!<p>
 				
 				<p>Note: IEFDF recipients must wait at least a full academic year between applications.</p>
+
+				<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
+					<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+				</div>
 			</div>
 		</div>
 		<!--BODY-->

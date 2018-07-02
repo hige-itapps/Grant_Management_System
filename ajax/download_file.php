@@ -12,12 +12,6 @@
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../functions/documents.php");
 
-	/*For sending custom emails*/
-	include_once(dirname(__FILE__) . "/../functions/customEmail.php");
-
-	/*For SFTP file transfer to server*/
-	include_once(dirname(__FILE__) . "/../Net/SFTP.php");
-
 /*This function is used similarly to AJAX calls, but technically it isn't one!
 
 ************ FOR ANYONE TO DOWNLOAD AN APPLICATION'S FILE AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
