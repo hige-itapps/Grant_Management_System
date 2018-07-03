@@ -28,14 +28,17 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     $scope.isApprover = scope_isApprover;
     //for when not creating application
     var app = var_app;
-    if(app != null){app.appFiles = var_appFiles;}
+    if(app != null){
+        app.appFiles = var_appFiles;
+        app.appEmails = var_appEmails;//previously sent emails
+    }
     //for when creating application
     var CASemail = var_CASemail;
     $scope.allowedFirstCycle = scope_allowedFirstCycle;
     $scope.shouldWarn = scope_shouldWarn;
 
     //set admin updating to false by default
-    $scope.isAdminUpdating = false
+    $scope.isAdminUpdating = false;
 
 
     /*Functions*/
@@ -69,6 +72,12 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //remove the alert from the page
     $scope.removeAlert = function(){
         $scope.alertMessage = null;
+    }
+
+    //display a generic loading alert to the page
+    $scope.loadingAlert = function(){
+        $scope.alertType = "info";
+        $scope.alertMessage = "Loading...";
     }
 
     //function to turn on/off admin updating
@@ -182,6 +191,12 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 
                 $scope.appFiles = existingApp.appFiles;//refresh the associated files
                 $scope.appStatus = existingApp.status;//refresh the status
+
+                existingApp.appEmails.forEach(function (email){ //iterate over sent emails
+                    email[3] = $sce.trustAsHtml(email[3]); //allow html to render correctly
+                    email[4] = new Date(email[4] + ' UTC').toString();//convert timestamp to local time
+                });
+                $scope.appEmails = existingApp.appEmails;//refresh the associated emails
             }
             catch(e)
             {
@@ -223,6 +238,9 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 }
             }
 
+            //start a loading alert
+            $scope.loadingAlert();
+
             //loop through form data, appending each field to the FormData object
             for (var key in $scope.formData) {
                 if ($scope.formData.hasOwnProperty(key)) {
@@ -263,15 +281,36 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     var newAlertType = null;
                     var newAlertMessage = null;
 
-                    if(response.data.fileSuccess)
+                    if($scope.isCreating)//if creating, check the status of the email
+                    {
+                        if(response.data.email.saveSuccess) //email saved correctly
+                        {
+                            if(response.data.email.sendSuccess) //email was sent correctly
+                            {
+                                newAlertType = "success";
+                                newAlertMessage = "Success! The application has been received with no issues. Your specified department chair has been notified of your submission. You can return to your application at any time to upload more documents if necessary.";
+                            }
+                            else
+                            {
+                                newAlertType = "warning";
+                                newAlertMessage = "Warning: The application has been received, and an email was created to send to your specified department chair, but it was unable to be sent. Please notify the HIGE IEFDF admin to let them know about this error. You can return to your application at any time to upload more documents if necessary. Error: " + response.data.email.sendError;
+                            }
+                        }
+                        else
+                        {
+                            newAlertType = "warning";
+                            newAlertMessage = "Warning: The application has been received, but your specified department chair could not be notified via email. Please notify the HIGE IEFDF admin to let them know about this error. You can return to your application at any time to upload more documents if necessary.";
+                        }
+                    }
+                    else//just updating
                     {
                         newAlertType = "success";
-                        newAlertMessage = "Success! The application has been received with no issues. You can return to your application at any time to upload more documents if necessary.";
+                        newAlertMessage = "Success! The application was updated with no issues.";
                     }
-                    else
+
+                    if(!response.data.fileSuccess) //error when uploading files
                     {
-                        newAlertType = "warning";
-                        newAlertMessage = "Warning: The application has been received, but there was an error when trying to upload your documents. You can return to your application to upload more documents. Error: " + response.data.fileError;
+                        newAlertMessage += " Unfortunately, there was an error when trying to upload your documents. Please double check to see which ones were uploaded correctly."; //append a file upload error message
                     }
                     if(!$scope.isCreating) //updating
                     {
@@ -310,6 +349,9 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this application's status to " + status + "?"))
         {
+            //start a loading alert
+            $scope.loadingAlert();
+
             $http({
                 method  : 'POST',
                 url     : '/../../ajax/approve_application.php',
@@ -320,16 +362,32 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 console.log(response, 'res');
                 if(typeof response.data.error === 'undefined') //ran function as expected
                 {
-                    if(response.data.success)//updated
+                    if(response.data.success === true)//updated
                     {
+                        if(response.data.email.saveSuccess === true) //email saved correctly
+                        {
+                            if(response.data.email.sendSuccess === true) //email was sent correctly
+                            {
+                                $scope.alertType = "success";
+                                $scope.alertMessage = "Success! The application's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                            }
+                            else
+                            {
+                                $scope.alertType = "warning";
+                                $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant. Error: " + response.data.email.sendError;
+                            }
+                        }
+                        else
+                        {
+                            $scope.alertType = "warning";
+                            $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
+                        }
                         $scope.populateForm(); //refresh the form again
-                        $scope.alertType = "success";
-                        $scope.alertMessage = "Success! The application's status has been updated to: \"" + status + "\".";
                     }
                     else//didn't update
                     {
                         $scope.alertType = "warning";
-                        $scope.alertMessage = "Warning: The application was not updated from its previous state.";
+                        $scope.alertMessage = "Warning: The application may not have been updated from its previous state.";
                     }
                 }
                 else //failure!
@@ -350,6 +408,9 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         if(confirm ('By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.'))
         {
+            //start a loading alert
+            $scope.loadingAlert();
+
             $http({
                 method  : 'POST',
                 url     : '/../../ajax/chair_approval.php',
@@ -363,8 +424,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     response.data = response.data.trim();//remove blankspace around data
                     if(response.data === "true")//updated
                     {
-                        $scope.alertType = "success";
-                        $scope.alertMessage = "Success! You have approved this application.";
+                        $scope.redirectToHomepage("success", "Success! You have approved this application."); //redirect to the homepage with the message
                     }
                     else//didn't update
                     {
@@ -390,6 +450,9 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         if(confirm ('Are you sure you want to upload the selected files? You will not be able to delete them afterwards.')) //upload warning
         {
+            //start a loading alert
+            $scope.loadingAlert();
+
             var fd = new FormData();
             var totalUploads = 0; //iterate for each new file
             Object.keys($scope.uploadSupportingDocs).forEach(function (key){ //iterate over supporting documents

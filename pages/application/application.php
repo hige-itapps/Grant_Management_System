@@ -21,6 +21,7 @@
 	$app = null; //only set app if it exists (when not creating a new one)
 	$submitDate = null; //^
 	$appFiles = null; //^
+	$appEmails = null; //^
 	
 	/*get initial character limits for text fields*/
 	$appCharMax = getApplicationsMaxLengths($conn);
@@ -78,6 +79,7 @@
 			$app = getApplication($conn, $appID); //get application Data
 			$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
 			$appFiles = getFileNames($appID);
+			$appEmails = getEmails($conn, $appID);
 
 			$thisCycle = getCycleName($submitDate, false, true);
 			$nextCycle = getCycleName($submitDate, true, true);
@@ -129,6 +131,7 @@
 			var scope_isApprover = <?php echo json_encode($isApprover); ?>;
 			var var_app = <?php echo json_encode($app); ?>; //application data
 			var var_appFiles = <?php echo json_encode($appFiles); ?>; //the associated uploaded files
+			var var_appEmails = <?php echo json_encode($appEmails); ?>; //the associated saved emails
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
 			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, false)); ?>;
 			var scope_shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
@@ -161,7 +164,7 @@
 					<!-- application form -->
 				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" ng-submit="insertApplication()">
 
-
+					
 
 					<div class="row">
 						<h1 class="title">APPLICATION:</h1>
@@ -576,6 +579,21 @@
 							</div>
 						</div>
 						<div class="col-md-3"></div>
+					</div>
+
+
+
+					<!--PREVIOUSLY SENT EMAILS-->
+					<div id="previousEmailsHolder" ng-show="!isCreating">
+						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see sent emails associated with this application</button>
+						<ol id="previousEmails" class="collapse list-group">
+							<li class="list-group-item" ng-if="appEmails.length <= 0">There are no sent emails!</li>
+							<li class="list-group-item" ng-repeat="email in appEmails">
+								<h5 class="list-group-item-heading">{{email[2]}}: sent {{email[4]}}</h5>
+								<hr>
+								<p class="list-group-item-text" ng-bind-html="email[3]"></p>
+							</li>
+						</ol>
 					</div>
 
 

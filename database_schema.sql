@@ -97,7 +97,7 @@ CREATE TABLE `applications` (
   PRIMARY KEY (`ID`),
   KEY `applicant` (`Applicant`) USING BTREE,
   CONSTRAINT `fk_applications_applicant_id` FOREIGN KEY (`Applicant`) REFERENCES `applicants` (`BroncoNetID`)
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +116,7 @@ CREATE TABLE `applications_budgets` (
   PRIMARY KEY (`BudgetItemID`),
   KEY `INDEX` (`ApplicationID`),
   CONSTRAINT `fk_applications_budgets_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=297 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -131,6 +131,24 @@ CREATE TABLE `committee` (
   `Name` varchar(100) NOT NULL,
   PRIMARY KEY (`BroncoNetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `emails`
+--
+
+DROP TABLE IF EXISTS `emails`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `emails` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ApplicationID` int(11) NOT NULL,
+  `Subject` varchar(100) NOT NULL,
+  `Message` text NOT NULL,
+  `Time` timestamp NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `ApplicationID_idx` (`ApplicationID`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -177,4 +195,4 @@ CREATE TABLE `follow_up_reports` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-16 15:22:07
+-- Dump completed on 2018-07-02 16:11:52

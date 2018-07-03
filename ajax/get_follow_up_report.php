@@ -26,8 +26,8 @@ if(isset($_POST["appID"]))
 		try
 		{
 			$getReturn = getFollowUpReport($conn, $appID); //get report Data
-			$getReturn->reportStatus = $getReturn->getStatus(); //save the application's current status
 			$getReturn->reportFiles = getFileNames($appID); //get the list of file names associated with this application
+			$getReturn->reportEmails = getEmails($conn, $appID); //get associated emails
 		}
 		catch(Exception $e)
 		{

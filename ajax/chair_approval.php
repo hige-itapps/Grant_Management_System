@@ -25,7 +25,7 @@ if(isset($_POST["appID"]) && isset($_POST["deptChairApproval"]))
 	$deptChairApproval = $_POST["deptChairApproval"];
 
 	/*Verify that user is allowed to approve an application*/
-	if(isUserAllowedToSignApplication($conn, $CASemail, $appID))
+	if(isUserAllowedToSignApplication($conn, $CASemail, $appID, $CASbroncoNetID))
 	{
 		try
 		{

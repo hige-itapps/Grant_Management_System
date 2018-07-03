@@ -19,6 +19,7 @@
 	
 	$report = null; //only set report if it exists (when not creating a new one)
 	$reportFiles = null; //^
+	$reportEmails = null; //^
 
 	/*Initialize all user permissions to false*/
 	$isCreating = false; //user is an applicant initially creating report
@@ -53,6 +54,7 @@
 		{
 			$report = getFollowUpReport($conn, $appID); //get follow up report data
 			$reportFiles = getFileNames($appID);
+			$reportEmails = getEmails($conn, $appID);
 		} 
 ?>
 
@@ -85,6 +87,7 @@
 			var var_app = <?php echo json_encode($app); ?>; //application data
 			var var_report = <?php echo json_encode($report); ?>; //report data
 			var var_reportFiles = <?php echo json_encode($reportFiles); ?>; //the associated uploaded files
+			var var_reportEmails = <?php echo json_encode($reportEmails); ?>; //the associated saved emails
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="follow_up.js"></script>
@@ -284,6 +287,21 @@
 								</ul>
 							</div>
 						</div>
+					</div>
+
+
+
+					<!--PREVIOUSLY SENT EMAILS-->
+					<div id="previousEmailsHolder" ng-show="!isCreating">
+						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see sent emails associated with this application</button>
+						<ol id="previousEmails" class="collapse list-group">
+							<li class="list-group-item" ng-if="reportEmails.length <= 0">There are no sent emails!</li>
+							<li class="list-group-item" ng-repeat="email in reportEmails">
+								<h5 class="list-group-item-heading">{{email[2]}}: sent {{email[4]}}</h5>
+								<hr>
+								<p class="list-group-item-text" ng-bind-html="email[3]"></p>
+							</li>
+						</ol>
 					</div>
 					
 					

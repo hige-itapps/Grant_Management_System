@@ -24,7 +24,7 @@ if(isset($_GET["appID"]) && isset($_GET["filename"]))
 	$file = $_GET["filename"];
 
 	/*Verify that user is allowed to see this file*/
-	if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || doesUserOwnApplication($conn, $CASbroncoNetID, $appID) || isUserDepartmentChair($conn, $CASemail, $appID))
+	if(isUserAllowedToSeeApplications($conn, $CASbroncoNetID) || doesUserOwnApplication($conn, $CASbroncoNetID, $appID) || isUserDepartmentChair($conn, $CASemail, $appID, $CASbroncoNetID))
 	{
 		$uploadReturn = downloadDoc($appID, $file);
 	}

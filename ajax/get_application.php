@@ -27,6 +27,7 @@ if(isset($_POST["appID"]))
 		{
 			$getReturn = getApplication($conn, $appID); //get application Data
 			$getReturn->appFiles = getFileNames($appID); //get the list of file names associated with this application
+			$getReturn->appEmails = getEmails($conn, $appID); //get associated emails
 		}
 		catch(Exception $e)
 		{

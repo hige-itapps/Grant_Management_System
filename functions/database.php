@@ -28,6 +28,45 @@
 				return $conn;
 		}
 	}
+
+	/*Save a new email message to the database, return true if successful or false otherwise*/
+	if(!function_exists('saveEmail')) {
+		function saveEmail($conn, $appID, $subject, $message)
+		{
+			$curTime = date('Y-m-d H:i:s');//get current timestamp
+						
+			/*Prepare the query*/
+			$sql = $conn->prepare("INSERT INTO emails(ApplicationID, Subject, Message, Time) VALUES(:applicationid, :subject, :message, :time)");
+			$sql->bindParam(':applicationid', $appID);
+			$sql->bindParam(':subject', $subject);
+			$sql->bindParam(':message', $message);
+			$sql->bindParam(':time', $curTime);
+			
+			$res = $sql->execute();
+			/* Close finished query and connection */
+			$sql = null;
+			/*return confirmation*/
+			return $res;
+		}
+	}
+
+	/*Return all emails for a given application*/
+	if(!function_exists('getEmails')) {
+		function getEmails($conn, $appID)
+		{
+			$curTime = date('Y-m-d H:i:s');//get current timestamp
+						
+			/*Prepare the query*/
+			$sql = $conn->prepare("Select * FROM emails WHERE ApplicationID = :applicationid");
+			$sql->bindParam(':applicationid', $appID);
+			$sql->execute();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			/* Close finished query and connection */
+			$sql = null;
+			/*return confirmation*/
+			return $res;
+		}
+	}
 	
 	/* Returns array of all administrators */
 	if(!function_exists('getAdministrators')) {
@@ -737,7 +776,7 @@
 			if ($email != "" && $appID != "") //valid email & ID
 			{
 				/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's broncoNetID == this broncoNetID*/
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID AND Status = 'Approved'");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID");
 				$sql->bindParam(':dEmail', $email);
 				$sql->bindParam(':appID', $appID);
 				$sql->bindParam(':broncoNetID', $broncoNetID);
@@ -1125,7 +1164,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Status = 'Denied' WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Status = 'Denied', AmountAwarded = 0 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 
@@ -1146,7 +1185,7 @@
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE applications SET Status = 'Hold' WHERE ID = :id");
+				$sql = $conn->prepare("UPDATE applications SET Status = 'Hold', AmountAwarded = 0 WHERE ID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 
@@ -1801,8 +1840,8 @@
 
 						$conn->beginTransaction(); //begin atomic transaction
 
-						$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date) 
-							VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date)");
+						$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date, Status) 
+							VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date, 'Pending')");
 						$sql->bindParam(':applicationid', $updateID);
 						$sql->bindParam(':travelstart', $travelFrom);
 						$sql->bindParam(':travelend', $travelTo);

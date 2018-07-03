@@ -2,7 +2,7 @@
 var higeApp = angular.module('HIGE-app', []);
 
 /*App Controller*/
-higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce, $filter){
+higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce){
     //get PHP init variables
    
     //char limits
@@ -18,10 +18,13 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     var app = var_app;
     //for when not creating report
     var report = var_report;
-    if(report != null){report.reportFiles = var_reportFiles;}
+    if(report != null){
+        report.reportFiles = var_reportFiles;
+        report.reportEmails = var_reportEmails;//previously sent emails
+    }
 
     //set admin updating to false by default
-    $scope.isAdminUpdating = false
+    $scope.isAdminUpdating = false;
 
 
     /*Functions*/
@@ -31,13 +34,19 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         $scope.alertMessage = null;
     }
 
+    //display a generic loading alert to the page
+    $scope.loadingAlert = function(){
+        $scope.alertType = "info";
+        $scope.alertMessage = "Loading...";
+    }
+
     //function to turn on/off admin updating
     $scope.toggleAdminUpdate = function(){
         $scope.isAdmin = !$scope.isAdmin; //toggle the isAdmin permission
         $scope.isAdminUpdating = !$scope.isAdmin; //set the isAdminUpdating permission to the opposite of isAdmin
         $scope.reportFieldsDisabled = $scope.isAdmin; //update the fields to be editable or non-editable
     }
-=
+
     //redirect the user to the homepage. Optionally, send an alert which will show up on the next page, consisting of a type(success, warning, danger, etc.) and message
     $scope.redirectToHomepage = function(alert_type, alert_message){
         var homeURL = '../home/home.php'; //url to homepage
@@ -81,7 +90,12 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             .then(function (response) {
                 console.log(response, 'res');
                 //data = response.data;
-                $scope.populateForm(response.data);//recurse to this function again with a real report
+                if(typeof response["error"] !== 'undefined'){ //there was an error
+                    $scope.alertType = "danger";
+                    $scope.alertMessage = "There was an error when trying to retrieve the report: " + response["error"];
+                }else{ //no error
+                    $scope.populateForm(response.data);//recurse to this function again with a real app
+                }
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
@@ -104,6 +118,13 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 $scope.formData.amountAwarded = existingReport.amountAwarded;
                 
                 $scope.reportFiles = existingReport.reportFiles;//refresh the associated files
+
+                existingReport.reportEmails.forEach(function (email){ //iterate over sent emails
+                    email[3] = $sce.trustAsHtml(email[3]); //allow html to render correctly
+                    email[4] = new Date(email[4] + ' UTC').toString();//convert timestamp to local time
+                });
+                $scope.reportEmails = existingReport.reportEmails;//refresh the associated emails
+                $scope.reportStatus = existingReport.status; //set the report's status
             }
             catch(e)
             {
@@ -135,6 +156,9 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                     if(!confirm( "Warning: you have not selected any files to upload with your follow up report. Are you sure you want to submit anyway?")) {return;} //exit function early if not confirmed
                 }
             }
+
+            //start a loading alert
+            $scope.loadingAlert();
 
             //add necessary form elements to the FormData array
             if(typeof $scope.formData.travelFrom !== 'undefined'){fd.append("travelFrom", JSON.stringify($scope.formData.travelFrom.getTime()/1000));}
@@ -213,34 +237,52 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
         if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this report's status to " + status + "?"))
         {
+            //start a loading alert
+            $scope.loadingAlert();
+
             $http({
                 method  : 'POST',
-                url     : '/../../ajax/approve_report.php',
-                data    : $.param({appID: app.id, status: status}),  // pass in data as strings
+                url     : '/../../ajax/approve_follow_up_report.php',
+                data    : $.param({appID: app.id, status: status, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
                 console.log(response, 'res');
                 if(typeof response.data.error === 'undefined') //ran function as expected
                 {
-                    response.data = response.data.trim();//remove blankspace around data
-                    if(response.data === "true")//updated
+                    if(response.data.success === true)//updated
                     {
+                        if(response.data.email.saveSuccess === true) //email saved correctly
+                        {
+                            if(response.data.email.sendSuccess === true) //email was sent correctly
+                            {
+                                $scope.alertType = "success";
+                                $scope.alertMessage = "Success! The report's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                            }
+                            else
+                            {
+                                $scope.alertType = "warning";
+                                $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant. Error: " + response.data.email.sendError;
+                            }
+                        }
+                        else
+                        {
+                            $scope.alertType = "warning";
+                            $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
+                        }
                         $scope.populateForm(); //refresh the form again
-                        $scope.alertType = "success";
-                        $scope.alertMessage = "Success! The report's status has been updated to: \"" + status + "\".";
                     }
                     else//didn't update
                     {
                         $scope.alertType = "warning";
-                        $scope.alertMessage = "Warning: The report was not updated from its previous state.";
+                        $scope.alertMessage = "Warning: The report may not have been updated from its previous state.";
                     }
                 }
                 else //failure!
                 {
                     console.log(response.data.error);
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an error with your report! Error: " + response.data.error;
+                    $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
                 }
             },function (error){
                 console.log(error, 'can not get data.');
@@ -254,6 +296,9 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
         if(confirm ('Are you sure you want to upload the selected files? You will not be able to delete them afterwards.')) //upload warning
         {
+            //start a loading alert
+            $scope.loadingAlert();
+
             var fd = new FormData();
             var totalUploads = 0; //iterate for each new file
             Object.keys($scope.uploadDocs).forEach(function (key){ //iterate over supporting documents

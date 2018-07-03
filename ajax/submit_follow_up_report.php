@@ -77,15 +77,6 @@ if(isset($_POST["appID"]))
                 }
                 else {$insertReturn["fileSuccess"] = true;} //not uploading files
             }
-
-            
-            /*if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
-            {
-                chairApprovalEmail($_POST["inputDeptCE"], $_POST["inputName"], $_POST["inputEmail"]); //send the email
-                
-                header('Location: ../index.php'); //redirect back to homepage
-            }*/
-            
         }
         catch(Exception $e)
         {

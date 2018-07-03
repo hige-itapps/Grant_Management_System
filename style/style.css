@@ -249,3 +249,20 @@ hr{
 	text-align: left;
 	padding-top: 5px;
 }
+
+/*format the previously sent emails list*/
+#previousEmailsHolder{
+	text-align: center;
+}
+#previousEmails h5{
+	font-weight: bold;
+}
+#previousEmails p{
+	text-align: left;
+}
+#previousEmails li{
+	padding: 20px 15px;
+}
+#previousEmails li:not(:last-child){ /*exclude last li*/
+	border-bottom: 3px dotted;
+}

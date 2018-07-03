@@ -121,34 +121,29 @@ if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, tr
         
         if(isset($insertReturn["success"]))//returned normally
         {
-            if($insertReturn["success"] === true)//if it was successful
+            if($insertReturn["success"] === true)//if it was successful; try to upload all files and send an email to the department chair
             {
+                $appID = $insertReturn["appID"]; //get the new application ID
                 $insertReturn["fileSuccess"] = null; //variable to tell whether file upload was successful. If not, this will be set to false, and ["fileError"] will hold a detailed error message
 
                 if($files != null) //user is uploading files as well
                 {
-                    $uploadReturn = uploadDocs($insertReturn["appID"], $files);
+                    $uploadReturn = uploadDocs($appID, $files);
 
                     if($uploadReturn !== true)//if there was an error with the upload
                     {
                         $insertReturn["fileSuccess"] = false; 
-                        $insertReturn["fileError"] = $$uploadReturn["error"];
+                        $insertReturn["fileError"] = $uploadReturn["error"];
                     }
                     else {$insertReturn["fileSuccess"] = true;} //it was successful
                 }
                 else {$insertReturn["fileSuccess"] = true;} //not uploading files
+
+                //now try to email department chair IF creating for the first time
+                if(!$isAdmin){$insertReturn["email"] = chairApprovalEmail($appID, $deptChairEmail, $name, $email);} //get results of trying to save/send email message
             }
             else {$insertReturn["fileSuccess"] = true;} //not uploading files
         }
-
-        
-        /*if($successUpload > 0 && !$isAdmin) //upload was successful- send email to department chair if not administrator
-        {
-            chairApprovalEmail($_POST["inputDeptCE"], $_POST["inputName"], $_POST["inputEmail"]); //send the email
-            
-            header('Location: ../index.php'); //redirect back to homepage
-        }*/
-        
     }
     catch(Exception $e)
     {
