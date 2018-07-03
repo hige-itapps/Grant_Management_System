@@ -259,6 +259,7 @@ hr{
 }
 #previousEmails p{
 	text-align: left;
+	white-space: pre-line; /*render newlines*/
 }
 #previousEmails li{
 	padding: 20px 15px;

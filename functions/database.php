@@ -1286,27 +1286,25 @@
 				insertApplicantIfNew($conn, $broncoNetID);
 			}
 			
-			/*Sanitize everything*/
+			/*Sanitize everything - keep quotes. This may be a bit redundant since PDO already sanitizes everything in prepared statements*/
 			try
 			{
-				$name = trim(filter_var($name, FILTER_SANITIZE_STRING));
-				$email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
-				$department = trim(filter_var($department, FILTER_SANITIZE_STRING));
-				//$departmentMailStop = filter_var($departmentMailStop, FILTER_SANITIZE_NUMBER_INT);
-				$title = trim(filter_var($title, FILTER_SANITIZE_STRING));
-				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING));
-				//$amountRequested = filter_var($amountRequested, FILTER_SANITIZE_NUMBER_INT);//needs to be DECIMAL, NOT INT
+				$name = trim(filter_var($name, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$email = trim(filter_var($email, FILTER_SANITIZE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$department = trim(filter_var($department, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$title = trim(filter_var($title, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$destination = trim(filter_var($destination, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
 				$purpose1 = filter_var($purpose1, FILTER_SANITIZE_NUMBER_INT);
 				$purpose2 = filter_var($purpose2, FILTER_SANITIZE_NUMBER_INT);
 				$purpose3 = filter_var($purpose3, FILTER_SANITIZE_NUMBER_INT);
-				$purpose4Other = trim(filter_var($purpose4Other, FILTER_SANITIZE_STRING));
-				$otherFunding = trim(filter_var($otherFunding, FILTER_SANITIZE_STRING));
-				$proposalSummary = trim(filter_var($proposalSummary, FILTER_SANITIZE_STRING));
+				$purpose4Other = trim(filter_var($purpose4Other, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$otherFunding = trim(filter_var($otherFunding, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+				$proposalSummary = trim(filter_var($proposalSummary, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
 				$goal1 = filter_var($goal1, FILTER_SANITIZE_NUMBER_INT);
 				$goal2 = filter_var($goal2, FILTER_SANITIZE_NUMBER_INT);
 				$goal3 = filter_var($goal3, FILTER_SANITIZE_NUMBER_INT);
 				$goal4 = filter_var($goal4, FILTER_SANITIZE_NUMBER_INT);
-				$deptChairEmail = trim(filter_var($deptChairEmail, FILTER_SANITIZE_EMAIL));
+				$deptChairEmail = trim(filter_var($deptChairEmail, FILTER_SANITIZE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES));
 				$nextCycle = filter_var($nextCycle, FILTER_SANITIZE_NUMBER_INT);
 				
 				//echo "Dates: ".$travelFrom.",".$travelTo.",".$activityFrom.",".$activityTo.".";
@@ -1764,10 +1762,10 @@
 			$errors = array(); // array to hold validation errors
 			$data = array(); // array to pass back data
 			
-			/*Sanitize everything*/
+			/*Sanitize everything, may be redundant since PDO sanitizes prepared statements*/
 			try
 			{
-				$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING));
+				$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
 			}
 			catch(Exception $e)
 			{
