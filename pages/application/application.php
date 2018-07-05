@@ -162,7 +162,7 @@
 				</div>
 
 					<!-- application form -->
-				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" ng-submit="insertApplication()">
+				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" ng-submit="submit()">
 
 					
 
@@ -464,22 +464,22 @@
 								<li ng-repeat="budgetItem in formData.budgetItems" class="row list-group-item"> 
 								<!--BUDGET:EXPENSE-->
 									<div class="form-group col-md-4">
-										<label for="{{budgetItem.expense}}">Expense:</label>
-										<select class="form-control" ng-model="budgetItem.expense" ng-disabled="appFieldsDisabled" name="{{budgetItem.expense}}" value="{{budgetItem.expense}}" >
+										<label for="budgetExpense{{$index+1}}">Expense:</label>
+										<select class="form-control" ng-model="budgetItem.expense" ng-disabled="appFieldsDisabled" name="budgetExpense{{$index+1}}" id="budgetExpense{{$index+1}}" value="{{budgetItem.expense}}" >
 											<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
 										</select>
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} expense']" aria-live="polite">{{errors['budgetArray '+($index+1)+' expense']}}</span>
 									</div>
 								<!--BUDGET:COMMENTS-->
 									<div class="form-group col-md-4">
-										<label for="{{budgetItem.comment}}">Comments{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetComment-budgetItem.comment.length)+" characters remaining)" : ""}}:</label>
-										<input type="text" class="form-control" ng-model="budgetItem.comment" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetComment}}" name="{{budgetItem.comment}}" placeholder="Explain..." />
+										<label for="budgetComment{{$index+1}}">Comments{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetComment-budgetItem.comment.length)+" characters remaining)" : ""}}:</label>
+										<input type="text" class="form-control" ng-model="budgetItem.comment" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetComment}}" name="budgetComment{{$index+1}}" id="budgetComment{{$index+1}}" placeholder="Explain..." />
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} comment']" aria-live="polite">{{errors['budgetArray '+($index+1)+' comment']}}</span>
 									</div>
 								<!--BUDGET:AMOUNT-->
 									<div class="form-group col-md-4">
-										<label for="{{budgetItem.amount}}">Amount($):</label>
-										<input type="text" class="form-control" ng-model="budgetItem.amount" ng-disabled="appFieldsDisabled" name="{{budgetItem.amount}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
+										<label for="budgetAmount{{$index+1}}">Amount($):</label>
+										<input type="text" class="form-control" ng-model="budgetItem.amount" ng-disabled="appFieldsDisabled" name="budgetAmount{{$index+1}}" id="budgetAmount{{$index+1}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} amount']" aria-live="polite">{{errors['budgetArray '+($index+1)+' amount']}}</span>
 									</div>
 								</li>
@@ -625,18 +625,18 @@
 
 
 					<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
-						<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 					</div>
 
 
 
 					<div class="buttons-group bottom-buttons"> 
-						<button ng-show="isCreating" type="button" ng-click="insertApplication()" class="btn btn-success">SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Approved')" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Hold')" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveApplication('Denied')" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
-						<button ng-show="isChair" type="button" ng-click="chairApproval()" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
-						<button ng-show="isReviewing" type="button" ng-click="uploadFiles()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
+						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertApplication'" class="btn btn-success">SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveApplication'" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='holdApplication'" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyApplication'" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
+						<button ng-show="isChair" type="submit" ng-click="submitFunction='chairApproval'" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
+						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>

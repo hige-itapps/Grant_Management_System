@@ -81,7 +81,7 @@
 				<p>Note: IEFDF recipients must wait at least a full academic year between applications.</p>
 
 				<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
-					<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+					<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 				</div>
 			</div>
 		</div>

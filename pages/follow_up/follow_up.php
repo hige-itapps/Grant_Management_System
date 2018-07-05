@@ -319,16 +319,16 @@
 					
 
 					<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
-						<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 					</div>
 
 
 
 					<div class="buttons-group bottom-buttons"> 
-						<button ng-show="isCreating" type="button" ng-click="insertReport()" class="btn btn-success">SUBMIT FOLLOW UP REPORT</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('Approved')" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="button" ng-click="approveReport('Denied')" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
-						<button ng-show="isReviewing" type="button" ng-click="uploadFiles()" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
+						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success">SUBMIT FOLLOW UP REPORT</button> <!-- For applicant submitting for first time -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyReport'" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
+						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>

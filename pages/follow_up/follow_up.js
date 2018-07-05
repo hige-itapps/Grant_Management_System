@@ -26,8 +26,22 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     //set admin updating to false by default
     $scope.isAdminUpdating = false;
 
+    //the function to use when submitting; set this parameter in ng-click on the submit buttons
+    $scope.submitFunction = null;
+
+
+
+
 
     /*Functions*/
+
+    //submit the report - use a different function depending on the submitFunction variable
+    $scope.submit = function(){
+        if($scope.submitFunction === 'insertReport'){$scope.insertReport();}
+        else if($scope.submitFunction === 'approveReport'){$scope.approveReport('Approved');}
+        else if($scope.submitFunction === 'denyReport'){$scope.approveReport('Denied');}
+        else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
+    }
 
     //remove the alert from the page
     $scope.removeAlert = function(){

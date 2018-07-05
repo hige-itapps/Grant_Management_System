@@ -55,8 +55,8 @@
 					<h1 class="title">Administrator View</h1>
 					
 					<!-- View & Remove Admins -->
-					<h2 class="title">Administrators:</h2>
 					<table class="table table-bordered table-sm">
+						<caption class="title">Administrators:</caption>
 						<thead>
 							<tr>
 								<th>BroncoNetID</th>
@@ -86,10 +86,11 @@
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>
 
+					<hr>
 
 					<!-- View & Remove Committee Members -->
-					<h2 class="title">Committee Members:</h2>
 					<table class="table table-bordered table-sm">
+						<caption class="title">Committee Members:</caption>
 						<thead>
 							<tr>
 								<th>BroncoNetID</th>
@@ -119,10 +120,11 @@
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>
 
+					<hr>
 
 					<!-- View & Remove Application Approvers -->
-					<h2 class="title">Application Approvers:</h2>
 					<table class="table table-bordered table-sm">
+						<caption class="title">Application Approvers:</caption>
 						<thead>
 							<tr>
 								<th>BroncoNetID</th>
@@ -152,10 +154,11 @@
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>
 
+					<hr>
 
 					<!-- View & Remove Follow Up Approvers -->
-					<h2 class="title">Follow Up Report Approvers:</h2>
 					<table class="table table-bordered table-sm">
+						<caption class="title">Follow Up Report Approvers:</caption>
 						<thead>
 							<tr>
 								<th>BroncoNetID</th>
@@ -185,9 +188,10 @@
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>
 
+					<hr>
 
 					<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
-						<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 					</div>
 
 

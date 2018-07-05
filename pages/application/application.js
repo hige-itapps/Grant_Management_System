@@ -40,8 +40,24 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //set admin updating to false by default
     $scope.isAdminUpdating = false;
 
+    //the function to use when submitting; set this parameter in ng-click on the submit buttons
+    $scope.submitFunction = null;
 
+
+
+
+    
     /*Functions*/
+
+    //submit the application - use a different function depending on the submitFunction variable
+    $scope.submit = function(){
+        if($scope.submitFunction === 'insertApplication'){$scope.insertApplication();}
+        else if($scope.submitFunction === 'approveApplication'){$scope.approveApplication('Approved');}
+        else if($scope.submitFunction === 'denyApplication'){$scope.approveApplication('Denied');}
+        else if($scope.submitFunction === 'holdApplication'){$scope.approveApplication('Hold');}
+        else if($scope.submitFunction === 'chairApproval'){$scope.chairApproval();}
+        else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
+    }
 
     //Add new budget item
     $scope.addBudgetItem = function(expense, comment, amount) {
