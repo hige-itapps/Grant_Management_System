@@ -262,7 +262,7 @@ final class ApplicationsTest extends TestCase
         $newAppID = 6;
 
         $this->assertEquals(true, denyApplication($this->pdo, $approvedAppID));
-        $this->assertEquals(false, denyApplication($this->pdo, $unapprovedAppID));
+        $this->assertEquals(true, denyApplication($this->pdo, $unapprovedAppID));
         $this->assertEquals(true, denyApplication($this->pdo, $pendingAppID));
         $this->assertEquals(false, denyApplication($this->pdo, $newAppID));
     }
@@ -279,7 +279,7 @@ final class ApplicationsTest extends TestCase
         $this->assertEquals(true, holdApplication($this->pdo, $approvedAppID));
         $this->assertEquals(true, holdApplication($this->pdo, $unapprovedAppID));
         $this->assertEquals(true, holdApplication($this->pdo, $pendingAppID));
-        $this->assertEquals(false, holdApplication($this->pdo, $heldAppID));
+        $this->assertEquals(true, holdApplication($this->pdo, $heldAppID));
         $this->assertEquals(false, holdApplication($this->pdo, $newAppID));
     }
 

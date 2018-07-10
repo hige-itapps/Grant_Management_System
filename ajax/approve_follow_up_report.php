@@ -6,9 +6,6 @@
 	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
 	
-	/*Verification functions*/
-	include_once(dirname(__FILE__) . "/../functions/verification.php");
-	
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../functions/documents.php");
 

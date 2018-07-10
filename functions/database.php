@@ -1,6 +1,6 @@
 <?php
 	include_once(dirname(__FILE__) . "/../include/classDefinitions.php");
-	include_once('verification.php');
+	include_once('cycles.php');
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	if(!function_exists('connection')) {
@@ -701,7 +701,7 @@
 	Rules:
 	1. Must be in a non-student position //currently disabled, see commented out segment below
 	2. Must not have a pending application
-	3. Must not have received funding within the past year (use rules from verification.php)
+	3. Must not have received funding within the past year (use rules from cycles.php)
 	4. Must not be an admin, committee member, application approver, or follow-up report approver (HIGE Staff)
 	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {

@@ -5,9 +5,6 @@
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
-	
-	/*Verification functions*/
-	include_once(dirname(__FILE__) . "/../functions/verification.php");
 
 /************* FOR A DEPARTMENT CHAIR CHAIR TO APPROVE AN APPLICATION AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 

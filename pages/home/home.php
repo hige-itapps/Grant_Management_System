@@ -5,9 +5,6 @@
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
-	
-	/*Verification functions*/
-	include_once(dirname(__FILE__) . "/../../functions/verification.php");
 
 	//Initialize everything with PHP
 	$totalAppsToSign = getNumberOfApplicationsToSign($conn, $CASemail, $CASbroncoNetID); //get number of applications this user needs to sign

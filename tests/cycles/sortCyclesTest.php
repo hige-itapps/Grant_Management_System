@@ -1,6 +1,6 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/verification.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../functions/cycles.php"); //the associated file
 
 use PHPUnit\Framework\TestCase;
 

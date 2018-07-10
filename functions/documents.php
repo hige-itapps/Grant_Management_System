@@ -1,7 +1,4 @@
 <?php
-	/*Verification functions*/
-	include_once(dirname(__FILE__) . "/../functions/verification.php");
-
 
 	/* Returns array of all associated file names */
 	if(!function_exists('getFileNames')) {
