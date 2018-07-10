@@ -196,13 +196,12 @@ DROP TABLE IF EXISTS `notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `notes` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
   `ApplicationID` int(11) NOT NULL,
   `Note` text,
-  PRIMARY KEY (`ID`),
+  PRIMARY KEY (`ApplicationID`),
   KEY `fk_notes_applications_id_idx` (`ApplicationID`),
   CONSTRAINT `fk_notes_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

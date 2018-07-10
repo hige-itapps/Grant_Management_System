@@ -67,6 +67,46 @@
 			return $res;
 		}
 	}
+
+	/*Return staff notes for a given application*/
+	if(!function_exists('getStaffNotes')) {
+		function getStaffNotes($conn, $appID)
+		{
+			/*Prepare the query*/
+			$sql = $conn->prepare("Select * FROM notes WHERE ApplicationID = :applicationid");
+			$sql->bindParam(':applicationid', $appID);
+			$sql->execute();
+			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+			/* Close finished query and connection */
+			$sql = null;
+			/*return confirmation*/
+			if(!empty($res)){return $res[0];}
+			else{return null;}
+		}
+	}
+
+	/*Save staff notes for a certain application*/
+	if(!function_exists('saveStaffNotes')){
+		function saveStaffNotes($conn, $appID, $note)
+		{
+			if ($appID != "") //valid app id
+			{
+				/*Update note or insert if new*/
+				$sql = $conn->prepare("INSERT INTO notes(ApplicationID, Note) VALUES(:applicationid, :note) ON DUPLICATE KEY UPDATE Note = :updatenote");
+				$sql->bindParam(':applicationid', $appID);
+				$sql->bindParam(':note', $note);
+				$sql->bindParam(':updatenote', $note); //have to bind to different name despite being the same variable
+				$sql->execute();
+
+				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+				
+				/* Close finished query and connection */
+				$sql = null;
+				return $ret;
+			}
+			else{return null;}
+		}
+	}
 	
 	/* Returns array of all administrators */
 	if(!function_exists('getAdministrators')) {

@@ -23,6 +23,9 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         report.reportEmails = var_reportEmails;//previously sent emails
     }
 
+    //get staff notes if they exist
+    $scope.staffNotes = scope_staffNotes;
+
     //set admin updating to false by default
     $scope.isAdminUpdating = false;
 
@@ -31,7 +34,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
 
 
-
+    
 
     /*Functions*/
 
@@ -162,7 +165,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 totalDocs++;
             });
 
-            if(typeof report !== 'undefined')//creating, not updating
+            if(typeof report === 'undefined')//creating, not updating
             {
                 //a warning for missing files
                 if(totalDocs === 0)
@@ -241,6 +244,8 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 }
             },function (error){
                 console.log(error, 'can not get data.');
+                $scope.alertType = "danger";
+                $scope.alertMessage = "There was an unexpected error when trying to insert the report!";
             });
         }
     };
@@ -300,8 +305,54 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 }
             },function (error){
                 console.log(error, 'can not get data.');
+                $scope.alertType = "danger";
+                $scope.alertMessage = "There was an unexpected error with your approval!";
             });
         }
+    };
+
+
+     //let a staff member save a note
+     $scope.saveNote = function(){
+
+        console.log("saving note...");
+
+        //start a loading alert
+        $scope.loadingAlert();
+
+        $http({
+            method  : 'POST',
+            url     : '/../../ajax/save_note.php',
+            data    : $.param({appID: app.id, note: $scope.staffNotes[1]}),  // pass in data as strings
+            headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+        .then(function (response) {
+            console.log(response, 'res');
+            if(typeof response.data.error === 'undefined') //ran function as expected
+            {
+                response.data = response.data.trim();//remove blankspace around data
+                if(response.data === "true")//saved
+                {
+                    $scope.alertType = "success";
+                    $scope.alertMessage = "Your note has been saved.";
+                }
+                else//didn't update
+                {
+                    $scope.alertType = "warning";
+                    $scope.alertMessage = "Warning: The note could not be updated from its previous state.";
+                }
+            }
+            else //failure!
+            {
+                console.log(response.data.error);
+                $scope.alertType = "danger";
+                $scope.alertMessage = "There was an error when trying to save your note! Error: " + response.data.error;
+            }
+        },function (error){
+            console.log(error, 'can not get data.');
+            $scope.alertType = "danger";
+            $scope.alertMessage = "There was an unexpected error when trying to save your note!";
+        });
     };
 
 
@@ -361,6 +412,8 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                     }
                 },function (error){
                     console.log(error, 'can not get data.');
+                    $scope.alertType = "danger";
+                    $scope.alertMessage = "There was an unexpected error when trying to upload your files!";
                 });
             }
             else

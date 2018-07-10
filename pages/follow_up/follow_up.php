@@ -21,6 +21,8 @@
 	$reportFiles = null; //^
 	$reportEmails = null; //^
 
+	$staffNotes = null; //only set if report exists AND user is a staff member
+
 	/*Initialize all user permissions to false*/
 	$isCreating = false; //user is an applicant initially creating report
 	$isReviewing = false; //user is an applicant reviewing their already created report
@@ -37,8 +39,8 @@
 	{
 		if($permissionSet = $isAdmin = isAdministrator($conn, $CASbroncoNetID)){} //admin check
 		else if($permissionSet = $isFollowUpApprover = isFollowUpReportApprover($conn, $CASbroncoNetID)){} //follow up report approver check
+		else if($permissionSet = $isCommittee = isCommitteeMember($conn, $CASbroncoNetID)){} //committee member check
 		else if($permissionSet = $isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
-		else if($permissionSet = $isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetID)){} //committee member check
 		else if($permissionSet = $isCreating = isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $_GET['id'])){} //applicant creating check
 		else if($permissionSet = $isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id']) && getFollowUpReport($conn, $_GET['id'])){} //applicant reviewing check
 	}
@@ -55,6 +57,11 @@
 			$report = getFollowUpReport($conn, $appID); //get follow up report data
 			$reportFiles = getFileNames($appID);
 			$reportEmails = getEmails($conn, $appID);
+
+			if($isAdmin || $isFollowUpApprover || $isCommittee) //if hige staff, then retrieve staff notes
+			{
+				$staffNotes = getStaffNotes($conn, $appID);
+			}
 		} 
 ?>
 
@@ -88,6 +95,7 @@
 			var var_report = <?php echo json_encode($report); ?>; //report data
 			var var_reportFiles = <?php echo json_encode($reportFiles); ?>; //the associated uploaded files
 			var var_reportEmails = <?php echo json_encode($reportEmails); ?>; //the associated saved emails
+			var scope_staffNotes = <?php echo json_encode($staffNotes); ?>; //the associated staff notes if allowed
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="follow_up.js"></script>
@@ -291,6 +299,19 @@
 
 
 
+					<!--STAFF NOTES-->
+					<div id="staffNotesHolder" class="row" ng-show="isAdmin || isFollowUpApprover || isCommittee">
+						<div class="col-md-3"></div>
+						<div class="col-md-6">
+							<label for="staffNotes">Staff Notes:</label>
+							<textarea class="form-control" ng-disabled="!isAdmin && !isFollowUpApprover" ng-model="staffNotes[1]" id="staffNotes" name="staffNotes" rows=10 /></textarea>
+							<button type="button" ng-show="isAdmin || isFollowUpApprover" ng-click="saveNote()" class="btn btn-success">SAVE NOTE</button>
+						</div>
+						<div class="col-md-3"></div>
+					</div>
+
+
+
 					<!--PREVIOUSLY SENT EMAILS-->
 					<div id="previousEmailsHolder" ng-show="!isCreating">
 						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see sent emails associated with this application</button>
@@ -306,7 +327,7 @@
 					
 					
 					
-					<div class="row" ng-cloak ng-show="isAdmin || isApprover">
+					<div class="row" ng-cloak ng-show="isAdmin || isFollowUpApprover">
 					<!--EMAIL EDIT-->
 						<div class="col-md-12">
 							<div class="form-group">
@@ -326,8 +347,8 @@
 
 					<div class="buttons-group bottom-buttons"> 
 						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success">SUBMIT FOLLOW UP REPORT</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyReport'" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
+						<button ng-show="isFollowUpApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
+						<button ng-show="isFollowUpApprover || isAdmin" type="submit" ng-click="submitFunction='denyReport'" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
 						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>

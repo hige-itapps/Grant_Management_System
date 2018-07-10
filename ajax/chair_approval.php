@@ -8,12 +8,6 @@
 	
 	/*Verification functions*/
 	include_once(dirname(__FILE__) . "/../functions/verification.php");
-	
-	/*Document functions*/
-	include_once(dirname(__FILE__) . "/../functions/documents.php");
-
-	/*For sending custom emails*/
-	include_once(dirname(__FILE__) . "/../functions/customEmail.php");
 
 /************* FOR A DEPARTMENT CHAIR CHAIR TO APPROVE AN APPLICATION AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 

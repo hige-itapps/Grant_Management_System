@@ -22,12 +22,12 @@
 	$submitDate = null; //^
 	$appFiles = null; //^
 	$appEmails = null; //^
+
+	$staffNotes = null; //only set if app exists AND user is a staff member
 	
 	/*get initial character limits for text fields*/
 	$appCharMax = getApplicationsMaxLengths($conn);
 	$appBudgetCharMax = getApplicationsBudgetsMaxLengths($conn);
-
-	//echo var_dump($appCharMax);
 	
 	$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
 	$maxDepartment = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
@@ -58,9 +58,9 @@
 	{
 		if($permissionSet = $isAdmin = isAdministrator($conn, $CASbroncoNetID)){} //admin check
 		else if($permissionSet = $isApprover = isApplicationApprover($conn, $CASbroncoNetID)){} //application approver check
+		else if($permissionSet = $isCommittee = isCommitteeMember($conn, $CASbroncoNetID)){} //committee member check
 		else if($permissionSet = $isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair check
 		else if($permissionSet = $isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
-		else if($permissionSet = $isCommittee = isUserAllowedToSeeApplications($conn, $CASbroncoNetID)){} //committee member check
 		else if($permissionSet = $isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id'])){} //applicant reviewing check
 	}
 	if(!$permissionSet && !isset($_GET["id"])) //applicant creating check. Note- if the app id is set, then by default the application cannot be created
@@ -83,6 +83,11 @@
 
 			$thisCycle = getCycleName($submitDate, false, true);
 			$nextCycle = getCycleName($submitDate, true, true);
+
+			if($isAdmin || $isApprover || $isCommittee) //if hige staff, then retrieve staff notes
+			{
+				$staffNotes = getStaffNotes($conn, $appID);
+			}
 		}
 		else
 		{
@@ -135,6 +140,7 @@
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
 			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, false)); ?>;
 			var scope_shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
+			var scope_staffNotes = <?php echo json_encode($staffNotes); ?>; //the associated staff notes if allowed
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="application.js"></script>
@@ -577,6 +583,19 @@
 								<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxDeptChairApproval-formData.deptChairApproval.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
 								<input type="text" class="form-control" maxlength="{{maxDeptChairApproval}}" ng-model="formData.deptChairApproval" ng-disabled="{{!isChair ? true : false}}" id="deptChairApproval" name="deptChairApproval" placeholder="{{isChair ? 'Type Your Full Name Here' : 'Department Chair Must Type Name Here'}}" />
 							</div>
+						</div>
+						<div class="col-md-3"></div>
+					</div>
+
+
+
+					<!--STAFF NOTES-->
+					<div id="staffNotesHolder" class="row" ng-show="isAdmin || isApprover || isCommittee">
+						<div class="col-md-3"></div>
+						<div class="col-md-6">
+							<label for="staffNotes">Staff Notes:</label>
+							<textarea class="form-control" ng-disabled="!isAdmin && !isApprover" ng-model="staffNotes[1]" id="staffNotes" name="staffNotes" rows=10 /></textarea>
+							<button type="button" ng-show="isAdmin || isApprover" ng-click="saveNote()" class="btn btn-success">SAVE NOTE</button>
 						</div>
 						<div class="col-md-3"></div>
 					</div>

@@ -270,3 +270,12 @@ hr{
 #previousEmails li:not(:last-child){ /*exclude last li*/
 	border-bottom: 3px dotted;
 }
+
+/*format staff notes*/
+#staffNotesHolder button{
+	margin: auto;
+    display: block;
+}
+#staffNotes{
+	background-color: #f0f8ff;
+}
