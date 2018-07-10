@@ -86,24 +86,24 @@
 	{
 		$subject = "New HIGE Grant Application - Do Not Reply";
 
-		$body = "<p>Dear Department Chair, </p>
-			<p>Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:</p>
+		$body = "Dear Department Chair, 
+			Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:
 
-			<p>1. Go to the IEFDF website at www.wmich.edu/international/iefdf</p>
+			1. Go to the IEFDF website at www.wmich.edu/international/iefdf
 
-			<p>2. Click on the application system log in</p>
+			2. Click on the application system log in
 
-			<p>3. Log in with your bronco net id</p>
+			3. Log in with your bronco net id
 
-			<p>4. Click on the link to view the application</p>
+			4. Click on the link to view the application
 
-			<p>5. At the bottom of the page, type your name in the signature field</p>
+			5. At the bottom of the page, type your name in the signature field
 
-			<p>6. Submit</p>
+			6. Submit
 
-			<p>If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmich.edu) or 7-3908.</p>
+			If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmich.edu) or 7-3908.
 			
-			<p>Best Regards, Dr. Michelle Metro-Roland</p>";
+			Best Regards, Dr. Michelle Metro-Roland";
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
 		$body = str_replace("#email", nl2br($applicantEmail), $body); //insert the applicant's email into the message
 

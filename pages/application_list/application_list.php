@@ -188,8 +188,8 @@
 					<div class="col-md-1"></div>
 				</div>
 
-				<div class="alert alert-{{alertType}} alert-dismissible fade in" ng-show='alertMessage'>
-					<button type="button" class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+				<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
+					<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 				</div>
 
 				<div class="buttons-group bottom-buttons"> 

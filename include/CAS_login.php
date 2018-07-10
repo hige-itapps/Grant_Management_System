@@ -68,10 +68,18 @@ try {
 	exit();
 }
 
+
+$allPosCheck = false; //check all positions to make sure at least 1 position is set, and change to true if so
+if(isset($CASallPositions))
+{
+	if(!is_array($CASallPositions)){$allPosCheck = (trim($CASallPositions)!=='');} //if it's not an array of values, make sure the single value is not empty
+	else {$allPosCheck = true;} //if it is an array, assume it's fine
+}
+
 //make sure all variables aren't blank or null
 if(!isset($CASbroncoNetID) || trim($CASbroncoNetID)==='' ||
 	!isset($CASprimaryPosition) || trim($CASprimaryPosition)==='' ||
-	!isset($CASallPositions) || trim($CASallPositions)==='' ||
+	$allPosCheck === false ||
 	!isset($CASemail) || trim($CASemail)==='')
 {
 	echo "<h1>Error retrieving valid user data! Please refresh the page or try restarting your browser.</h1>";

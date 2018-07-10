@@ -62,8 +62,26 @@
 			return $farEnoughApart;
 		}
 	}
+
+	/*Return the next cycle for which the applicant can apply for based off of the latest application's date and nextCycle boolean. Use the showDueDate boolean to optionally return the cycle's due date as well.
+	This function is actually quite simple because it just needs to call getCycleName() with the date and nextCycle variables modified a bit.*/
+	if(!function_exists('getNextCycleToApplyFor')){
+		function getNextCycleToApplyFor($date, $nextCycle, $showDueDate)
+		{
+			if(!$date){return null;} //escape if no date was given
+			/*	
+			RULES: If applying in Fall 2016, must wait until Fall 2018. 
+			If applying in Spring 2017, must also wait until Fall 2018 (Spring 2019 is the earliest acceptable Spring cycle in this case)
+			Example 2-year schedule:
+			(2015) Fall 2015 cycle, Spring 2016 cycle
+			(2016) Fall 2016 cycle, Spring 2017 cycle
+			*/
+
+
+		}
+	}
 	
-	/*Find the cycle of a given application; */
+	/*Find the cycle of a given application. Use the showDueDate boolean to optionally return the cycle's due date as well.*/
 	if(!function_exists('getCycleName')){
 		function getCycleName($date, $nextCycle, $showDueDate)
 		{
@@ -141,8 +159,8 @@
 	if(!function_exists('sortCycles')){
 		function sortCycles($cycles)
 		{
-			usort($cycles, "cmpCycles");
-			return array_reverse($cycles);
+			usort($cycles, "cmpCycles"); //initial sort
+			return array_reverse($cycles); //reverse order
 		}
 	}
 	/*The comparator between two cycles, used for sorting*/

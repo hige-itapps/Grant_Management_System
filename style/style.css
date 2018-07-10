@@ -196,7 +196,17 @@ h1, h2, h3, h4, h5{
 	min-width: 80%;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 2;
+	z-index: 2;
+	transition: visibility 0s linear 0s, opacity 150ms; /*turn visibility on immediately at first*/
+}
+.alert button{
+	opacity: 1;
+	font-size: 2em;
+}
+.hideAlert{
+	opacity: 0!important;
+	visibility: hidden;
+	transition: visibility 0s linear 150ms, opacity 150ms; /*turn visibility off slowly after fade-out*/
 }
 
 /*hide elements that have the hidden tag*/

@@ -23,38 +23,42 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 	$emailAddress = $_POST["emailAddress"];
 	$emailMessage = $_POST["emailMessage"];
 
-	/*Verify that user is allowed to approve an application*/
-	if(isApplicationApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
-	{
-		try
-		{
-			if($status === 'Approved') 
-			{ 
-				if(isset($_POST["amount"])) 
-				{
-					if($_POST["amount"] > 0){ $approvalReturn["success"] = approveApplication($conn, $appID, $_POST["amount"]); }
-					else {$approvalReturn["error"] = "Amount awarded must be greater than $0";}
-				}
-				else {$approvalReturn["error"] = "No amount specified";}
-			}
-			else if($status === 'Hold') { $approvalReturn["success"] = holdApplication($conn, $appID); }
-			else if($status === 'Denied') { $approvalReturn["success"] = denyApplication($conn, $appID); }
-			else { $approvalReturn["error"] = "Invalid status given"; }
-
-			//if everything has been successful so far, send off the email as well
-			if(!isset($approvalReturn["error"]))
-			{
-				$approvalReturn["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
-			}
-		}
-		catch(Exception $e)
-		{
-			$approvalReturn["error"] = "Unable to approve application: " . $e->getMessage();
-		}
-	}
+	if(trim($emailMessage) === '' || $emailMessage == null) {$approvalReturn["error"] = "Email message must not be empty!";}
 	else
 	{
-		$approvalReturn["error"] = "Permission denied";
+		/*Verify that user is allowed to approve an application*/
+		if(isApplicationApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
+		{
+			try
+			{
+				if($status === 'Approved') 
+				{ 
+					if(isset($_POST["amount"])) 
+					{
+						if($_POST["amount"] > 0){ $approvalReturn["success"] = approveApplication($conn, $appID, $_POST["amount"]); }
+						else {$approvalReturn["error"] = "Amount awarded must be greater than $0";}
+					}
+					else {$approvalReturn["error"] = "No amount specified";}
+				}
+				else if($status === 'Hold') { $approvalReturn["success"] = holdApplication($conn, $appID); }
+				else if($status === 'Denied') { $approvalReturn["success"] = denyApplication($conn, $appID); }
+				else { $approvalReturn["error"] = "Invalid status given"; }
+
+				//if everything has been successful so far, send off the email as well
+				if(!isset($approvalReturn["error"]))
+				{
+					$approvalReturn["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
+				}
+			}
+			catch(Exception $e)
+			{
+				$approvalReturn["error"] = "Unable to approve application: " . $e->getMessage();
+			}
+		}
+		else
+		{
+			$approvalReturn["error"] = "Permission denied";
+		}
 	}
 }
 else

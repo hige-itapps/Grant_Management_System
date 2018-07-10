@@ -23,29 +23,34 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 	$emailAddress = $_POST["emailAddress"];
 	$emailMessage = $_POST["emailMessage"];
 
-	/*Verify that user is allowed to approve a report*/
-	if(isFollowUpReportApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
-	{
-		try
-		{
-			if($status === 'Approved') { $approvalReturn["success"] = approveFollowUpReport($conn, $appID); }
-			else if($status === 'Denied') { $approvalReturn["success"] = denyFollowUpReport($conn, $appID); }
-			else { $approvalReturn["error"] = "Invalid status given"; }
 
-			//if everything has been successful so far, send off the email as well
-			if(!isset($approvalReturn["error"]))
-			{
-				$approvalReturn["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
-			}
-		}
-		catch(Exception $e)
-		{
-			$approvalReturn["error"] = "Unable to approve follow up report: " . $e->getMessage();
-		}
-	}
+	if(trim($emailMessage) === '' || $emailMessage == null) {$approvalReturn["error"] = "Email message must not be empty!";}
 	else
 	{
-		$approvalReturn["error"] = "Permission denied";
+		/*Verify that user is allowed to approve a report*/
+		if(isFollowUpReportApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
+		{
+			try
+			{
+				if($status === 'Approved') { $approvalReturn["success"] = approveFollowUpReport($conn, $appID); }
+				else if($status === 'Denied') { $approvalReturn["success"] = denyFollowUpReport($conn, $appID); }
+				else { $approvalReturn["error"] = "Invalid status given"; }
+
+				//if everything has been successful so far, send off the email as well
+				if(!isset($approvalReturn["error"]))
+				{
+					$approvalReturn["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
+				}
+			}
+			catch(Exception $e)
+			{
+				$approvalReturn["error"] = "Unable to approve follow up report: " . $e->getMessage();
+			}
+		}
+		else
+		{
+			$approvalReturn["error"] = "Permission denied";
+		}
 	}
 }
 else

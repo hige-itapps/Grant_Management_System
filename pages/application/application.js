@@ -47,7 +47,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     $scope.submitFunction = null;
 
 
-    
+
     
     /*Functions*/
 
@@ -266,7 +266,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     if(key == "travelFrom" || key == "travelTo" || key == "activityFrom" || key == "activityTo")
                     {
                         //console.log(key + " -x-> " + JSON.stringify($scope.formData[key].getTime()/1000));
-                        fd.append(key, JSON.stringify($scope.formData[key].getTime()/1000));
+                        if($scope.formData[key] != null){fd.append(key, JSON.stringify($scope.formData[key].getTime()/1000));}
                     }
                     else
                     {
