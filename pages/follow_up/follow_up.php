@@ -115,7 +115,7 @@
 				</div>
 				
 				<!-- follow-up form -->
-				<form enctype="multipart/form-data" class="form-horizontal" id="reportForm" name="reportForm" ng-submit="insertReport()">
+				<form enctype="multipart/form-data" class="form-horizontal" id="reportForm" name="reportForm" ng-submit="submit()">
 				
 
 				

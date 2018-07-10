@@ -147,7 +147,8 @@ CREATE TABLE `emails` (
   `Message` text NOT NULL,
   `Time` timestamp NOT NULL,
   PRIMARY KEY (`ID`),
-  KEY `ApplicationID_idx` (`ApplicationID`)
+  KEY `fk_emails_applications_id_idx` (`ApplicationID`),
+  CONSTRAINT `fk_emails_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -182,8 +183,26 @@ CREATE TABLE `follow_up_reports` (
   `TotalAwardSpent` decimal(10,2) NOT NULL,
   `ProjectSummary` varchar(3200) NOT NULL,
   `Status` varchar(20) NOT NULL,
-  PRIMARY KEY (`ApplicationID`)
+  PRIMARY KEY (`ApplicationID`),
+  CONSTRAINT `fk_follow_up_reports_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `notes`
+--
+
+DROP TABLE IF EXISTS `notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `notes` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ApplicationID` int(11) NOT NULL,
+  `Note` text,
+  PRIMARY KEY (`ID`),
+  KEY `fk_notes_applications_id_idx` (`ApplicationID`),
+  CONSTRAINT `fk_notes_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -195,4 +214,4 @@ CREATE TABLE `follow_up_reports` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-02 16:11:52
+-- Dump completed on 2018-07-10  8:57:59
