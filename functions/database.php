@@ -415,7 +415,7 @@
 			else //no username
 			{
 				/* Select all applications */
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM FROM applications");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications");
 			}
 			/* run the prepared query */
 			$sql->execute();

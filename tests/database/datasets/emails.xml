@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<dataset>
+	<table name="emails">
+		<column>ID</column>
+		<column>ApplicationID</column>
+		<column>Subject</column>
+		<column>Message</column>
+		<column>Time</column>
+
+		<row>
+			<value>1</value>
+			<value>1</value>
+			<value>HIGE Email</value>
+			<value>Test Email 1</value>
+			<value>2018-07-10 20:59:28</value>
+		</row>
+		<row>
+			<value>2</value>
+			<value>1</value>
+			<value>HIGE Email</value>
+			<value>Test Email 2</value>
+			<value>2018-07-10 20:59:28</value>
+		</row>
+		<row>
+			<value>3</value>
+			<value>1</value>
+			<value>HIGE Email</value>
+			<value>Test Email 3</value>
+			<value>2018-07-10 20:59:28</value>
+		</row>
+	</table>
+</dataset>

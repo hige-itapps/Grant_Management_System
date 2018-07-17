@@ -33,7 +33,7 @@ final class ApplicationsTest extends TestCase
                 $this->pdo = new PDO( $dsn, $settings["test_database_username"], $settings["test_database_password"] );
                 // set the PDO error mode to exception
                 $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $this->pdo->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
+                $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             }
             $this->conn = $this->createDefaultDBConnection($this->pdo, "administrators");
         }
@@ -46,7 +46,14 @@ final class ApplicationsTest extends TestCase
      */
     public function getDataSet()
     {
-        return $this->createXMLDataSet(dirname(__FILE__).'/datasets/applications.xml');
+        $ds1 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/applicants.xml');
+        $ds2 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/applications.xml');
+
+        $compositeDs = new PHPUnit\DbUnit\DataSet\CompositeDataSet();
+        $compositeDs->addDataSet($ds1);
+        $compositeDs->addDataSet($ds2);
+
+        return $compositeDs;
     }
 
     
@@ -139,6 +146,21 @@ final class ApplicationsTest extends TestCase
         $this->assertEquals(1, count(getApplications($this->pdo, $existingApplicant2)));
         $this->assertEquals(0, count(getApplications($this->pdo, $newApplicant)));
         $this->assertEquals(5, count(getApplications($this->pdo, "")));
+    }
+
+
+
+    //test getting number of all applications or a subset of applications
+    public function testGetNumberOfApplications()
+    {
+        $existingApplicant1 = "abc1234";
+        $existingApplicant2 = "zyx4321";
+        $newApplicant = "eqk7410";
+
+        $this->assertEquals(3, getNumberOfApplications($this->pdo, $existingApplicant1));
+        $this->assertEquals(1, getNumberOfApplications($this->pdo, $existingApplicant2));
+        $this->assertEquals(0, getNumberOfApplications($this->pdo, $newApplicant));
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));
     }
 
 
@@ -283,7 +305,7 @@ final class ApplicationsTest extends TestCase
         $this->assertEquals(false, holdApplication($this->pdo, $newAppID));
     }
 
-    /*Test signing an app*/
+    /*Test signing an application*/
     public function testSignApplication()
     {
         $signedAppID = 1;
@@ -294,6 +316,207 @@ final class ApplicationsTest extends TestCase
         $this->assertEquals(true, signApplication($this->pdo, $unsignedAppID, "Sam"));
         $this->assertEquals(false, signApplication($this->pdo, $newAppID, "Sam"));
         $this->assertEquals(true, signApplication($this->pdo, $signedAppID, "Dude")); //try signing an already signed app with a new sig
+    }
+
+
+
+    /*Test inserting an application. There are MANY errors to check for*/
+    public function testInsertApplication()
+    {
+        $newApplicant = "eqk7410";
+
+        //new, acceptable variables
+        $validName = "Sam";
+        $validEmail = "samuel.j.kison@wmich.edu";
+        $validDepartment = "CS";
+        $validDeptChairEmail = "jeffkrony@wmich.edu";
+        $validTravelFrom = date('Y-m-d h:i:s', mktime(0, 0, 0, 7, 1, 2018));
+        $validTravelTo = date('Y-m-d h:i:s', mktime(0, 0, 0, 7, 25, 2018));
+        $validActivityFrom = date('Y-m-d h:i:s', mktime(0, 0, 0, 7, 10, 2018));
+        $validActivityTo = date('Y-m-d h:i:s', mktime(0, 0, 0, 7, 15, 2018));
+        $validTitle = "This is a title";
+        $validDestination = "This is a destination";
+        $validAmountRequested = 300;
+        $validPurpose4Other = "This is a special purpose";
+        $validProposalSummary = "Lorem Ipsum";
+        $validNextCycle = 0;
+        $validBudgetArray = array(array("expense"=>"Air Travel", "comment"=>"2 way flight", "amount"=>400), array("expense"=>"Hotel", "comment"=>"4 nights", "amount"=>1000));
+
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should start with only 5 applications
+
+        /*for inserting new applications*/
+
+        //pass in empty values for all fields
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "comment"=>"", "amount"=>0), array("expense"=>"", "comment"=>"", "amount"=>0)));
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
+
+        //almost every field should have an error regarding missing data
+        $this->assertArrayHasKey('name', $testReturn['errors']);
+        $this->assertArrayHasKey('email', $testReturn['errors']);
+        $this->assertArrayHasKey('department', $testReturn['errors']);
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+        $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
+        $this->assertArrayHasKey('travelTo', $testReturn['errors']);
+        $this->assertArrayHasKey('activityFrom', $testReturn['errors']);
+        $this->assertArrayHasKey('activityTo', $testReturn['errors']);
+        $this->assertArrayHasKey('title', $testReturn['errors']);
+        $this->assertArrayHasKey('destination', $testReturn['errors']);
+        $this->assertArrayHasKey('amountRequested', $testReturn['errors']);
+        $this->assertArrayHasKey('purpose', $testReturn['errors']);
+        $this->assertArrayHasKey('proposalSummary', $testReturn['errors']);
+        $this->assertArrayHasKey('goal', $testReturn['errors']);
+        $this->assertArrayHasKey('cycleChoice', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 expense', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 amount', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 expense', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 amount', $testReturn['errors']);
+
+
+        //pass in invalid email address formats
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, $validName, "samuel.j.kisonATwmich.edu", $validDepartment, "jeffkrony@wmichDOTedu", 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
+
+        //just check for email errors
+        $this->assertArrayHasKey('email', $testReturn['errors']);
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+
+
+        //pass in a non-wmu deptChairEmail
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, $validName, $validEmail, $validDepartment, "jeffkrony@gmail.com", 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
+
+        //just check for email error
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+
+
+        //pass in an invalid travel date
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
+
+        //just check for invalid travel date
+        $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
+
+
+        //pass in no budget array
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, array());
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
+
+        //just check for budget array error
+        $this->assertArrayHasKey('budgetArray', $testReturn['errors']);
+
+        
+        //@todo: try inserting an application before enough time has passed. Requires changing dynamic dates to static dates, probably via namespaces or dependency injection
+
+
+        //insert an acceptable new application
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
+        $this->assertEquals(6, $testReturn['appID']);//appID should be 6
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should now have 6 applications
+
+
+
+
+
+        /*for updating applications*/
+
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "comment"=>"", "amount"=>0), array("expense"=>"", "comment"=>"", "amount"=>0)));
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
+
+        //almost every field should have an error regarding missing data
+        $this->assertArrayHasKey('name', $testReturn['errors']);
+        $this->assertArrayHasKey('email', $testReturn['errors']);
+        $this->assertArrayHasKey('department', $testReturn['errors']);
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+        $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
+        $this->assertArrayHasKey('travelTo', $testReturn['errors']);
+        $this->assertArrayHasKey('activityFrom', $testReturn['errors']);
+        $this->assertArrayHasKey('activityTo', $testReturn['errors']);
+        $this->assertArrayHasKey('title', $testReturn['errors']);
+        $this->assertArrayHasKey('destination', $testReturn['errors']);
+        $this->assertArrayHasKey('amountRequested', $testReturn['errors']);
+        $this->assertArrayHasKey('purpose', $testReturn['errors']);
+        $this->assertArrayHasKey('proposalSummary', $testReturn['errors']);
+        $this->assertArrayHasKey('goal', $testReturn['errors']);
+        $this->assertArrayHasKey('cycleChoice', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 expense', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 amount', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 expense', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 amount', $testReturn['errors']);
+
+
+        //pass in invalid email address formats
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, $validName, "samuel.j.kisonATwmich.edu", $validDepartment, "jeffkrony@wmichDOTedu", 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
+
+        //just check for email errors
+        $this->assertArrayHasKey('email', $testReturn['errors']);
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+
+
+        //pass in a non-wmu deptChairEmail
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, $validName, $validEmail, $validDepartment, "jeffkrony@gmail.com", 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
+
+        //just check for email error
+        $this->assertArrayHasKey('deptChairEmail', $testReturn['errors']);
+
+
+        //pass in an invalid travel date
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
+
+        //just check for invalid travel date
+        $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
+
+
+        //pass in no budget array
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, array());
+        $this->assertEquals(false, $testReturn['success']);//insert should have failed
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
+
+        //just check for budget array error
+        $this->assertArrayHasKey('budgetArray', $testReturn['errors']);
+
+
+        //insert an acceptable new application
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, $validName, $validEmail, $validDepartment, $validDeptChairEmail, 
+            $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validTitle, $validDestination, $validAmountRequested, 0, 0, 0, $validPurpose4Other, 
+            "", $validProposalSummary, 1, 0, 0, 0, $validNextCycle, $validBudgetArray);
+        $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
+        $this->assertEquals(6, $testReturn['appID']);//appID should be 6
+        $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
     }
 }
 
