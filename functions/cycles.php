@@ -1,7 +1,5 @@
 <?php
-	include('database.php'); /*include important database functions*/
 
-	
 	/*Return true if 2 cycle strings are far enough apart to be valid (for creating a new application). The old cycle should come first, followed by the new cycle*/
 	if(!function_exists('areCyclesFarEnoughApart')){
 		function areCyclesFarEnoughApart($firstCycle, $secondCycle)
@@ -63,12 +61,11 @@
 		}
 	}
 
-	/*Return the next cycle for which the applicant can apply for based off of the latest application's date and nextCycle boolean. Use the showDueDate boolean to optionally return the cycle's due date as well.
-	This function is actually quite simple because it just needs to call getCycleName() with the date and nextCycle variables modified a bit.*/
+	/*Return the next cycle for which the applicant can apply for based off of the latest approved application's cycle name.*/
 	if(!function_exists('getNextCycleToApplyFor')){
-		function getNextCycleToApplyFor($date, $nextCycle, $showDueDate)
+		function getNextCycleToApplyFor($cycle)
 		{
-			if(!$date){return null;} //escape if no date was given
+			if($cycle == null || $cycle === ''){return null;} //escape if cycle wasn't given
 			/*	
 			RULES: If applying in Fall 2016, must wait until Fall 2018. 
 			If applying in Spring 2017, must also wait until Fall 2018 (Spring 2019 is the earliest acceptable Spring cycle in this case)
@@ -76,8 +73,16 @@
 			(2015) Fall 2015 cycle, Spring 2016 cycle
 			(2016) Fall 2016 cycle, Spring 2017 cycle
 			*/
+			//initialize semester and year of the next applicable cycle
+			$newCycleSemester = 'Fall '; //the next applicable cycle will ALWAYS be a fall cycle according to the rules
+			$newCycleYear = 0;
 
+			$cycleParts = explode(" ", $cycle); //[0] holds Spring/Fall, [1] holds Year
 
+			if($cycleParts[0] === "Fall"){$newCycleYear = (int)$cycleParts[1] + 2;} //if fall cycle, add 2 years
+			else if($cycleParts[0] === "Spring"){$newCycleYear = (int)$cycleParts[1] + 1;} //if spring cycle, add 1 year
+
+			return $newCycleSemester.$newCycleYear; // concatenate the cycle semester and year into 1 sting, and return.
 		}
 	}
 	

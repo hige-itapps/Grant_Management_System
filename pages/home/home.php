@@ -6,6 +6,9 @@
 	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
 
+	/*Cycle functions*/
+	include_once(dirname(__FILE__) . "/../../functions/cycles.php");
+
 	//Initialize everything with PHP
 	$totalAppsToSign = getNumberOfApplicationsToSign($conn, $CASemail, $CASbroncoNetID); //get number of applications this user needs to sign
 	$totalSignedApps = getNumberOfSignedApplications($conn, $CASemail); //get number of previously signed applications
@@ -17,6 +20,21 @@
 
 	$alertType = isset($_POST["alert_type"]) ? $_POST["alert_type"] : null; //set the alert type if it exists, otherwise set to null
 	$alertMessage = isset($_POST["alert_message"]) ? $_POST["alert_message"] : null; //set the alert type if it exists, otherwise set to null
+
+	$nextApplicableCycle = ''; //init next applicable cycle as string
+	if(!$isUserAllowedToCreateApplication && $totalPrevApps > 0) //if user is not allowed to create a new application but they have applied before, let them know when they can next apply
+	{
+		$latestApprovedApplication = getMostRecentApprovedApplication($conn, $CASbroncoNetID); //get the most recent approved application, if any
+		if($latestApprovedApplication != null) //actually has one
+		{
+			$nextApplicableCycle = getNextCycleToApplyFor(getCycleName( //get next applicable cycle as a string
+				DateTime::createFromFormat('Y-m-d', $latestApprovedApplication->dateSubmitted),
+				$latestApprovedApplication->nextCycle,
+				false
+			));
+		}
+	}
+	
 
 ?>
 <!DOCTYPE html>
@@ -38,6 +56,7 @@
 			var scope_isAdmin = <?php echo json_encode($isAdmin); ?>;
 			var alert_type = <?php echo json_encode($alertType); ?>;
 			var alert_message = <?php echo json_encode($alertMessage); ?>;
+			var scope_nextApplicableCycle = <?php echo json_encode($nextApplicableCycle); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="home.js"></script>
@@ -74,8 +93,7 @@
 				</div>	
 				
 				<p ng-if="hasPendingApplication">Your application is pending!<p>
-				
-				<p>Note: IEFDF recipients must wait at least a full academic year between applications.</p>
+				<p ng-if="nextApplicableCycle !== ''">You are currently unable to create a new application because not enough time has passed since your last approved application. The earliest cycle you can apply for is {{nextApplicableCycle}}.<p>
 
 				<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
 					<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
