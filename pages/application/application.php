@@ -65,7 +65,7 @@
 	}
 	if(!$permissionSet && !isset($_GET["id"])) //applicant creating check. Note- if the app id is set, then by default the application cannot be created
 	{
-		$permissionSet = $isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true); //applicant is creating an application (check latest date possible)
+		$permissionSet = $isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true); //applicant is creating an application (check latest date possible)
 	}
 
 	/*Verify that user is allowed to render application*/
@@ -138,7 +138,7 @@
 			var var_appFiles = <?php echo json_encode($appFiles); ?>; //the associated uploaded files
 			var var_appEmails = <?php echo json_encode($appEmails); ?>; //the associated saved emails
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
-			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, false)); ?>;
+			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, false)); ?>;
 			var scope_shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
 			var scope_staffNotes = <?php echo json_encode($staffNotes); ?>; //the associated staff notes if allowed
 		</script>

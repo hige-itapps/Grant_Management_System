@@ -9,7 +9,7 @@
 	//Initialize everything with PHP
 	$totalAppsToSign = getNumberOfApplicationsToSign($conn, $CASemail, $CASbroncoNetID); //get number of applications this user needs to sign
 	$totalSignedApps = getNumberOfSignedApplications($conn, $CASemail); //get number of previously signed applications
-	$isUserAllowedToCreateApplication = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true); //Make sure user is allowed to make an application. Check the latest cycle possible
+	$isUserAllowedToCreateApplication = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true); //Make sure user is allowed to make an application. Check the latest cycle possible
 	$hasPendingApplication = hasPendingApplication($conn, $CASbroncoNetID); //Let the user know they've got a pending application (if they do)
 	$totalPrevApps = getNumberOfApplications($conn, $CASbroncoNetID); //Let user see the apps they've submitted, if they have at least 1
 	$isUserAllowedToSeeApplications = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //Verify that user is allowed to freely see applications

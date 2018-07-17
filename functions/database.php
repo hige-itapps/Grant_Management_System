@@ -699,36 +699,16 @@
 	
 	/*Checks if a user is allowed to create an application
 	Rules:
-	1. Must be in a non-student position //currently disabled, see commented out segment below
 	2. Must not have a pending application
 	3. Must not have received funding within the past year (use rules from cycles.php)
 	4. Must not be an admin, committee member, application approver, or follow-up report approver (HIGE Staff)
 	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {
-		function isUserAllowedToCreateApplication($conn, $broncoNetID, $positions, $nextCycle)
+		function isUserAllowedToCreateApplication($conn, $broncoNetID, $nextCycle)
 		{
 			//make sure user is not part of HIGE staff
 			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFollowUpReportApprover($conn, $broncoNetID))
 			{
-				$check = true;
-				/*
-				//check all positions to see if any are 'Faculty' or 'Staff'!
-				if (is_array($positions)) {
-					foreach ($positions as $position) {
-						if ($position === 'Faculty' || $position === 'faculty' 
-							|| $position === 'Staff' || $position === 'staff'
-							|| $position === 'Provisional Employee' || $position === 'Student') {
-							$check = true;
-						}
-					}	
-				} else {
-					if ($positions === 'Faculty' || $positions === 'faculty'
-						|| $positions === 'Staff' || $positions === 'staff'
-						|| $positions === 'Provisional Employee' || $position === 'Student') {
-							$check = true;
-						}
-				} */
-				
 				$lastApproved = false; //set to true if last approved application was long enough ago
 				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
 
@@ -752,7 +732,7 @@
 					$lastApproved = true;
 				}
 				
-				if($check && !hasPendingApplication($conn, $broncoNetID) && $lastApproved)
+				if(!hasPendingApplication($conn, $broncoNetID) && $lastApproved)
 				{
 					return true;
 				}

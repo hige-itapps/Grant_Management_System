@@ -41,8 +41,8 @@ ini_set('sendmail_from', 'info@hige.com');
 
 $isAdmin = isAdministrator($conn, $CASbroncoNetID);
 
-/*Verify that user is allowed to make an application*/
-if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, $CASallPositions, true) || $isAdmin)
+/*Verify that user is allowed to make an application. The specific cycle is checked in the insertApplication() function, so just pass in true for now.*/
+if(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true) || $isAdmin)
 {
     //echo "User is allowed to create an application!";
    // echo var_dump($_POST);
