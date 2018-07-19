@@ -4,7 +4,7 @@ This guide will describes the steps you will need to take when setting up a new 
 ## 1. Set up the WAMP stack
 Download and install WampServer from http://www.wampserver.com/en/download-wampserver-64bits/. Specifically, we're using version 3.0.6 which includes Wampserver 3.1.0, Apache 2.4.27, PHP 5.6.31, and MySQL 5.7.19.
 
-*Note: although we built the system on with WampServer, any Windows server with these services would work just fine*
+*Note: although we built the system with WampServer, any Windows server with these services would work just fine*
 
 ## 2. Configure Apache
 First, create the web hosting directory (currently labled 'IEFDF') under the /www directory. Apache must be configured to only allow direct access to the defined webpages. <<TODO: add directions for this>>
