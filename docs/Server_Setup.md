@@ -15,7 +15,7 @@ You will then need to import the grant application schema using the database_sch
 
 ## 4. Move server files to server directory
 Most of the files in the repository need to be moved over to the web hosting directory. These include: 
- -config.ini: configuration file to hold information such as relative directories and username/password combinations; this way, no critical information needs to be hard-coded
+    -config.ini: configuration file to hold information such as relative directories and username/password combinations; this way, no critical information needs to be hard-coded
  -index.php: a simple file which just redirects users to the homepage upon navigating to the site; this functionality might be configurable directly in Apache which would make this file redundant
  -favicon.ico: the site's icon, which appears in tabs where the site is loaded
  -/pages: files associated with each navigatable web page
