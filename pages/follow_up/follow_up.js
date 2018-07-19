@@ -476,6 +476,8 @@ higeApp.directive('readdocuments', ['$parse', function ($parse) {
                 var allFiles = scope[attrs.readdocuments].concat(newFiles); //add new files to the full array
                 //console.log(allFiles);
                 modelSetter(scope, allFiles); //set to all files
+
+                element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });
         });
     }

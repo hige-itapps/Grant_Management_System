@@ -667,6 +667,8 @@ higeApp.directive('readsupportingdocs', ['$parse', function ($parse) {
                 var allFiles = scope[attrs.readsupportingdocs].concat(newFiles); //add new files to the full array
                 //console.log(allFiles);
                 modelSetter(scope, allFiles); //set to all files
+
+                element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });
         });
     }
@@ -684,7 +686,10 @@ higeApp.directive('readproposalnarrative', ['$parse', function ($parse) {
 
         element.bind('change', function(){
             scope.$apply(function(){
-                modelSetter(scope, element[0].files); //set to only the newly chosen files
+                var newFile = Array.from(element[0].files) //save the new file only
+                modelSetter(scope, newFile); //set to only the newly chosen file
+
+                element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });
         });
     }
