@@ -34,6 +34,7 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 			{
 				if($status === 'Approved') { $approvalReturn["success"] = approveFollowUpReport($conn, $appID); }
 				else if($status === 'Denied') { $approvalReturn["success"] = denyFollowUpReport($conn, $appID); }
+				else if($status === 'Hold') { $approvalReturn["success"] = holdFollowUpReport($conn, $appID); }
 				else { $approvalReturn["error"] = "Invalid status given"; }
 
 				//if everything has been successful so far, send off the email as well

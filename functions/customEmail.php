@@ -33,9 +33,10 @@
 			$customSubject = "IEFDF Application Update";
 		}
 		//custom footer to be attached to the end of every message
-		$footer = "<br><br><strong>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</strong>";
-		//insert <br>s where newlines are so the message renders correctly in email clients
-		$customMessage = nl2br($customMessage);
+		$footer = "
+		
+		<strong>Please do not reply to this email, this account is not being monitored.
+		If you need more information, please contact the IEFDF administrator directly.</strong>";
 
 		$fullMessage = $customMessage . $footer; //combine everything
 
@@ -46,6 +47,9 @@
 
 		if($saveResult === true) //if it saved, then try to send it
 		{
+			//insert <br>s where newlines are so the message renders correctly in email clients
+			$fullMessage = nl2br($fullMessage);
+
 			$mail = new PHPMailer(true); //set exceptions to true
 			try{
 				//Server settings
