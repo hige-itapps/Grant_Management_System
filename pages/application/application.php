@@ -38,7 +38,7 @@
 	$maxProposalSummary = $appCharMax[array_search('ProposalSummary', array_column($appCharMax, 0))][1]; //proposal summary char limit
 	$maxDeptChairApproval = $appCharMax[array_search('DepartmentChairSignature', array_column($appCharMax, 0))][1];//signature char limit
 	
-	$maxBudgetComment = $appBudgetCharMax[array_search('Comment', array_column($appBudgetCharMax, 0))][1]; //budget comment char limit
+	$maxBudgetDetails = $appBudgetCharMax[array_search('Details', array_column($appBudgetCharMax, 0))][1]; //budget details char limit
 	
 	
 	/*Initialize all user permissions to false*/
@@ -126,7 +126,7 @@
 			var scope_maxOtherFunding = <?php echo json_encode($maxOtherFunding); ?>;
 			var scope_maxProposalSummary = <?php echo json_encode($maxProposalSummary); ?>;
 			var scope_maxDeptChairApproval = <?php echo json_encode($maxDeptChairApproval); ?>;
-			var scope_maxBudgetComment = <?php echo json_encode($maxBudgetComment); ?>;
+			var scope_maxBudgetDetails = <?php echo json_encode($maxBudgetDetails); ?>;
 			var scope_isCreating = <?php echo json_encode($isCreating); ?>;
 			var scope_isReviewing = <?php echo json_encode($isReviewing); ?>;
 			var scope_isAdmin = <?php echo json_encode($isAdmin); ?>;
@@ -460,7 +460,7 @@
 					<div id="exampleBudgetHolder">
 						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample">Click here for an example of how to construct a budget!</button>
 						<div id="budgetExample" class="collapse">
-							<img src="../../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Comments: Conference Registration, Amount($): 450" class="exampleBudget" />
+							<img src="../../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Details: Conference Registration, Amount($): 450" class="exampleBudget" />
 						</div>
 					</div>
 					
@@ -476,11 +476,11 @@
 										</select>
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} expense']" aria-live="polite">{{errors['budgetArray '+($index+1)+' expense']}}</span>
 									</div>
-								<!--BUDGET:COMMENTS-->
+								<!--BUDGET:DETAILS-->
 									<div class="form-group col-md-4">
-										<label for="budgetComment{{$index+1}}">Comments{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetComment-budgetItem.comment.length)+" characters remaining)" : ""}}:</label>
-										<input type="text" class="form-control" ng-model="budgetItem.comment" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetComment}}" name="budgetComment{{$index+1}}" id="budgetComment{{$index+1}}" placeholder="Explain..." />
-										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} comment']" aria-live="polite">{{errors['budgetArray '+($index+1)+' comment']}}</span>
+										<label for="budgetDetails{{$index+1}}">Details{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetDetails-budgetItem.details.length)+" characters remaining)" : ""}}:</label>
+										<input type="text" class="form-control" ng-model="budgetItem.details" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetDetails}}" name="budgetDetails{{$index+1}}" id="budgetDetails{{$index+1}}" placeholder="Explain..." />
+										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} details']" aria-live="polite">{{errors['budgetArray '+($index+1)+' details']}}</span>
 									</div>
 								<!--BUDGET:AMOUNT-->
 									<div class="form-group col-md-2">

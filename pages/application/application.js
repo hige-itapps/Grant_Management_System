@@ -17,7 +17,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     $scope.maxOtherFunding = scope_maxOtherFunding;
     $scope.maxProposalSummary = scope_maxProposalSummary;
     $scope.maxDeptChairApproval = scope_maxDeptChairApproval;
-    $scope.maxBudgetComment = scope_maxBudgetComment;
+    $scope.maxBudgetDetails = scope_maxBudgetDetails;
     //user permissions
     $scope.isCreating = scope_isCreating;
     $scope.isReviewing = scope_isReviewing;
@@ -62,13 +62,13 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     }
 
     //Add new budget item
-    $scope.addBudgetItem = function(expense, comment, amount) {
+    $scope.addBudgetItem = function(expense, details, amount) {
         if(typeof expense === 'undefined'){expense = "Other";}
-        if(typeof comment === 'undefined'){comment = "";}
+        if(typeof details === 'undefined'){details = "";}
         if(typeof amount === 'undefined'){amount = 0;}
         $scope.formData.budgetItems.push({
             expense: expense,
-            comment: comment,
+            details: details,
             amount: amount
         })       
     }

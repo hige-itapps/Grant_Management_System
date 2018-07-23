@@ -9,7 +9,7 @@
 	/*Document functions*/
     include_once(dirname(__FILE__) . "/../functions/documents.php");
     
-/************* FOR ADDING OR UPDATING FOLLOW UP REPORT VIA SUMBISSION ***************/
+/************* FOR ADDING OR UPDATING FINAL REPORT VIA SUMBISSION ***************/
 
 $insertReturn = null; //will be an array with return code and status, or an array of errors
 //$data = array();    // array to pass back data
@@ -21,7 +21,7 @@ if(isset($_POST["appID"]))
     $appID = json_decode($_POST["appID"]);
 
     /*Verify that user is allowed to make an application*/
-    if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $appID) || $isAdmin)
+    if(isUserAllowedToCreateFinalReport($conn, $CASbroncoNetID, $appID) || $isAdmin)
     {
 
         try
@@ -46,11 +46,11 @@ if(isset($_POST["appID"]))
             /*parameters: DB connection, updating boolean, app ID (if exists), travel from, travel to, activity from, activity to, project summary, amount awarded spent*/
             if($isAdmin)
             {
-                $insertReturn = insertFollowUpReport($conn, true, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $amountAwardedSpent);
+                $insertReturn = insertFinalReport($conn, true, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $amountAwardedSpent);
             }
             else
             {
-                $insertReturn = insertFollowUpReport($conn, false, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $amountAwardedSpent);
+                $insertReturn = insertFinalReport($conn, false, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $amountAwardedSpent);
             }
             
             if(isset($insertReturn["success"]))//returned normally
@@ -77,7 +77,7 @@ if(isset($_POST["appID"]))
         }
         catch(Exception $e)
         {
-            $insertReturn = "Error adding follow up report: " . $e->getMessage();
+            $insertReturn = "Error adding final report: " . $e->getMessage();
         }
     }
     else

@@ -1,8 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `hige` /*!40100 DEFAULT CHARACTER SET latin1 */;
-USE `hige`;
+CREATE DATABASE  IF NOT EXISTS `iefdf` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `iefdf`;
 -- MySQL dump 10.13  Distrib 5.7.19, for Win64 (x86_64)
 --
--- Host: 141.218.158.65    Database: hige
+-- Host: 141.218.158.65    Database: iefdf
 -- ------------------------------------------------------
 -- Server version	5.7.19
 
@@ -112,7 +112,7 @@ CREATE TABLE `applications_budgets` (
   `ApplicationID` int(11) NOT NULL,
   `Name` varchar(25) NOT NULL,
   `Cost` decimal(10,2) NOT NULL,
-  `Comment` varchar(100) NOT NULL,
+  `Details` varchar(100) NOT NULL,
   PRIMARY KEY (`BudgetItemID`),
   KEY `INDEX` (`ApplicationID`),
   CONSTRAINT `fk_applications_budgets_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
@@ -153,13 +153,13 @@ CREATE TABLE `emails` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `follow_up_approval`
+-- Table structure for table `final_report_approval`
 --
 
-DROP TABLE IF EXISTS `follow_up_approval`;
+DROP TABLE IF EXISTS `final_report_approval`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `follow_up_approval` (
+CREATE TABLE `final_report_approval` (
   `BroncoNetID` varchar(20) NOT NULL,
   `Name` varchar(100) NOT NULL,
   PRIMARY KEY (`BroncoNetID`)
@@ -167,13 +167,13 @@ CREATE TABLE `follow_up_approval` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `follow_up_reports`
+-- Table structure for table `final_reports`
 --
 
-DROP TABLE IF EXISTS `follow_up_reports`;
+DROP TABLE IF EXISTS `final_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `follow_up_reports` (
+CREATE TABLE `final_reports` (
   `ApplicationID` int(11) NOT NULL,
   `Date` date NOT NULL,
   `TravelStart` date NOT NULL,
@@ -184,7 +184,7 @@ CREATE TABLE `follow_up_reports` (
   `ProjectSummary` varchar(3200) NOT NULL,
   `Status` varchar(20) NOT NULL,
   PRIMARY KEY (`ApplicationID`),
-  CONSTRAINT `fk_follow_up_reports_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
+  CONSTRAINT `fk_final_reports_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

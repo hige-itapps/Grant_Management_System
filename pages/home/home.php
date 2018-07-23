@@ -36,12 +36,12 @@
 		}
 	}
 
-	$finalReportID = -1; //set to a positive number if there is a follow up report to create
+	$finalReportID = -1; //set to a positive number if there is a final report to create
 
 	$mostRecentApplication = getMostRecentApprovedApplication($conn, $CASbroncoNetID); //null if none
 	if($mostRecentApplication != null)
 	{
-		if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $mostRecentApplication->id))
+		if(isUserAllowedToCreateFinalReport($conn, $CASbroncoNetID, $mostRecentApplication->id))
 		{
 			$finalReportID = $mostRecentApplication->id; //set it to the appropriate ID
 		}
@@ -94,7 +94,7 @@
 					<div class="col-md-4"></div>
 					<div class="col-md-4">
 						<ul id="pageList">
-							<li ng-if="finalReportID > 0"><a href="../follow_up/follow_up.php?id={{finalReportID}}">Create Follow-Up Report</a></li>
+							<li ng-if="finalReportID > 0"><a href="../final_report/final_report.php?id={{finalReportID}}">Create Final Report</a></li>
 							<li ng-if="totalAppsToSign > 0"><a href="../application_list/application_list.php?approval">Approve Applications ({{totalAppsToSign}} to approve)</a></li>
 							<li ng-if="totalSignedApps > 0"><a href="../application_list/application_list.php?previousApproval">View Applications You've Approved As A Chair ({{totalSignedApps}} approved)</a></li>
 							<li ng-if="isUserAllowedToCreateApplication"><a href="../application/application.php">Create Application</a></li>

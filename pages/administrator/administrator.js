@@ -6,7 +6,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
     $scope.administrators = scope_administrators;
     $scope.applicationApprovers = scope_applicationApprovers
     $scope.committee = scope_committee
-    $scope.followUpApprovers = scope_followUpApprovers;
+    $scope.finalReportApprovers = scope_finalReportApprovers;
 
 
     /*Functions*/
@@ -135,12 +135,12 @@ myApp.controller('adminCtrl', function($scope, $http) {
         });
     };
 
-    //add a follow up report approver
-    $scope.addFollowUpApprover = function(){
+    //add a final report approver
+    $scope.addFinalReportApprover = function(){
         $http({
             method  : 'POST',
-            url     : '/../../ajax/add_follow_up_approver.php',
-            data    : $.param({broncoNetID: $scope.addFollowUpApproverID, name: $scope.addFollowUpApproverName}),  // pass in data as strings
+            url     : '/../../ajax/add_final_report_approver.php',
+            data    : $.param({broncoNetID: $scope.addFinalReportApproverID, name: $scope.addFinalReportApproverName}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -150,23 +150,23 @@ myApp.controller('adminCtrl', function($scope, $http) {
                 response.data = response.data.trim();//remove blankspace around data
                 if(response.data === "true")//updated
                 {
-                    $scope.getFollowUpApprovers(); //refresh the form again
+                    $scope.getFinalReportApprovers(); //refresh the form again
                     $scope.alertType = "success";
-                    $scope.alertMessage = "Success! " + $scope.addFollowUpApproverName + " has been added as a follow up report approver.";
-                    $scope.addFollowUpApproverName = ""; //reset inputs
-                    $scope.addFollowUpApproverID = "";
+                    $scope.alertMessage = "Success! " + $scope.addFinalReportApproverName + " has been added as a final report approver.";
+                    $scope.addFinalReportApproverName = ""; //reset inputs
+                    $scope.addFinalReportApproverID = "";
                 }
                 else//didn't update
                 {
                     $scope.alertType = "warning";
-                    $scope.alertMessage = "Warning: " + $scope.addFollowUpApproverName + " was not added as a follow up report approver.";
+                    $scope.alertMessage = "Warning: " + $scope.addFinalReportApproverName + " was not added as a final report approver.";
                 }
             }
             else //failure!
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to add the follow up report approver! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to add the final report approver! Error: " + response.data.error;
             }
         },function (error){
             console.log(error, 'can not get data.');
@@ -287,11 +287,11 @@ myApp.controller('adminCtrl', function($scope, $http) {
         });
     };
 
-    //remove a follow up report approver
-    $scope.removeFollowUpApprover = function(id){
+    //remove a final report approver
+    $scope.removeFinalReportApprover = function(id){
         $http({
             method  : 'POST',
-            url     : '/../../ajax/remove_follow_up_approver.php',
+            url     : '/../../ajax/remove_final_report_approver.php',
             data    : $.param({broncoNetID: id}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
@@ -302,21 +302,21 @@ myApp.controller('adminCtrl', function($scope, $http) {
                 response.data = response.data.trim();//remove blankspace around data
                 if(response.data === "true")//updated
                 {
-                    $scope.getFollowUpApprovers(); //refresh the form again
+                    $scope.getFinalReportApprovers(); //refresh the form again
                     $scope.alertType = "success";
-                    $scope.alertMessage = "Success! the follow up report approver was removed.";
+                    $scope.alertMessage = "Success! the final report approver was removed.";
                 }
                 else//didn't update
                 {
                     $scope.alertType = "warning";
-                    $scope.alertMessage = "Warning: unable to remove the follow up report approver!";
+                    $scope.alertMessage = "Warning: unable to remove the final report approver!";
                 }
             }
             else //failure!
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to remove the follow up report approver! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to remove the final report approver! Error: " + response.data.error;
             }
         },function (error){
             console.log(error, 'can not get data.');
@@ -398,23 +398,23 @@ myApp.controller('adminCtrl', function($scope, $http) {
         });
     };
 
-    //refresh the follow up report approvers list by getting the most up-to-date list from the database
-    $scope.getFollowUpApprovers = function(){
+    //refresh the final report approvers list by getting the most up-to-date list from the database
+    $scope.getFinalReportApprovers = function(){
         $http({
             method  : 'POST',
-            url     : '/../../ajax/get_follow_up_approvers.php'
+            url     : '/../../ajax/get_final_report_approvers.php'
         })
         .then(function (response) {
             console.log(response, 'res');
             if(typeof response.data.error === 'undefined') //ran function as expected
             {
-                $scope.followUpApprovers = response.data;
+                $scope.finalReportApprovers = response.data;
             }
             else //failure!
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to get the follow up approvers list! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to get the final report approvers list! Error: " + response.data.error;
             }
         },function (error){
             console.log(error, 'can not get data.');

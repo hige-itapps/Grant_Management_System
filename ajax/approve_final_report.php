@@ -28,13 +28,13 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 	else
 	{
 		/*Verify that user is allowed to approve a report*/
-		if(isFollowUpReportApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
+		if(isFinalReportApprover($conn, $CASbroncoNetID) || isAdministrator($conn, $CASbroncoNetID))
 		{
 			try
 			{
-				if($status === 'Approved') { $approvalReturn["success"] = approveFollowUpReport($conn, $appID); }
-				else if($status === 'Denied') { $approvalReturn["success"] = denyFollowUpReport($conn, $appID); }
-				else if($status === 'Hold') { $approvalReturn["success"] = holdFollowUpReport($conn, $appID); }
+				if($status === 'Approved') { $approvalReturn["success"] = approveFinalReport($conn, $appID); }
+				else if($status === 'Denied') { $approvalReturn["success"] = denyFinalReport($conn, $appID); }
+				else if($status === 'Hold') { $approvalReturn["success"] = holdFinalReport($conn, $appID); }
 				else { $approvalReturn["error"] = "Invalid status given"; }
 
 				//if everything has been successful so far, send off the email as well
@@ -45,7 +45,7 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 			}
 			catch(Exception $e)
 			{
-				$approvalReturn["error"] = "Unable to approve follow up report: " . $e->getMessage();
+				$approvalReturn["error"] = "Unable to approve final report: " . $e->getMessage();
 			}
 		}
 		else

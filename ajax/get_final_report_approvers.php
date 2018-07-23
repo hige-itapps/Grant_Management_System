@@ -6,19 +6,19 @@
 	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
 
-/************* FOR ADMIN TO GET FOLLOW UP APPROVERS LIST ***************/
+/************* FOR ADMIN TO GET FINAL REPORT APPROVERS LIST ***************/
 
-$getReturn = null; //will be the follow up approvers list if successful
+$getReturn = null; //will be the final report approvers list if successful
 
 if(isAdministrator($conn, $CASbroncoNetID))
 {
 	try
 	{
-		$getReturn = getFollowUpReportApprovers($conn);
+		$getReturn = getFinalReportApprovers($conn);
 	}
 	catch(Exception $e)
 	{
-		$getReturn["error"] = "Unable to retrieve follow up report approvers: " . $e->getMessage();
+		$getReturn["error"] = "Unable to retrieve final report approvers: " . $e->getMessage();
 	}
 }
 else

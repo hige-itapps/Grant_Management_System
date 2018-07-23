@@ -1,9 +1,9 @@
 <?php
 
 
-/* Holds information for a follow-up report; these fields should be mostly self-explanatory */
-	if(!class_exists('FollowUpReport')){
-		class FollowUpReport{
+/* Holds information for a final report; these fields should be mostly self-explanatory */
+	if(!class_exists('FinalReport')){
+		class FinalReport{
 			public $appID;
 			public $date;				// (DATE)
 			public $travelFrom;			// (DATE)

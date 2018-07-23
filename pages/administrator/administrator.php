@@ -11,7 +11,7 @@
 		$administrators = getAdministrators($conn);
 		$applicationApprovers = getApplicationApprovers($conn);
 		$committee = getCommittee($conn);
-		$followUpApprovers = getFollowUpReportApprovers($conn);
+		$finalReportApprovers = getfinalReportApprovers($conn);
 ?>
 
 
@@ -30,7 +30,7 @@
 			var scope_administrators = <?php echo json_encode($administrators); ?>;
 			var scope_committee = <?php echo json_encode($committee); ?>;
 			var scope_applicationApprovers = <?php echo json_encode($applicationApprovers); ?>;
-			var scope_followUpApprovers = <?php echo json_encode($followUpApprovers); ?>;
+			var scope_finalReportApprovers = <?php echo json_encode($finalReportApprovers); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="administrator.js"></script>
@@ -153,9 +153,9 @@
 
 					<hr>
 
-					<!-- View & Remove Follow Up Approvers -->
+					<!-- View & Remove Final Report Approvers -->
 					<table class="table table-bordered table-sm">
-						<caption class="title">Follow Up Report Approvers:</caption>
+						<caption class="title">Final Report Approvers:</caption>
 						<thead>
 							<tr>
 								<th>BroncoNetID</th>
@@ -164,23 +164,23 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="approver in followUpApprovers">
+							<tr ng-repeat="approver in finalReportApprovers">
 								<td>{{ approver[0] }}</td>
 								<td>{{ approver[1] }}</td>
-								<td><button type="button" ng-click="removeFollowUpApprover(approver[0])" class="btn btn-danger">REMOVE</button></td> 
+								<td><button type="button" ng-click="removeFinalReportApprover(approver[0])" class="btn btn-danger">REMOVE</button></td> 
 							</tr>
 						</tbody>
 					</table>
-					<!--Add Follow Up Approver-->
-					<h3>Add Follow Up Report Approver:</h3>
-					<form class="form-inline" ng-submit="addFollowUpApprover()"> 
+					<!--Add Final Report Approver-->
+					<h3>Add Final Report Approver:</h3>
+					<form class="form-inline" ng-submit="addFinalReportApprover()"> 
 						<div class="form-group">
-							<label for="addFollowUpApproverID">BroncoNetID:</label>
-							<input type="text" ng-model="addFollowUpApproverID" id="addFollowUpApproverID" name="addFollowUpApproverID">
+							<label for="addFinalReportApproverID">BroncoNetID:</label>
+							<input type="text" ng-model="addFinalReportApproverID" id="addFinalReportApproverID" name="addFinalReportApproverID">
 						</div>
 						<div class="form-group">
-							<label for="addFollowUpApproverName">Name:</label>
-							<input type="text" ng-model="addFollowUpApproverName" id="addFollowUpApproverName" name="addFollowUpApproverName">
+							<label for="addFinalReportApproverName">Name:</label>
+							<input type="text" ng-model="addFinalReportApproverName" id="addFinalReportApproverName" name="addFinalReportApproverName">
 						</div>
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>

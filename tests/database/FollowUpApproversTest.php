@@ -5,7 +5,7 @@ include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associa
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
 
-final class FollowUpApproversTest extends TestCase
+final class FinalReportApproversTest extends TestCase
 {    
     use TestCaseTrait;
 
@@ -44,12 +44,12 @@ final class FollowUpApproversTest extends TestCase
      */
     public function getDataSet()
     {
-        return $this->createXMLDataSet(dirname(__FILE__).'/datasets/follow_up_approvers.xml');
+        return $this->createXMLDataSet(dirname(__FILE__).'/datasets/final_report_approvers.xml');
     }
 
     
 
-    public function testGetFollowUpReportApprovers()
+    public function testGetFinalReportApprovers()
     {
         $testArray = array(
             array(0 => "wdr5341", 1 => "Wander"),
@@ -60,54 +60,54 @@ final class FollowUpApproversTest extends TestCase
         //test array in no particular order
         $this->assertEquals(
             $testArray,
-            getFollowUpReportApprovers($this->pdo),
+            getFinalReportApprovers($this->pdo),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
     }
 
 
-    public function testAddFollowUpApprover_Existing()
+    public function testAddFinalReportApprover_Existing()
     {
         $existingApproverID = "wdr5341"; $existingApproverName = "Wander";
 
         $this->expectException(PDOException::class);
 
-        addFollowUpApprover($this->pdo, $existingApproverID, $existingApproverName);
+        addFinalReportApprover($this->pdo, $existingApproverID, $existingApproverName);
     }
 
-    public function testAddFollowUpApprover_New()
+    public function testAddFinalReportApprover_New()
     {
         $newApproverID = "dor3122"; $newApproverName = "Dormin";
-        $this->assertEquals(3, $this->getConnection()->getRowCount('follow_up_approval'));
+        $this->assertEquals(3, $this->getConnection()->getRowCount('final_report_approval'));
 
-        addFollowUpApprover($this->pdo, $newApproverID, $newApproverName);
-        $this->assertEquals(4, $this->getConnection()->getRowCount('follow_up_approval'));
+        addFinalReportApprover($this->pdo, $newApproverID, $newApproverName);
+        $this->assertEquals(4, $this->getConnection()->getRowCount('final_report_approval'));
     }
 
 
-    public function testRemoveFollowUpApprover()
+    public function testRemoveFinalReportApprover()
     {
         $existingApproverID = "wdr5341";
         $newApproverID = "dor3122";
 
-        $this->assertEquals(3, $this->getConnection()->getRowCount('follow_up_approval'));
+        $this->assertEquals(3, $this->getConnection()->getRowCount('final_report_approval'));
 
-        removeFollowUpApprover($this->pdo, $newApproverID);
-        $this->assertEquals(3, $this->getConnection()->getRowCount('follow_up_approval'));
+        removeFinalReportApprover($this->pdo, $newApproverID);
+        $this->assertEquals(3, $this->getConnection()->getRowCount('final_report_approval'));
 
-        removeFollowUpApprover($this->pdo, $existingApproverID);
-        $this->assertEquals(2, $this->getConnection()->getRowCount('follow_up_approval'));
+        removeFinalReportApprover($this->pdo, $existingApproverID);
+        $this->assertEquals(2, $this->getConnection()->getRowCount('final_report_approval'));
     }
 
 
-    public function testIsFollowUpReportApprover()
+    public function testIsFinalReportApprover()
     {
         $existingApproverID = "wdr5341";
         $newApproverID = "dor3122";
 
-        $this->assertEquals(false, isFollowUpReportApprover($this->pdo, $newApproverID));
+        $this->assertEquals(false, isFinalReportApprover($this->pdo, $newApproverID));
 
-        $this->assertEquals(true, isFollowUpReportApprover($this->pdo, $existingApproverID));
+        $this->assertEquals(true, isFinalReportApprover($this->pdo, $existingApproverID));
     }
 }
 

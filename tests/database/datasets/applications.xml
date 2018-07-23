@@ -204,7 +204,7 @@
 		<column>ApplicationID</column>
 		<column>Name</column>
 		<column>Cost</column>
-		<column>Comment</column>
+		<column>Details</column>
 
 
 		<row>

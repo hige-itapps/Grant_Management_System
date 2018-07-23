@@ -13,7 +13,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     $scope.isAdmin = scope_isAdmin;
     $scope.isCommittee = scope_isCommittee;
     $scope.isChairReviewing = scope_isChairReviewing;
-    $scope.isFollowUpApprover = scope_isFollowUpApprover;
+    $scope.isFinalReportApprover = scope_isFinalReportApprover;
     //previous application data
     var app = var_app;
     //for when not creating report
@@ -71,7 +71,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
         if(alert_type == null) //if no alert message to send, simply redirect
         {
-            if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isFollowUpApprover)
+            if($scope.isAdmin || $scope.isAdminUpdating || $scope.isCreating || $scope.isReviewing || $scope.isFinalReportApprover)
             {
                 if(!confirm ('Are you sure you want to leave this page? Any unsaved data will be lost.')){return;} //don't leave page if user decides not to
             }
@@ -101,7 +101,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         {
             $http({
                 method  : 'POST',
-                url     : '/../../ajax/get_follow_up_report.php',
+                url     : '/../../ajax/get_final_report.php',
                 data    : $.param({appID: app.id}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
@@ -162,7 +162,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             var fd = new FormData();
             var totalDocs = 0; //iterate for each new  document
             Object.keys($scope.uploadDocs).forEach(function (key){ //iterate over documents
-                fd.append('followUpDoc'+key, $scope.uploadDocs[key]); //save files in FormData object
+                fd.append('finalReportDoc'+key, $scope.uploadDocs[key]); //save files in FormData object
                 totalDocs++;
             });
 
@@ -171,7 +171,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 //a warning for missing files
                 if(totalDocs === 0)
                 {  
-                    if(!confirm( "Warning: you have not selected any files to upload with your follow up report. Are you sure you want to submit anyway?")) {return;} //exit function early if not confirmed
+                    if(!confirm( "Warning: you have not selected any files to upload with your final report. Are you sure you want to submit anyway?")) {return;} //exit function early if not confirmed
                 }
             }
 
@@ -189,7 +189,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
             $http({
                 method  : 'POST',
-                url     : '/../../ajax/submit_follow_up_report.php',
+                url     : '/../../ajax/submit_final_report.php',
                 data    : fd,  // pass in the FormData object
                 transformRequest: angular.identity,
                 headers : { 'Content-Type': undefined,'Process-Data': false}  //allow for file and text upload
@@ -262,7 +262,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
             $http({
                 method  : 'POST',
-                url     : '/../../ajax/approve_follow_up_report.php',
+                url     : '/../../ajax/approve_final_report.php',
                 data    : $.param({appID: app.id, status: status, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
@@ -368,7 +368,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             var fd = new FormData();
             var totalUploads = 0; //iterate for each new file
             Object.keys($scope.uploadDocs).forEach(function (key){ //iterate over supporting documents
-                fd.append('followUpDoc'+key, $scope.uploadDocs[key]); //save files in FormData object
+                fd.append('finalReportDoc'+key, $scope.uploadDocs[key]); //save files in FormData object
                 totalUploads++;
             });
             fd.append('appID', app.id);

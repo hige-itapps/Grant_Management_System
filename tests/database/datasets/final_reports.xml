@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <dataset>
-	<table name="follow_up_reports">
+	<table name="final_reports">
 		<column>ApplicationID</column>
 		<column>Date</column>
 		<column>TravelStart</column>

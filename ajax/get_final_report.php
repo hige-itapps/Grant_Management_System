@@ -9,7 +9,7 @@
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../functions/documents.php");
 
-/************* FOR RETRIEVING A FOLLOW UP REPORT AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
+/************* FOR RETRIEVING A FINAL REPORT AT ANY TIME - REQUIRES USER TO HAVE PERMISSION TO DO SO ***************/
 
 $getReturn = null; //will be the report data if successful
 
@@ -22,13 +22,13 @@ if(isset($_POST["appID"]))
 	{
 		try
 		{
-			$getReturn = getFollowUpReport($conn, $appID); //get report Data
+			$getReturn = getFinalReport($conn, $appID); //get report Data
 			$getReturn->reportFiles = getFileNames($appID); //get the list of file names associated with this application
 			$getReturn->reportEmails = getEmails($conn, $appID); //get associated emails
 		}
 		catch(Exception $e)
 		{
-			$getReturn["error"] = "Unable to retrieve follow up report: " . $e->getMessage();
+			$getReturn["error"] = "Unable to retrieve final report: " . $e->getMessage();
 		}
 	}
 	else

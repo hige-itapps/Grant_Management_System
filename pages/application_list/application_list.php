@@ -36,14 +36,14 @@
 		
 		foreach($apps as $curApp)
 		{
-			//If this is a user's own application and they are allowed, let them create a follow-up report
-			if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $curApp->id))
+			//If this is a user's own application and they are allowed, let them create a final report
+			if(isUserAllowedToCreateFinalReport($conn, $CASbroncoNetID, $curApp->id))
 			{
-				$curApp->FollowUpReportCreate = true; //let user know they can create a follow up report
+				$curApp->FinalReportCreate = true; //let user know they can create a final report
 			}
 			else
 			{
-				$curApp->FollowUpReport = getFollowUpReport($conn, $curApp->id); //load up an existing follow up report if possible
+				$curApp->FinalReport = getFinalReport($conn, $curApp->id); //load up an existing final report if possible
 			}
 
 			$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false); //retrieve the cycle this application was submitted during
@@ -163,8 +163,8 @@
 									<th>Status</th>
 									<th>Approval</th>
 									<th>Application Link</th>
-									<th>Follow-up Report Link</th>
-									<th>Follow-up Report Status</th>
+									<th>Final Report Link</th>
+									<th>Final Report Status</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -178,9 +178,9 @@
 									<td class="{{application.status}}">{{ application.status }}</td>
 									<td>{{application.deptChairApproval}}</td>
 									<td><a href="../application/application.php?id={{application.id}}">Application</a></td>
-									<td ng-if="application.FollowUpReport"><a href="../follow_up/follow_up.php?id={{application.id}}">Follow-Up Report</a></td>					<td class="{{application.FollowUpReport.status}}" ng-if="application.FollowUpReport">{{application.FollowUpReport.status}}</td>
-										<td ng-if="application.FollowUpReportCreate"><a href="../follow_up/follow_up.php?id={{application.id}}">Create Follow-Up Report</a></td>	<td ng-if="application.FollowUpReportCreate">N/A</td>
-										<td ng-if="!application.FollowUpReport && !application.FollowUpReportCreate">N/A</td>										<td ng-if="!application.FollowUpReport && !application.FollowUpReportCreate">N/A</td>
+									<td ng-if="application.FinalReport"><a href="../final_report/final_report.php?id={{application.id}}">Final Report</a></td>					<td class="{{application.FinalReport.status}}" ng-if="application.FinalReport">{{application.FinalReport.status}}</td>
+										<td ng-if="application.FinalReportCreate"><a href="../final_report/final_report.php?id={{application.id}}">Create Final Report</a></td>	<td ng-if="application.FinalReportCreate">N/A</td>
+										<td ng-if="!application.FinalReport && !application.FinalReportCreate">N/A</td>										<td ng-if="!application.FinalReport && !application.FinalReportCreate">N/A</td>
 								</tr>
 							</tbody>
 						</table>

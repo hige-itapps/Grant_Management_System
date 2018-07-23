@@ -52,7 +52,7 @@
 						$totalExisting = count(preg_grep('~^PN.*~', scandir($uploadTo)));//find number of already existing files with this prefix
 						$prefix = "PN".($totalExisting+1)."_";//increment the prefix
 					}
-					else if(strncmp($filename, "followUpDoc", 11) === 0){
+					else if(strncmp($filename, "finalReportDoc", 11) === 0){
 						$totalExisting = count(preg_grep('~^FD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
 						$prefix = "FD".($totalExisting+1)."_";//increment the prefix
 					}

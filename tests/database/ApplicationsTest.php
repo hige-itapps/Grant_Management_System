@@ -340,14 +340,14 @@ final class ApplicationsTest extends TestCase
         $validPurpose4Other = "This is a special purpose";
         $validProposalSummary = "Lorem Ipsum";
         $validNextCycle = 0;
-        $validBudgetArray = array(array("expense"=>"Air Travel", "comment"=>"2 way flight", "amount"=>400), array("expense"=>"Hotel", "comment"=>"4 nights", "amount"=>1000));
+        $validBudgetArray = array(array("expense"=>"Air Travel", "details"=>"2 way flight", "amount"=>400), array("expense"=>"Hotel", "details"=>"4 nights", "amount"=>1000));
 
         $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should start with only 5 applications
 
         /*for inserting new applications*/
 
         //pass in empty values for all fields
-        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "comment"=>"", "amount"=>0), array("expense"=>"", "comment"=>"", "amount"=>0)));
+        $testReturn = insertApplication($this->pdo, false, null, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "details"=>"", "amount"=>0), array("expense"=>"", "details"=>"", "amount"=>0)));
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
         $this->assertEquals(5, getNumberOfApplications($this->pdo, ""));//should still only have 5 applications
 
@@ -368,10 +368,10 @@ final class ApplicationsTest extends TestCase
         $this->assertArrayHasKey('goal', $testReturn['errors']);
         $this->assertArrayHasKey('cycleChoice', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 1 expense', $testReturn['errors']);
-        $this->assertArrayHasKey('budgetArray 1 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 details', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 1 amount', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 2 expense', $testReturn['errors']);
-        $this->assertArrayHasKey('budgetArray 2 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 details', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 2 amount', $testReturn['errors']);
 
 
@@ -437,7 +437,7 @@ final class ApplicationsTest extends TestCase
 
         /*for updating applications*/
 
-        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "comment"=>"", "amount"=>0), array("expense"=>"", "comment"=>"", "amount"=>0)));
+        $testReturn = insertApplication($this->pdo, true, 6, $newApplicant, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", array(array("expense"=>"", "details"=>"", "amount"=>0), array("expense"=>"", "details"=>"", "amount"=>0)));
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
         $this->assertEquals(6, getNumberOfApplications($this->pdo, ""));//should still have 6 applications
 
@@ -458,10 +458,10 @@ final class ApplicationsTest extends TestCase
         $this->assertArrayHasKey('goal', $testReturn['errors']);
         $this->assertArrayHasKey('cycleChoice', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 1 expense', $testReturn['errors']);
-        $this->assertArrayHasKey('budgetArray 1 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 1 details', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 1 amount', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 2 expense', $testReturn['errors']);
-        $this->assertArrayHasKey('budgetArray 2 comment', $testReturn['errors']);
+        $this->assertArrayHasKey('budgetArray 2 details', $testReturn['errors']);
         $this->assertArrayHasKey('budgetArray 2 amount', $testReturn['errors']);
 
 

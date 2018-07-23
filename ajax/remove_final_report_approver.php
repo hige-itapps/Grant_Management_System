@@ -6,7 +6,7 @@
 	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
 
-/************* FOR ADMIN TO REMOVE FOLLOW UP APPROVERS ***************/
+/************* FOR ADMIN TO REMOVE FINAL REPORT APPROVERS ***************/
 
 $removeReturn = null; //will be true if successful, false if unsuccessful, or otherwise ["error"] will be set
 
@@ -19,11 +19,11 @@ if(isset($_POST["broncoNetID"]))
 	{
         try
         {
-            $removeReturn = removeFollowUpApprover($conn, $broncoNetID);
+            $removeReturn = removeFinalReportApprover($conn, $broncoNetID);
         }
         catch(Exception $e)
         {
-            $removeReturn["error"] = "Unable to remove follow up approver: " . $e->getMessage();
+            $removeReturn["error"] = "Unable to remove final report approver: " . $e->getMessage();
         }
 	}
 	else

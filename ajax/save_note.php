@@ -6,7 +6,7 @@
 	include_once(dirname(__FILE__) . "/../functions/database.php");
 	$conn = connection();
 
-/************* FOR AN ADMIN, APPROVER, OR FOLLOW UP APPROVER TO SAVE APPLICATION NOTES ***************/
+/************* FOR AN ADMIN, APPROVER, OR FINAL REPORT APPROVER TO SAVE APPLICATION NOTES ***************/
 
 $saveReturn = null; //will be the application data if successful. If unsuccessful, saveReturn["error"] should be set
 
@@ -16,7 +16,7 @@ if(isset($_POST["appID"]) && isset($_POST["note"]))
 	$note = $_POST["note"];
 
 	/*Verify that user is allowed to save this note*/
-	if(isAdministrator($conn, $CASbroncoNetID) || isApplicationApprover($conn, $CASbroncoNetID) || isFollowUpReportApprover($conn, $CASbroncoNetID))
+	if(isAdministrator($conn, $CASbroncoNetID) || isApplicationApprover($conn, $CASbroncoNetID) || isFinalReportApprover($conn, $CASbroncoNetID))
 	{
 		try
 		{

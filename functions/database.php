@@ -196,11 +196,11 @@
 		}
 	}
 	
-	/*Returns a single follow up report for a specified application ID*/
-	if(!function_exists('getFollowUpReport')) {
-		function getFollowUpReport($conn, $appID)
+	/*Returns a single final report for a specified application ID*/
+	if(!function_exists('getFinalReport')) {
+		function getFinalReport($conn, $appID)
 		{
-			$sql = $conn->prepare("Select * FROM follow_up_reports WHERE ApplicationID = :appID");
+			$sql = $conn->prepare("Select * FROM final_reports WHERE ApplicationID = :appID");
 			$sql->bindParam(':appID', $appID);
 			/* run the prepared query */
 			$sql->execute();
@@ -209,14 +209,14 @@
 			if(!empty($res))
 			{
 				/*create application object*/
-				$FollowUpReport = new FollowUpReport($res[0]);
+				$FinalReport = new FinalReport($res[0]);
 				
 				
 				/* Close finished query and connection */
 				$sql = null;
 				
-				/* return FollowUpReport object */
-				return $FollowUpReport;
+				/* return FinalReport object */
+				return $FinalReport;
 			}
 			else
 			{
@@ -458,12 +458,12 @@
 		}
 	}
 	
-	/* Returns array of follow-up report approvers */
-	if(!function_exists('getFollowUpReportApprovers')) {
-		function getFollowUpReportApprovers($conn)
+	/* Returns array of final report approvers */
+	if(!function_exists('getFinalReportApprovers')) {
+		function getFinalReportApprovers($conn)
 		{
 			/* Prepare & run the query */
-			$sql = $conn->prepare("Select BroncoNetID, Name FROM follow_up_approval");
+			$sql = $conn->prepare("Select BroncoNetID, Name FROM final_report_approval");
 			$sql->execute();
 			$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 			/* Close finished query and connection */
@@ -509,14 +509,14 @@
 		}
 	}
 	
-	/* Add a follow-up approver to the follow_up_approval table */
-	if(!function_exists('addFollowUpApprover')){
-		function addFollowUpApprover($conn, $broncoNetID, $name)
+	/* Add a final report approver to the final_report_approval table */
+	if(!function_exists('addFinalReportApprover')){
+		function addFinalReportApprover($conn, $broncoNetID, $name)
 		{
 			if ($broncoNetID != "" && $name != "") //valid params
 			{
 				/* Prepare & run the query */
-				$sql = $conn->prepare("INSERT INTO follow_up_approval(BroncoNetID, Name) VALUES(:id, :name)");
+				$sql = $conn->prepare("INSERT INTO final_report_approval(BroncoNetID, Name) VALUES(:id, :name)");
 				$sql->bindParam(':id', $broncoNetID);
 				$sql->bindParam(':name', $name);
 				$ret = $sql->execute();
@@ -580,14 +580,14 @@
 		}
 	}
 	
-	/* Remove a follow-up approver to the follow_up_approval table */
-	if(!function_exists('removeFollowUpApprover')){
-		function removeFollowUpApprover($conn, $broncoNetID)
+	/* Remove a final report approver to the final_report_approval table */
+	if(!function_exists('removeFinalReportApprover')){
+		function removeFinalReportApprover($conn, $broncoNetID)
 		{
 			if ($broncoNetID != "") //valid params
 			{
 				/* Prepare & run the query */
-				$sql = $conn->prepare("DELETE FROM follow_up_approval WHERE BroncoNetID = :id");
+				$sql = $conn->prepare("DELETE FROM final_report_approval WHERE BroncoNetID = :id");
 				$sql->bindParam(':id', $broncoNetID);
 				$ret = $sql->execute();
 				/* Close finished query and connection */
@@ -657,12 +657,12 @@
 		}
 	}
 	
-	/*Checks if a user is a follow-up report approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
-	if(!function_exists('isFollowUpReportApprover')) {
-		function isFollowUpReportApprover($conn, $broncoNetID)
+	/*Checks if a user is a final report approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	if(!function_exists('isFinalReportApprover')) {
+		function isFinalReportApprover($conn, $broncoNetID)
 		{
 			$is = false; //initialize boolean to false
-			$approverList = getFollowUpReportApprovers($conn);//grab follow-up report approver list
+			$approverList = getFinalReportApprovers($conn);//grab final report approver list
 			
 			foreach($approverList as $i) //loop through approvers
 			{
@@ -701,13 +701,13 @@
 	Rules:
 	2. Must not have a pending application
 	3. Must not have received funding within the past year (use rules from cycles.php)
-	4. Must not be an admin, committee member, application approver, or follow-up report approver (HIGE Staff)
+	4. Must not be an admin, committee member, application approver, or final report approver (HIGE Staff)
 	&nextCycle = false if checking current cycle, or true if checking next cycle*/
 	if(!function_exists('isUserAllowedToCreateApplication')) {
 		function isUserAllowedToCreateApplication($conn, $broncoNetID, $nextCycle)
 		{
 			//make sure user is not part of HIGE staff
-			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFollowUpReportApprover($conn, $broncoNetID))
+			if(!isCommitteeMember($conn, $broncoNetID) && !isApplicationApprover($conn, $broncoNetID) && !isAdministrator($conn, $broncoNetID) && !isFinalReportApprover($conn, $broncoNetID))
 			{
 				$lastApproved = false; //set to true if last approved application was long enough ago
 				$lastApprovedApp = getMostRecentApprovedApplication($conn, $broncoNetID);
@@ -748,15 +748,15 @@
 		}
 	}
 
-	/*Checks if a user is allowed to create a follow up report for a specified appID
+	/*Checks if a user is allowed to create a final report for a specified appID
 	Rules:
-	Application must not already have a follow up report
+	Application must not already have a final report
 	Application must belong to the user
 	Application must have 'Approved' status*/
-	if(!function_exists('isUserAllowedToCreateFollowUpReport')) {
-		function isUserAllowedToCreateFollowUpReport($conn, $broncoNetID, $appID)
+	if(!function_exists('isUserAllowedToCreateFinalReport')) {
+		function isUserAllowedToCreateFinalReport($conn, $broncoNetID, $appID)
 		{
-			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFollowUpReport($conn, $appID) && isApplicationApproved($conn, $appID))
+			if(doesUserOwnApplication($conn, $broncoNetID, $appID) && !getFinalReport($conn, $appID) && isApplicationApproved($conn, $appID))
 			{
 				return true;
 			}
@@ -767,13 +767,13 @@
 		}
 	}
 	
-	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FOLLOW-UP REPORTS
-	Rules: Must be an application approver, follow-up report approver, administrator, or a committee member*/
+	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FINAL REPORTS
+	Rules: Must be an application approver, final report approver, administrator, or a committee member*/
 	if(!function_exists('isUserAllowedToSeeApplications')) {
 		function isUserAllowedToSeeApplications($conn, $broncoNetID)
 		{
 				
-			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID) || isFollowUpReportApprover($conn, $broncoNetID))
+			if(isCommitteeMember($conn, $broncoNetID) || isApplicationApprover($conn, $broncoNetID) || isAdministrator($conn, $broncoNetID) || isFinalReportApprover($conn, $broncoNetID))
 			{
 				return true;
 			}
@@ -905,7 +905,7 @@
 	
 	
 	/* Returns true if applicant's application has been approved, or false otherwise 
-	TODO: make this only work for applications that do not also have an approved follow-up report!*/
+	TODO: make this only work for applications that do not also have an approved final report!*/
 	if(!function_exists('isApplicationApproved')){
 		function isApplicationApproved($conn, $appID)
 		{
@@ -1020,15 +1020,15 @@
 		}
 	}
 	
-	/* Returns true if this applicant has a follow up report already created, or false otherwise */
-	if(!function_exists('hasFollowUpReport')){
-		function hasFollowUpReport($conn, $appID)
+	/* Returns true if this applicant has a final report already created, or false otherwise */
+	if(!function_exists('hasFinalReport')){
+		function hasFinalReport($conn, $appID)
 		{
 			$ret = false;
 			
 			if ($appID != "") //valid username
 			{
-				$sql = $conn->prepare("Select COUNT(*) AS Count FROM follow_up_reports WHERE ApplicationID = :appID");
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM final_reports WHERE ApplicationID = :appID");
 				$sql->bindParam(':appID', $appID);
 				$sql->execute();
 				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
@@ -1144,7 +1144,11 @@
 	if(!function_exists('getApplicationsMaxLengths')){
 		function getApplicationsMaxLengths($conn)
 		{
-			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications'");
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+			$settings = parse_ini_file($config_url);
+
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = '" . $settings["database_name"] . "' AND table_name = 'applications'");
 			$sql->execute();
 			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
@@ -1159,7 +1163,11 @@
 	if(!function_exists('getApplicationsBudgetsMaxLengths')){
 		function getApplicationsBudgetsMaxLengths($conn)
 		{
-			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'applications_budgets'");
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+			$settings = parse_ini_file($config_url);
+
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = '" . $settings["database_name"] . "' AND table_name = 'applications_budgets'");
 			$sql->execute();
 			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
@@ -1170,11 +1178,15 @@
 		}
 	}
 
-	/*return an array of the maximum lengths of every column in the follow_up_reports table*/
-	if(!function_exists('getFollowUpReportsMaxLengths')){
-		function getFollowUpReportsMaxLengths($conn)
+	/*return an array of the maximum lengths of every column in the final_reports table*/
+	if(!function_exists('getFinalReportsMaxLengths')){
+		function getFinalReportsMaxLengths($conn)
 		{
-			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = 'hige' AND table_name = 'follow_up_reports'");
+			/*VERY IMPORTANT! In order to utilize the config.ini file, we need to have the url to point to it! set that here:*/
+			$config_url = dirname(__FILE__).'/../config.ini';
+			$settings = parse_ini_file($config_url);
+			
+			$sql = $conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = '" . $settings["database_name"] . "' AND table_name = 'final_reports'");
 			$sql->execute();
 			$res = $sql->fetchAll(); //return indexes AND names as keys
 					
@@ -1268,14 +1280,14 @@
 	
 	
 
-	/*Update a Follow Up Report to be approved*/
-	if(!function_exists('approveFollowUpReport')){
-		function approveFollowUpReport($conn, $id)
+	/*Update a Final Report to be approved*/
+	if(!function_exists('approveFinalReport')){
+		function approveFinalReport($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Status = 'Approved' WHERE ApplicationID = :id");
+				$sql = $conn->prepare("UPDATE final_reports SET Status = 'Approved' WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
@@ -1287,14 +1299,14 @@
 		}
 	}
 	
-	/*Update a Follow Up Report to be denied*/
-	if(!function_exists('denyFollowUpReport')){
-		function denyFollowUpReport($conn, $id)
+	/*Update a Final Report to be denied*/
+	if(!function_exists('denyFinalReport')){
+		function denyFinalReport($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Status = 'Denied' WHERE ApplicationID = :id");
+				$sql = $conn->prepare("UPDATE final_reports SET Status = 'Denied' WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
@@ -1306,14 +1318,14 @@
 		}
 	}
 
-	/*Update a Follow Up Report to be on hold*/
-	if(!function_exists('holdFollowUpReport')){
-		function holdFollowUpReport($conn, $id)
+	/*Update a Final Report to be on hold*/
+	if(!function_exists('holdFinalReport')){
+		function holdFinalReport($conn, $id)
 		{
 			if ($id != "") //valid application id
 			{
 				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE follow_up_reports SET Status = 'Hold' WHERE ApplicationID = :id");
+				$sql = $conn->prepare("UPDATE final_reports SET Status = 'Hold' WHERE ApplicationID = :id");
 				$sql->bindParam(':id', $id);
 				$sql->execute();
 				
@@ -1330,7 +1342,7 @@
 	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
 		$budgetArray[i][0] is the name of the expense
-		$budgetArray[i][1] is the comment on the expense
+		$budgetArray[i][1] is the details on the expense
 		$budgetArray[i][2] is the actual cost
 
 	This function returns a data array; If the application is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
@@ -1384,7 +1396,7 @@
 					{
 						//echo 'Budget array at ' . $i[0];
 						if(isset($i["expense"])){ $i["expense"] = trim(filter_var($i["expense"], FILTER_SANITIZE_STRING)); }
-						if(isset($i["comment"])){ $i["comment"] = trim(filter_var($i["comment"], FILTER_SANITIZE_STRING)); }
+						if(isset($i["details"])){ $i["details"] = trim(filter_var($i["details"], FILTER_SANITIZE_STRING)); }
 					}
 				}
 				
@@ -1555,13 +1567,13 @@
 							$errors["budgetArray ".($index+1)." expense"] = "Budget expense is required.";
 						}
 
-						if(!isset($item["comment"]))
+						if(!isset($item["details"]))
 						{
-							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
+							$errors["budgetArray ".($index+1)." details"] = "Budget details are required.";
 						}
-						else if($item["comment"] === '')
+						else if($item["details"] === '')
 						{
-							$errors["budgetArray ".($index+1)." comment"] = "Budget comment is required.";
+							$errors["budgetArray ".($index+1)." details"] = "Budget details are required.";
 						}
 
 						if(!isset($item["amount"]))
@@ -1646,11 +1658,11 @@
 										//echo "going to insert:";
 										//var_dump($i);
 
-										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Details) VALUES (:appID, :name, :cost, :details)");
 										$sql->bindParam(':appID', $newAppID);
 										$sql->bindParam(':name', $i['expense']);
 										$sql->bindParam(':cost', $i['amount']);
-										$sql->bindParam(':comment', $i['comment']);
+										$sql->bindParam(':details', $i['details']);
 										
 										if ($sql->execute() === TRUE) //query executed correctly
 										{
@@ -1744,11 +1756,11 @@
 								{
 									if(!empty($i))
 									{
-										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Comment) VALUES (:appID, :name, :cost, :comment)");
+										$sql = $conn->prepare("INSERT INTO applications_budgets(ApplicationID, Name, Cost, Details) VALUES (:appID, :name, :cost, :details)");
 										$sql->bindParam(':appID', $updateID);
 										$sql->bindParam(':name', $i['expense']);
 										$sql->bindParam(':cost', $i['amount']);
-										$sql->bindParam(':comment', $i['comment']);
+										$sql->bindParam(':details', $i['details']);
 										
 										if ($sql->execute() === TRUE) //query executed correctly
 										{
@@ -1819,13 +1831,13 @@
 	
 	
 	/*
-	Insert a follow-up report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
+	Insert a final report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 
 	This function returns a data array; If the report is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
 	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the report's fields.
 	*/
-	if(!function_exists('insertFollowUpReport')){
-		function insertFollowUpReport($conn, $updating, $updateID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
+	if(!function_exists('insertFinalReport')){
+		function insertFinalReport($conn, $updating, $updateID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent)
 		{
 			$errors = array(); // array to hold validation errors
 			$data = array(); // array to pass back data
@@ -1894,7 +1906,7 @@
 				}
 			}
 			
-			/*Now insert new follow up report into database*/
+			/*Now insert new final report into database*/
 			if(empty($errors)) //no errors yet
 			{
 				if(!$updating) //adding, not updating
@@ -1906,7 +1918,7 @@
 
 						$conn->beginTransaction(); //begin atomic transaction
 
-						$sql = $conn->prepare("INSERT INTO follow_up_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date, Status) 
+						$sql = $conn->prepare("INSERT INTO final_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date, Status) 
 							VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date, 'Pending')");
 						$sql->bindParam(':applicationid', $updateID);
 						$sql->bindParam(':travelstart', $travelFrom);
@@ -1923,13 +1935,13 @@
 						} 
 						else //query failed
 						{
-							$errors["other"] = "Query failed to insert follow up report";
+							$errors["other"] = "Query failed to insert final report";
 							$conn->rollBack();
 						}
 					}
 					catch(Exception $e)
 					{
-						$errors["other"] = "Exception when trying to insert follow up report into database: ".$e->getMessage();
+						$errors["other"] = "Exception when trying to insert final report into database: ".$e->getMessage();
 					}
 				}
 				else //just updating
@@ -1938,7 +1950,7 @@
 					{
 						$conn->beginTransaction(); //begin atomic transaction
 
-						$sql = $conn->prepare("UPDATE follow_up_reports SET TravelStart = :travelstart, TravelEnd = :travelend, EventStart = :eventstart, EventEnd = :eventend,
+						$sql = $conn->prepare("UPDATE final_reports SET TravelStart = :travelstart, TravelEnd = :travelend, EventStart = :eventstart, EventEnd = :eventend,
 							ProjectSummary = :projectsummary, TotalAwardSpent = :totalawardspent WHERE ApplicationID = :applicationid");
 						$sql->bindParam(':travelstart', $travelFrom);
 						$sql->bindParam(':travelend', $travelTo);
@@ -1954,13 +1966,13 @@
 						} 
 						else //query failed
 						{
-							$errors["other"] = "Query failed to insert follow up report";
+							$errors["other"] = "Query failed to insert final report";
 							$conn->rollBack();
 						}
 					}
 					catch(Exception $e)
 					{
-						$errors["other"] = "Exception when trying to insert follow up report into database: ".$e->getMessage();
+						$errors["other"] = "Exception when trying to insert final report into database: ".$e->getMessage();
 					}
 				}
 			}
@@ -1975,11 +1987,11 @@
 				$data['success'] = true;
 				if(!$updating)
 				{
-					$data['message'] = "Successfully inserted follow up report into database";
+					$data['message'] = "Successfully inserted final report into database";
 				}
 				else
 				{
-					$data['message'] = "Successfully updated follow up report in database";
+					$data['message'] = "Successfully updated final report in database";
 				}
 			}
 			

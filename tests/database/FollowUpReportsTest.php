@@ -2,12 +2,12 @@
 
 include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
 
-include_once(dirname(__FILE__) . "/../../include/classDefinitions.php");//for follow up report class
+include_once(dirname(__FILE__) . "/../../include/classDefinitions.php");//for final report class
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
 
-final class FollowUpReportsTest extends TestCase
+final class FinalReportsTest extends TestCase
 {    
     use TestCaseTrait;
 
@@ -48,7 +48,7 @@ final class FollowUpReportsTest extends TestCase
     {
         $ds1 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/applicants.xml');
         $ds2 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/applications.xml');
-        $ds3 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/follow_up_reports.xml');
+        $ds3 = $this->createXMLDataSet(dirname(__FILE__).'/datasets/final_reports.xml');
 
         $compositeDs = new PHPUnit\DbUnit\DataSet\CompositeDataSet();
         $compositeDs->addDataSet($ds1);
@@ -59,17 +59,17 @@ final class FollowUpReportsTest extends TestCase
     }
 
     
-    //test getting a single follow up report- make sure all fields are correct!
-    public function testGetFollowUpReport()
+    //test getting a single final report- make sure all fields are correct!
+    public function testGetFinalReport()
     {
         $exisitingAppID = 1;
         $existingReportArray = array(
             0 => "1", 1 => "2012-05-25", 2 => "2012-06-05", 3 => "2012-06-23", 4 => "2012-06-08", 5 => "2012-06-13", 6 => number_format((float)700, 2, '.', ''), //format budget as decimal to 2 places
             7 => "Lorum Ipsum Lorum Ipsum etc. 2.0", 8 => "Approved"
         );
-        $existingReport = new FollowUpReport($existingReportArray);
+        $existingReport = new FinalReport($existingReportArray);
         //should exist
-        $this->assertEquals($existingReport, getFollowUpReport($this->pdo, $exisitingAppID));
+        $this->assertEquals($existingReport, getFinalReport($this->pdo, $exisitingAppID));
 
         $newAppID = 6;
         //shouldn't exist
@@ -78,58 +78,58 @@ final class FollowUpReportsTest extends TestCase
 
 
 
-    //Check if app has a follow up report already
-    public function testHasFollowUpReport()
+    //Check if app has a final report already
+    public function testHasFinalReport()
     {
         $reportApp = 1;
         $noReportApp = 2;
 
-        $this->assertEquals(true, hasFollowUpReport($this->pdo, $reportApp));
-        $this->assertEquals(false, hasFollowUpReport($this->pdo, $noReportApp));
+        $this->assertEquals(true, hasFinalReport($this->pdo, $reportApp));
+        $this->assertEquals(false, hasFinalReport($this->pdo, $noReportApp));
     }
 
 
 
     //Check the max lengths of the reports columns (no point in testing specific numbers since this could easily change depending on MySQL/schema configuration)
-    public function testGetFollowUpReportsMaxLengths()
+    public function testGetFinalReportsMaxLengths()
     {
-        $this->assertEquals(9, count(getFollowUpReportsMaxLengths($this->pdo)));
+        $this->assertEquals(9, count(getFinalReportsMaxLengths($this->pdo)));
     }
 
 
 
-    /*Test approving a follow up report*/
-    public function testApproveFollowUpReport()
-    {
-        $approvedAppID = 1;
-        $pendingAppID = 3;
-        $deniedAppID = 4;
-        $newAppID = 6;
-
-        $this->assertEquals(false, approveFollowUpReport($this->pdo, $approvedAppID));
-        $this->assertEquals(true, approveFollowUpReport($this->pdo, $deniedAppID));
-        $this->assertEquals(true, approveFollowUpReport($this->pdo, $pendingAppID));
-        $this->assertEquals(false, approveFollowUpReport($this->pdo, $newAppID));
-    }
-
-    /*Test denying a follow up report*/
-    public function testDenyFollowUpReport()
+    /*Test approving a final report*/
+    public function testApproveFinalReport()
     {
         $approvedAppID = 1;
         $pendingAppID = 3;
         $deniedAppID = 4;
         $newAppID = 6;
 
-        $this->assertEquals(true, denyFollowUpReport($this->pdo, $approvedAppID));
-        $this->assertEquals(false, denyFollowUpReport($this->pdo, $deniedAppID));
-        $this->assertEquals(true, denyFollowUpReport($this->pdo, $pendingAppID));
-        $this->assertEquals(false, denyFollowUpReport($this->pdo, $newAppID));
+        $this->assertEquals(false, approveFinalReport($this->pdo, $approvedAppID));
+        $this->assertEquals(true, approveFinalReport($this->pdo, $deniedAppID));
+        $this->assertEquals(true, approveFinalReport($this->pdo, $pendingAppID));
+        $this->assertEquals(false, approveFinalReport($this->pdo, $newAppID));
+    }
+
+    /*Test denying a final report*/
+    public function testDenyFinalReport()
+    {
+        $approvedAppID = 1;
+        $pendingAppID = 3;
+        $deniedAppID = 4;
+        $newAppID = 6;
+
+        $this->assertEquals(true, denyFinalReport($this->pdo, $approvedAppID));
+        $this->assertEquals(false, denyFinalReport($this->pdo, $deniedAppID));
+        $this->assertEquals(true, denyFinalReport($this->pdo, $pendingAppID));
+        $this->assertEquals(false, denyFinalReport($this->pdo, $newAppID));
     }
 
 
 
-    /*Test inserting a follow up report. There are more errors than usual to check for*/
-    public function testInsertFollowUpReport()
+    /*Test inserting a final report. There are more errors than usual to check for*/
+    public function testInsertFinalReport()
     {
         $newReportID = 5; //application 5 shouldn't have a report yet
 
@@ -141,14 +141,14 @@ final class FollowUpReportsTest extends TestCase
         $validProjectSummary = "Lorem Ipsum";
         $validTotalAwardSpent = 300;
 
-        $this->assertEquals(false, hasFollowUpReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
 
         /*for inserting new reports*/
 
         //pass in empty values for all fields
-        $testReturn = insertFollowUpReport($this->pdo, false, $newReportID, "", "", "", "", "", "");
+        $testReturn = insertFinalReport($this->pdo, false, $newReportID, "", "", "", "", "", "");
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
-        $this->assertEquals(false, hasFollowUpReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
 
         //every field should have an error regarding missing data
         $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
@@ -160,18 +160,18 @@ final class FollowUpReportsTest extends TestCase
 
 
         //pass in an invalid travel date
-        $testReturn = insertFollowUpReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = insertFinalReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
-        $this->assertEquals(false, hasFollowUpReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
 
         //just check for invalid travel date
         $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
 
 
-        //insert an acceptable new follow up report
-        $testReturn = insertFollowUpReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        //insert an acceptable new final report
+        $testReturn = insertFinalReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
         $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
-        $this->assertEquals(true, hasFollowUpReport($this->pdo, $newReportID)); //should now have a report
+        $this->assertEquals(true, hasFinalReport($this->pdo, $newReportID)); //should now have a report
 
 
 
@@ -180,7 +180,7 @@ final class FollowUpReportsTest extends TestCase
         /*for updating reports*/
 
         //pass in empty values for all fields
-        $testReturn = insertFollowUpReport($this->pdo, true, $newReportID, "", "", "", "", "", "");
+        $testReturn = insertFinalReport($this->pdo, true, $newReportID, "", "", "", "", "", "");
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
 
         //every field should have an error regarding missing data
@@ -193,15 +193,15 @@ final class FollowUpReportsTest extends TestCase
 
 
         //pass in an invalid travel date
-        $testReturn = insertFollowUpReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = insertFinalReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
 
         //just check for invalid travel date
         $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
 
 
-        //insert an acceptable new follow up report
-        $testReturn = insertFollowUpReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        //insert an acceptable new final report
+        $testReturn = insertFinalReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
         $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
     }
 }
