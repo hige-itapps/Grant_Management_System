@@ -43,6 +43,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         if($scope.submitFunction === 'insertReport'){$scope.insertReport();}
         else if($scope.submitFunction === 'approveReport'){$scope.approveReport('Approved');}
         else if($scope.submitFunction === 'denyReport'){$scope.approveReport('Denied');}
+        else if($scope.submitFunction === 'holdReport'){$scope.approveReport('Hold');}
         else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
     }
 
@@ -165,7 +166,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 totalDocs++;
             });
 
-            if(typeof report === 'undefined')//creating, not updating
+            if($scope.isCreating)//creating, not updating
             {
                 //a warning for missing files
                 if(totalDocs === 0)
@@ -178,10 +179,10 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             $scope.loadingAlert();
 
             //add necessary form elements to the FormData array
-            if(typeof $scope.formData.travelFrom !== 'undefined'){fd.append("travelFrom", JSON.stringify($scope.formData.travelFrom.getTime()/1000));}
-            if(typeof $scope.formData.travelTo !== 'undefined'){fd.append("travelTo", JSON.stringify($scope.formData.travelTo.getTime()/1000));}
-            if(typeof $scope.formData.activityFrom !== 'undefined'){fd.append("activityFrom", JSON.stringify($scope.formData.activityFrom.getTime()/1000));}
-            if(typeof $scope.formData.activityTo !== 'undefined'){fd.append("activityTo", JSON.stringify($scope.formData.activityTo.getTime()/1000));}
+            if($scope.formData.travelFrom != null){fd.append("travelFrom", JSON.stringify($scope.formData.travelFrom.getTime()/1000));}
+            if($scope.formData.travelTo != null){fd.append("travelTo", JSON.stringify($scope.formData.travelTo.getTime()/1000));}
+            if($scope.formData.activityFrom != null){fd.append("activityFrom", JSON.stringify($scope.formData.activityFrom.getTime()/1000));}
+            if($scope.formData.activityTo != null){fd.append("activityTo", JSON.stringify($scope.formData.activityTo.getTime()/1000));}
             fd.append("amountAwardedSpent", JSON.stringify($scope.formData.amountAwardedSpent));
             fd.append("projectSummary", JSON.stringify($scope.formData.projectSummary));
             fd.append("appID", JSON.stringify(app.id));
@@ -455,7 +456,9 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         $scope.reportFieldsDisabled = true; //disable report inputs
 
         $scope.populateForm(report); //populate the form with the report data
-
+    }
+    else //otherwise alert user with warning
+    {
         alert("Please complete your final report fully; reports in progress cannot be saved. Additional documents may be uploaded later if preferred, however. Uploaded files cannot be deleted once submitted.");
     }
 }]);
