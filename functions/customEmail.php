@@ -30,7 +30,7 @@
 		$customSubject = trim($customSubject); //remove surrounding spaces
 		if($customSubject == null || $customSubject === '')//it's blank, so just use a default subject
 		{
-			$customSubject = "IEFDF Application Update - Do Not Reply";
+			$customSubject = "IEFDF Application Update";
 		}
 		//custom footer to be attached to the end of every message
 		$footer = "<br><br><strong>Please do not reply to this email, this account is not being monitored.<br>If you need more information, please contact the IEFDF administrator directly.</strong>";
@@ -84,7 +84,7 @@
 	//The email to send to the department chair to let them know of their needed approval. Let them know the applicant's name and email
 	function chairApprovalEmail($appID, $toAddress, $applicantName, $applicantEmail)
 	{
-		$subject = "New HIGE Grant Application - Do Not Reply";
+		$subject = "IEFDF Application - Chair Approval Required";
 
 		$body = "Dear Department Chair, 
 			Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:
@@ -101,7 +101,7 @@
 
 			6. Submit
 
-			If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmich.edu) or 7-3908.
+			If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmich.edu or 7-3908).
 			
 			Best Regards, Dr. Michelle Metro-Roland";
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message

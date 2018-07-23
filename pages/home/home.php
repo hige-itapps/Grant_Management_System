@@ -14,6 +14,7 @@
 	$totalSignedApps = getNumberOfSignedApplications($conn, $CASemail); //get number of previously signed applications
 	$isUserAllowedToCreateApplication = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true); //Make sure user is allowed to make an application. Check the latest cycle possible
 	$hasPendingApplication = hasPendingApplication($conn, $CASbroncoNetID); //Let the user know they've got a pending application (if they do)
+	$hasApplicationOnHold = hasApplicationOnHold($conn, $CASbroncoNetID); //Let the user know they've got an application on hold (if they do)
 	$totalPrevApps = getNumberOfApplications($conn, $CASbroncoNetID); //Let user see the apps they've submitted, if they have at least 1
 	$isUserAllowedToSeeApplications = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //Verify that user is allowed to freely see applications
 	$isAdmin = isAdministrator($conn, $CASbroncoNetID); //Verify user as administrator to give link to admin view
@@ -34,7 +35,17 @@
 			));
 		}
 	}
-	
+
+	$finalReportID = -1; //set to a positive number if there is a follow up report to create
+
+	$mostRecentApplication = getMostRecentApprovedApplication($conn, $CASbroncoNetID); //null if none
+	if($mostRecentApplication != null)
+	{
+		if(isUserAllowedToCreateFollowUpReport($conn, $CASbroncoNetID, $mostRecentApplication->id))
+		{
+			$finalReportID = $mostRecentApplication->id; //set it to the appropriate ID
+		}
+	}
 
 ?>
 <!DOCTYPE html>
@@ -51,12 +62,14 @@
 			var scope_totalSignedApps = <?php echo json_encode($totalSignedApps); ?>;
 			var scope_isUserAllowedToCreateApplication = <?php echo json_encode($isUserAllowedToCreateApplication); ?>;
 			var scope_hasPendingApplication = <?php echo json_encode($hasPendingApplication); ?>;
+			var scope_hasApplicationOnHold = <?php echo json_encode($hasApplicationOnHold); ?>;
 			var scope_totalPrevApps = <?php echo json_encode($totalPrevApps); ?>;
 			var scope_isUserAllowedToSeeApplications = <?php echo json_encode($isUserAllowedToSeeApplications); ?>;
 			var scope_isAdmin = <?php echo json_encode($isAdmin); ?>;
 			var alert_type = <?php echo json_encode($alertType); ?>;
 			var alert_message = <?php echo json_encode($alertMessage); ?>;
 			var scope_nextApplicableCycle = <?php echo json_encode($nextApplicableCycle); ?>;
+			var scope_finalReportID = <?php echo json_encode($finalReportID); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="home.js"></script>
@@ -81,8 +94,9 @@
 					<div class="col-md-4"></div>
 					<div class="col-md-4">
 						<ul id="pageList">
+							<li ng-if="finalReportID > 0"><a href="../follow_up/follow_up.php?id={{finalReportID}}">Create Follow-Up Report</a></li>
 							<li ng-if="totalAppsToSign > 0"><a href="../application_list/application_list.php?approval">Approve Applications ({{totalAppsToSign}} to approve)</a></li>
-							<li ng-if="totalSignedApps > 0"><a href="../application_list/application_list.php?previousApproval">View Previously Approved Applications ({{totalSignedApps}} approved)</a></li>
+							<li ng-if="totalSignedApps > 0"><a href="../application_list/application_list.php?previousApproval">View Applications You've Approved As A Chair ({{totalSignedApps}} approved)</a></li>
 							<li ng-if="isUserAllowedToCreateApplication"><a href="../application/application.php">Create Application</a></li>
 							<li ng-if="totalPrevApps > 0"><a href="../application_list/application_list.php?previousSubmit">View Previous Applications ({{totalPrevApps}} total)</a></li>
 							<li ng-if="isUserAllowedToSeeApplications"><a href="../application_list/application_list.php">List All Applications</a></li>
@@ -93,6 +107,7 @@
 				</div>	
 				
 				<p ng-if="hasPendingApplication">Your application is pending!<p>
+				<p ng-if="hasApplicationOnHold">Your application is on hold!<p>
 				<p ng-if="nextApplicableCycle !== ''">You are currently unable to create a new application because not enough time has passed since your last approved application. The earliest cycle you can apply for is {{nextApplicableCycle}}.<p>
 
 				<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">

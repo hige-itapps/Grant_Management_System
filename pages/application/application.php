@@ -483,10 +483,15 @@
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} comment']" aria-live="polite">{{errors['budgetArray '+($index+1)+' comment']}}</span>
 									</div>
 								<!--BUDGET:AMOUNT-->
-									<div class="form-group col-md-4">
+									<div class="form-group col-md-2">
 										<label for="budgetAmount{{$index+1}}">Amount($):</label>
 										<input type="text" class="form-control" ng-model="budgetItem.amount" ng-disabled="appFieldsDisabled" name="budgetAmount{{$index+1}}" id="budgetAmount{{$index+1}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
 										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} amount']" aria-live="polite">{{errors['budgetArray '+($index+1)+' amount']}}</span>
+									</div>
+								<!--REMOVE BUTTON-->
+									<div class="form-group col-md-2">
+										<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="removeBudgetItem($index)" class="btn btn-danger removeBudget">Delete Item</button>
+										<h3>Item {{$index+1}}</h3>
 									</div>
 								</li>
 							</ol>
@@ -495,12 +500,11 @@
 
 					
 					
-					<!--BUDGET:ADD OR REMOVE-->
+					<!--BUDGET:ADD NEW ITEM-->
 					<div class="row" ng-show="isCreating || isAdminUpdating">
 						<div class="col-md-3"></div>
 						<div id="budgetButtons" class="col-md-6">
 							<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="addBudgetItem()" class="btn btn-primary" id="addBudget">Add Budget Item</button>
-							<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="removeBudgetItem()" class="btn btn-danger" id="removeBudget">Remove Budget Item</button>
 						</div>
 						<div class="col-md-3"></div>
 					</div>

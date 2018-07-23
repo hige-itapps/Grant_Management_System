@@ -73,9 +73,12 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         })       
     }
     //Remove last budget item
-    $scope.removeBudgetItem = function() {
+    $scope.removeBudgetItem = function(index) {
         if($scope.formData.budgetItems.length > 1)
-            $scope.formData.budgetItems.splice($scope.formData.budgetItems.length - 1, 1);
+        {
+            $scope.formData.budgetItems.splice(index, 1);
+        }
+           
     }
     //Get total budget cost
     $scope.getTotal = function(){
@@ -306,7 +309,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                             if(response.data.email.sendSuccess) //email was sent correctly
                             {
                                 newAlertType = "success";
-                                newAlertMessage = "Success! The application has been received with no issues. Your specified department chair has been notified of your submission. You can return to your application at any time to upload more documents if necessary.";
+                                newAlertMessage = "Success! The application has been received. Your specified department chair has been notified of your submission. You can return to your application at any time to upload more documents if necessary.";
                             }
                             else
                             {
@@ -323,7 +326,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     else//just updating
                     {
                         newAlertType = "success";
-                        newAlertMessage = "Success! The application was updated with no issues.";
+                        newAlertMessage = "Success! The application was updated.";
                     }
 
                     if(!response.data.fileSuccess) //error when uploading files
@@ -516,7 +519,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //let the creator or admin upload files for this application
     $scope.uploadFiles = function(){
 
-        if(confirm ('Are you sure you want to upload the selected files? You will not be able to delete them afterwards.')) //upload warning
+        if(confirm ('Are you sure you want to upload the selected files?')) //upload warning
         {
             //start a loading alert
             $scope.loadingAlert();
@@ -628,7 +631,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         //populate the form with the app data
         $scope.populateForm(app);
     }
-    else //otherwise, only fill in a few fields
+    else //otherwise, only fill in a few fields, and alert user with warning
     {
         if($scope.allowedFirstCycle)
         {
@@ -641,10 +644,10 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         //by default, set the email field to this user's email
         $scope.formData.email = CASemail;
 
-        //add a few blank budget items
+        //add a blank budget item
         $scope.addBudgetItem();
-        $scope.addBudgetItem();
-        $scope.addBudgetItem();
+
+        alert("Please complete your application fully; applications in progress cannot be saved. Your proposal narrative and supporting documents may be uploaded later if preferred, however. Uploaded files cannot be deleted once submitted.");
     }
 
 }]);

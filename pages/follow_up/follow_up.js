@@ -212,7 +212,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                      if(response.data.fileSuccess)
                      {
                          newAlertType = "success";
-                         newAlertMessage = "Success! The report has been received with no issues. You can return to your report at any time to upload more documents if necessary.";
+                         newAlertMessage = "Success! The report has been received. You can return to your report at any time to upload more documents if necessary.";
                      }
                      else
                      {
@@ -359,7 +359,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     //let the creator or admin upload files for this report
     $scope.uploadFiles = function(){
 
-        if(confirm ('Are you sure you want to upload the selected files? You will not be able to delete them afterwards.')) //upload warning
+        if(confirm ('Are you sure you want to upload the selected files?')) //upload warning
         {
             //start a loading alert
             $scope.loadingAlert();
@@ -448,13 +448,15 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     $scope.formData.title = app.title;
     $scope.formData.destination = app.destination;
 
-    /*If not creating, get report data and populate entire form*/
+    /*If not creating, get report data and populate entire form. Also alert user with warning*/
     if(!$scope.isCreating)
     {
         $scope.reportStatus = report.status; //set the report's status
         $scope.reportFieldsDisabled = true; //disable report inputs
 
         $scope.populateForm(report); //populate the form with the report data
+
+        alert("Please complete your final report fully; reports in progress cannot be saved. Additional documents may be uploaded later if preferred, however. Uploaded files cannot be deleted once submitted.");
     }
 }]);
 

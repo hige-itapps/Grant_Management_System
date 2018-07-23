@@ -732,7 +732,7 @@
 					$lastApproved = true;
 				}
 				
-				if(!hasPendingApplication($conn, $broncoNetID) && $lastApproved)
+				if(!hasPendingApplication($conn, $broncoNetID) && !hasApplicationOnHold($conn, $broncoNetID) && $lastApproved)
 				{
 					return true;
 				}
@@ -966,7 +966,7 @@
 	if(!function_exists('hasPendingApplication')){
 		function hasPendingApplication($conn, $broncoNetID)
 		{
-			$is = false;
+			$ret = false;
 			
 			if ($broncoNetID != "") //valid username
 			{
@@ -983,19 +983,48 @@
 				
 				if($res[0][0] > 0) //at least one result
 				{
-					$is = true;
+					$ret = true;
 				}
 			}
 			
-			return $is;
+			return $ret;
+		}
+	}
+
+	/* Returns true if this applicant has an application on hold, or false otherwise */
+	if(!function_exists('hasApplicationOnHold')){
+		function hasApplicationOnHold($conn, $broncoNetID)
+		{
+			$ret = false;
+			
+			if ($broncoNetID != "") //valid username
+			{
+				/* Select only pending applications that this user has has submitted */
+				$sql = $conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Status = 'Hold' AND Applicant = :broncoNetID");
+				$sql->bindParam(':broncoNetID', $broncoNetID);
+				$sql->execute();
+				$res = $sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
+				
+				/* Close finished query and connection */
+				$sql = null;
+				
+				//echo 'Count: '.$res[0][0].".";
+				
+				if($res[0][0] > 0) //at least one result
+				{
+					$ret = true;
+				}
+			}
+			
+			return $ret;
 		}
 	}
 	
-	/* Returns true if this applicant has a follow up r already created, or false otherwise */
+	/* Returns true if this applicant has a follow up report already created, or false otherwise */
 	if(!function_exists('hasFollowUpReport')){
 		function hasFollowUpReport($conn, $appID)
 		{
-			$is = false;
+			$ret = false;
 			
 			if ($appID != "") //valid username
 			{
@@ -1011,11 +1040,11 @@
 				
 				if($res[0][0] > 0) //at least one result
 				{
-					$is = true;
+					$ret = true;
 				}
 			}
 			
-			return $is;
+			return $ret;
 		}
 	}
 	

@@ -183,6 +183,10 @@ h1, h2, h3, h4, h5{
 	margin: 0;
 	padding: 0px 5px;
 }
+#budgetList .removeBudget{
+	display: block;
+	margin: auto;
+}
 
 /*format error help blocks*/
 .help-block{
