@@ -55,4 +55,4 @@ At this point, everything should be ready to go. However, there could have been 
  - [ ] Administrators have all the same functionality as application approvers and final report approvers on their respective pages. In addition, they have access to an admin menu, from which they can modify application/report fields directly, and then save changes.
  - [ ] HIGE staff can view all applications on the application list page. They can use various filters to narrow down the list. They can also download a summary excel sheet to view details of the current applications in the list.
  
- You should also make sure that you're able to manipulate the database directly without any issues, probably using MySQL Workbench. <<TODO: add more specific instructions; current instructions can be found in the 'Manipulating the Database' document>>
+ You should also make sure that you're able to manipulate the database directly without any issues, probably using MySQL Workbench. See [Manipulating the Database](Manipulating_The_Database.md) for more details.
