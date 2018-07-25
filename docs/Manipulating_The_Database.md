@@ -99,8 +99,12 @@ If your query fails, it is likely that the data is of an incorrect format, or th
 If you find that you would like to run a more complex insertion query, you can always type one in the query box near the top of the page (in the picture above, it is shown under a tab called ‘administrators’). Once you’ve completed your query, simply click the lightning bolt button to execute it. By default, this query will be a SELECT * query which you can use to refresh the table whenever a change is made.
 
 The standard syntax for an insert statement is:
-```INSERT INTO table(field1, field2, …) VALUES('value1', 'value2', …)```
+```
+INSERT INTO table(field1, field2, …) VALUES('value1', 'value2', …)
+```
 
 So for example, to insert a new administrator, you can run:
-```INSERT INTO administrators(BroncoNetID, Name) VALUES('bpx4132', 'Barry Johnson')```
+```
+INSERT INTO administrators(BroncoNetID, Name) VALUES('bpx4132', 'Barry Johnson')
+```
  
