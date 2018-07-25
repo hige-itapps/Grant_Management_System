@@ -1,5 +1,5 @@
 # Manipulating The Database
- - [Getting Started](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#getting-started)
+ - [Getting Started](#getting-started)
  - [Table Definitions](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#table-definitions)
  - [Creating Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#creating-records)
  - [Retrieving Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#retrieving-records)
