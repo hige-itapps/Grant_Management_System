@@ -1,4 +1,11 @@
 # Manipulating The Database
+[Getting Started](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#getting-started)
+[Table Definitions](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#table-definitions)
+[Creating Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#creating-records)
+[Retrieving Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#retrieving-records)
+[Updating Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#updating-records)
+[Deleting Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#deleting-records)
+
 Despite this project containing many important web files, **the core of the system is the database itself**. If the information in the database is wrong, then everything else will be wrong too; and very often, the database is the root cause of other issues. Therefore, it is extremely important that you should be able to modify the database directly without relying solely on the front-end interfaces, just in case.
 
 This documentation specifically describes the MySQL structure of the database, and how to create, remove, update, and delete records (known as *CRUD* operations) for every table with specific examples. This documentation assumes that you will be using the MySQL Workbench application to connect to the database, and that you have all CRUD permissions enabled for your account.
