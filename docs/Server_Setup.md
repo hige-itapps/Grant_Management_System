@@ -1,7 +1,14 @@
 # Server Setup
+ - [Set Up The LAMP Stack](#set-up=the-lamp-stack)
+ - [Configure Apache](#configure-apache)
+ - [Configure MySQL](#configure-mysql)
+ - [Move Server Files To Server Directory](#move-server-files-to-server-directory)
+ - [Modify Config File](#modify-config-file)
+ - [Final Tests](#final-tests)
+ 
 This guide will describes the steps you will need to take when setting up a new server. It is assumed that a compatible OS is already up and running.
 
-## 1. Set up the LAMP stack
+## 1. Set Up The LAMP Stack
 This application was built on the LAMP stack. Although it was originally built on WampServer, using a Windows version of the LAMP stack (WAMP), it should work on any modern LAMP build. It is recommended to use the most up-to-date long term stable release versions of these technologies.
 
 If you would like to set up the server as it was originally during development, download and install WampServer from http://www.wampserver.com/en/download-wampserver-64bits/. Specifically, we used version 3.0.6 which includes Wampserver 3.1.0, Apache 2.4.27, PHP 5.6.31, and MySQL 5.7.19. It is important to note though that we updated PHP to version 7.2.5. Notably, PHP 7 is required in order to use the included PHPUnit testing suite.
@@ -16,7 +23,7 @@ In MySQL, you must create an account so that the site can interact with the data
 
 You will then need to import the grant application schema using the database_schema.sql file. During development we named this database 'iefdf', but you can name it to anything that makes sense; this will require modifying the top of the .sql file. Optionally, you may want to import other saved data with a saved file. <<TODO: add more specific instructions; current instructions can be found in the 'Migrating the Server' document>>
 
-## 4. Move server files to server directory
+## 4. Move Server Files To Server Directory
 Most (but not all!) of the files in the repository need to be moved over to the web hosting directory. These include: 
  - sample_config.ini: sample configuration file to hold information such as relative directories and username/password combinations; this way, no critical information needs to be hard-coded
  - index.php: a simple file which just redirects users to the homepage upon navigating to the site; this functionality might be configurable directly in Apache which would make this file redundant
@@ -31,7 +38,7 @@ Most (but not all!) of the files in the repository need to be moved over to the 
  - /PHPMAILER: dependency which allows for email messages to be sent from email clients in PHP
  - /FileSaver.js-master: dependency which allows users to create and download files directly in their browsers, used for excel summary sheet function on the application list page
 
-## 5. Config File
+## 5. Modify Config File
 Perhaps the most important file is the configuration file, as described above. The first step is to remove "sample_" from the name, so it is just named "config.ini".
 
 Within this file, you will need to set all the variables to their appropriate values. This includes the database username/password, the mail server username/password, and more. Some variables may be correctly set ahead of time, but it is recommended to double check all of them regardless. String variables that have special characters need to have quotes around them, although all strings can have quotes around them with no issue.
