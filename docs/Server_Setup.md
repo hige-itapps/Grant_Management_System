@@ -1,5 +1,5 @@
 # Server Setup
- - [Set Up The LAMP Stack](#1-set-up=the-lamp-stack)
+ - [Set Up The LAMP Stack](#1-set-up-the-lamp-stack)
  - [Configure Apache](#2-configure-apache)
  - [Configure MySQL](#3-configure-mysql)
  - [Move Server Files To Server Directory](#4-move-server-files-to-server-directory)
