@@ -108,3 +108,82 @@ So for example, to insert a new administrator, you can run:
 INSERT INTO administrators(BroncoNetID, Name) VALUES('bpx4132', 'Barry Johnson')
 ```
  
+## Retrieving Records
+Most of the time, you just need to see all the records within a table- this is covered in the ‘Getting Started’ section earlier. However, there may be an occasion where you need to find a specific record within an extensive list of other records. 
+
+Here are a few examples of more advanced select queries you can run to find specific records.
+
+**Find all pending applications**
+```
+SELECT * FROM hige.applications WHERE Approved IS NULL
+```
+
+**Find all approved applications**
+```
+SELECT * FROM hige.applications WHERE Approved = 1
+```
+
+**Find the total number of applications**
+```
+SELECT COUNT(*) FROM hige.applications
+```
+
+**Find all applications submitted by the user ‘abc1234’**
+```
+SELECT * FROM hige.applications WHERE Applicant = 'abc1234'
+```
+
+**Find the IDs of all the applications submitted by the user ‘abc1234’**
+```
+SELECT ID FROM hige.applications WHERE Applicant = 'abc1234'
+```
+
+**Find all applications submitted on April 25, 2018**
+```
+SELECT * FROM hige.applications WHERE Date = '2018-04-25'
+```
+
+## Updating Records
+Editing records through the MySQL app GUI is straightforward. Simply follow the steps you would take to create a new record, but instead of clicking on the empty box, click on the box of the record you wish to modify. Then, simply click ‘Apply’ and then confirm.
+
+Here are a few examples of some advanced update queries you can run on the database.
+
+**Update all applications first made by the user ‘abc1234’ to be linked to the new user ‘zyx2234’ (Note- this won’t work if the user ‘zyx2234’ doesn’t already exist in the applicants table)**
+```
+UPDATE applications SET Applicant = 'zyx2234' WHERE Applicant = 'abc1234'
+```
+
+**Update application #164 to be submitted on April 21, 2018**
+```
+UPDATE applications SET Date = '2018-04-21' WHERE ID = 164
+```
+
+**Update application #164 to be approved by the department chair ‘Barry Johnson’**
+```
+UPDATE applications SET DepartmentChairSignature = 'Barry Johnson' WHERE ID = 164
+```
+
+**Update application #164 to be on hold (and just in case, set Approved back to the null state)**
+```
+UPDATE applications SET OnHold = 1, Approved = NULL WHERE ID = 164
+```
+
+## Deleting Records
+Deleting records through the MySQL app GUI is also straightforward. Simply right click on the row you want to delete, select “Delete Row(s)”, then click ‘Apply’ and then confirm.
+
+Here are a few examples of some advanced deletion queries you can run on the database. NOTE- you may want to backup the database before running any custom delete queries just in case any important records are lost! Generally, we don’t recommend deleting records from the database; it may be better to just leave them there unless necessary.
+
+Delete the administrator with the BroncoNetID ‘abc1234’
+```
+DELETE FROM hige.administrators WHERE BroncoNetID = 'abc1234'
+```
+
+Delete any administrators with the name ‘Gerald’ (NOTE- will not work if the database is set to ‘safe update mode’)
+```
+DELETE FROM hige.administrators WHERE Name = 'Gerald'
+```
+
+Delete all administrators (NOTE- will not work if the database is set to ‘safe update mode’)
+```
+DELETE FROM hige.administrators
+```
