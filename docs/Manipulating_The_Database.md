@@ -1,10 +1,10 @@
 # Manipulating The Database
  - [Getting Started](#getting-started)
- - [Table Definitions](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#table-definitions)
- - [Creating Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#creating-records)
- - [Retrieving Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#retrieving-records)
- - [Updating Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#updating-records)
- - [Deleting Records](https://github.com/skison/Grant_Management_System/blob/master/docs/Manipulating_The_Database.md#deleting-records)
+ - [Table Definitions](#table-definitions)
+ - [Creating Records](#creating-records)
+ - [Retrieving Records](#retrieving-records)
+ - [Updating Records](#updating-records)
+ - [Deleting Records](#deleting-records)
 
 Despite this project containing many important web files, **the core of the system is the database itself**. If the information in the database is wrong, then everything else will be wrong too; and very often, the database is the root cause of other issues. Therefore, it is extremely important that you should be able to modify the database directly without relying solely on the front-end interfaces, just in case.
 
