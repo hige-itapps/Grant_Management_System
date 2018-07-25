@@ -4,7 +4,7 @@ This guide will describes the steps you will need to take when setting up a new 
 ## 1. Set up the LAMP stack
 This application was built on the LAMP stack. Although it was originally built on WampServer, using a Windows version of the stack (WAMP), it should work on any modern LAMP build. It is recommended to use the most up-to-date long term stable release versions of these technologies.
 
-If you would like to set up the server as it was originally during development, download and install WampServer from http://www.wampserver.com/en/download-wampserver-64bits/. Specifically, we used version 3.0.6 which includes Wampserver 3.1.0, Apache 2.4.27, PHP 5.6.31, and MySQL 5.7.19.
+If you would like to set up the server as it was originally during development, download and install WampServer from http://www.wampserver.com/en/download-wampserver-64bits/. Specifically, we used version 3.0.6 which includes Wampserver 3.1.0, Apache 2.4.27, PHP 5.6.31, and MySQL 5.7.19. It is important to note though that we updated PHP to version 7.2.5.
 
 ## 2. Configure Apache
 First, set up the web hosting directory for the LAMP stack. With many pre-made LAMP options, this directory is usually labled under /www. This is the case with WampServer, in which case you must create the web hosting directory (currently labled 'IEFDF') under the /www directory. The full directory should look something like "/server/www/IEFDF/".
