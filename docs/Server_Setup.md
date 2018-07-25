@@ -1,10 +1,10 @@
 # Server Setup
- - [Set Up The LAMP Stack](#set-up=the-lamp-stack)
- - [Configure Apache](#configure-apache)
- - [Configure MySQL](#configure-mysql)
- - [Move Server Files To Server Directory](#move-server-files-to-server-directory)
- - [Modify Config File](#modify-config-file)
- - [Final Tests](#final-tests)
+ - [Set Up The LAMP Stack](#1-set-up=the-lamp-stack)
+ - [Configure Apache](#2-configure-apache)
+ - [Configure MySQL](#3-configure-mysql)
+ - [Move Server Files To Server Directory](#4-move-server-files-to-server-directory)
+ - [Modify Config File](#5-modify-config-file)
+ - [Final Tests](#6-final-tests)
  
 This guide will describes the steps you will need to take when setting up a new server. It is assumed that a compatible OS is already up and running.
 
