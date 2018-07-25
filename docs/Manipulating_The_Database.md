@@ -173,17 +173,17 @@ Deleting records through the MySQL app GUI is also straightforward. Simply right
 
 Here are a few examples of some advanced deletion queries you can run on the database. NOTE- you may want to backup the database before running any custom delete queries just in case any important records are lost! Generally, we don’t recommend deleting records from the database; it may be better to just leave them there unless necessary.
 
-Delete the administrator with the BroncoNetID ‘abc1234’
+**Delete the administrator with the BroncoNetID ‘abc1234’**
 ```
 DELETE FROM hige.administrators WHERE BroncoNetID = 'abc1234'
 ```
 
-Delete any administrators with the name ‘Gerald’ (NOTE- will not work if the database is set to ‘safe update mode’)
+**Delete any administrators with the name ‘Gerald’ (NOTE- will not work if the database is set to ‘safe update mode’)**
 ```
 DELETE FROM hige.administrators WHERE Name = 'Gerald'
 ```
 
-Delete all administrators (NOTE- will not work if the database is set to ‘safe update mode’)
+**Delete all administrators (NOTE- will not work if the database is set to ‘safe update mode’)**
 ```
 DELETE FROM hige.administrators
 ```
