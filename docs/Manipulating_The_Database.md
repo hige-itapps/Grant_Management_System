@@ -90,3 +90,17 @@ At the time of writing, there are 10 tables in the database. These are listed be
 **10. notes** – Saves notes associated with a specific application/report which are only visible to HIGE staff
  -	**ApplicationID [INT(11)] PK** – *Foreign key* on the associated application’s ID from the applications table.
  -	**Note [TEXT]** – The full note's text.
+ 
+## Creating Records
+The MySQL Workbench app’s GUI makes it easy to perform any basic CRUD actions. To create a record, start by loading up the table of your choice. Scroll to the bottom of the table where you will find a blank line. Simply type in your data to be added into each corresponding box. Finally, click off the input box, find the ‘Apply’ button down and to the right, and confirm your additions. 
+
+If your query fails, it is likely that the data is of an incorrect format, or that there is a foreign key that doesn’t exist yet. Check the table definitions above for additional information.
+
+If you find that you would like to run a more complex insertion query, you can always type one in the query box near the top of the page (in the picture above, it is shown under a tab called ‘administrators’). Once you’ve completed your query, simply click the lightning bolt button to execute it. By default, this query will be a SELECT * query which you can use to refresh the table whenever a change is made.
+
+The standard syntax for an insert statement is:
+```INSERT INTO table(field1, field2, …) VALUES('value1', 'value2', …)```
+
+So for example, to insert a new administrator, you can run:
+```INSERT INTO administrators(BroncoNetID, Name) VALUES('bpx4132', 'Barry Johnson')```
+ 
