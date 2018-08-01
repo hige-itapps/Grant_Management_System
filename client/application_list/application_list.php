@@ -75,7 +75,7 @@
 		<?php include '../include/head_content.html'; ?>
 
 		<!-- For exporting files in-browser -->
-		<script type="module" src="../../FileSaver.js-master/src/FileSaver.js"></script>
+		<script type="module" src="../include/FileSaver.js-master/src/FileSaver.js"></script>
 
 		<!-- Set values from PHP on startup, accessible by the AngularJS Script -->
 		<script type="text/javascript">

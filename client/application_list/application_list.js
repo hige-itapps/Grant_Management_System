@@ -1,6 +1,6 @@
 
 //import saveAs function from FileSaver.js library so that user can download as excel sheet; requires ES6 syntax to be enabled by browser
-import { saveAs } from '/../../FileSaver.js-master/src/FileSaver.js';
+import { saveAs } from '/../include/FileSaver.js-master/src/FileSaver.js';
 
 //init app
 var higeApp = angular.module('HIGE-app', []);

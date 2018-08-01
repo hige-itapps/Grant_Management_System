@@ -1,13 +1,13 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../functions/database.php");
+	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
 	
 	/*Document functions*/
-    include_once(dirname(__FILE__) . "/../functions/documents.php");
+    include_once(dirname(__FILE__) . "/../../functions/documents.php");
     
 /************* FOR ADDING OR UPDATING FINAL REPORT VIA SUMBISSION ***************/
 

@@ -1,12 +1,12 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../functions/database.php");
+	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
 
-/************* FOR ADMIN TO ADD ANOTHER ADMIN ***************/
+/************* FOR ADMIN TO ADD AN APPLICATION APPROVER ***************/
 
 $removeReturn = null; //will be true if successful, false if unsuccessful, or otherwise ["error"] will be set
 
@@ -20,11 +20,11 @@ if(isset($_POST["broncoNetID"]) && isset($_POST["name"]))
 	{
         try
         {
-            $removeReturn = addAdmin($conn, $broncoNetID, $name);
+            $removeReturn = addApplicationApprover($conn, $broncoNetID, $name);
         }
         catch(Exception $e)
         {
-            $removeReturn["error"] = "Unable to add admin: " . $e->getMessage();
+            $removeReturn["error"] = "Unable to add application approver: " . $e->getMessage();
         }
 	}
 	else

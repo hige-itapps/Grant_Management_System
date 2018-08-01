@@ -1,16 +1,16 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../functions/database.php");
+	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
 	
 	/*Document functions*/
-	include_once(dirname(__FILE__) . "/../functions/documents.php");
+	include_once(dirname(__FILE__) . "/../../functions/documents.php");
 
 	/*For sending custom emails*/
-	include_once(dirname(__FILE__) . "/../functions/customEmail.php");
+	include_once(dirname(__FILE__) . "/../../functions/customEmail.php");
 
 
 	/*for dept. chair email message*/
@@ -24,11 +24,11 @@ $insertReturn = null; //will be an array with return code and status, or an arra
 
 
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/../PHPMAILER/src/Exception.php';
+    require_once dirname(__FILE__) . '/../../PHPMAILER/src/Exception.php';
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/../PHPMAILER/src/PHPMailer.php';
+    require_once dirname(__FILE__) . '/../../PHPMAILER/src/PHPMailer.php';
 if (!class_exists('PHPMailer'))
-    require_once dirname(__FILE__) . '/../PHPMAILER/src/SMTP.php';
+    require_once dirname(__FILE__) . '/../../PHPMAILER/src/SMTP.php';
 
 // Please specify your Mail Server - Example: mail.example.com.
 ini_set("SMTP","mail.example.com");

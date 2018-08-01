@@ -1,9 +1,9 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../functions/database.php");
+	include_once(dirname(__FILE__) . "/../../functions/database.php");
 	$conn = connection();
 
 /************* FOR AN ADMIN, APPROVER, OR FINAL REPORT APPROVER TO SAVE APPLICATION NOTES ***************/
