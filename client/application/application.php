@@ -111,7 +111,7 @@
 	<!-- Page Head -->
 	<head>
 		<!-- Shared head content -->
-		<?php include '../../include/head_content.html'; ?>
+		<?php include '../include/head_content.html'; ?>
 
 		<!-- Set values from PHP on startup, accessible by the AngularJS Script -->
 		<script type="text/javascript">
@@ -150,11 +150,11 @@
 	<body ng-app="HIGE-app">
 	
 		<!-- Shared Site Banner -->
-		<?php include '../../include/site_banner.html'; ?>
+		<?php include '../include/site_banner.html'; ?>
 
 	<div id="MainContent" role="main">
-		<script src="../../include/outdatedbrowser.js"></script> <!-- show site error if outdated -->
-		<?php include '../../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
+		<script src="../include/outdatedbrowser.js"></script> <!-- show site error if outdated -->
+		<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 
 			<!--AngularJS Controller-->
 			<div class="container-fluid" ng-controller="appCtrl" id="appCtrl">
@@ -460,7 +460,7 @@
 					<div id="exampleBudgetHolder">
 						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample">Click here for an example of how to construct a budget!</button>
 						<div id="budgetExample" class="collapse">
-							<img src="../../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Details: Conference Registration, Amount($): 450" class="exampleBudget" />
+							<img src="../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Details: Conference Registration, Amount($): 450" class="exampleBudget" />
 						</div>
 					</div>
 					
@@ -671,7 +671,7 @@
 </html>
 <?php
 	}else{
-		include '../../include/permission_denied.html';
+		include '../include/permission_denied.html';
 	}
 	$conn = null; //close connection
 ?>

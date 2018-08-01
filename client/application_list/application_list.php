@@ -72,7 +72,7 @@
 	<!-- Page Head -->
 	<head>
 		<!-- Shared head content -->
-		<?php include '../../include/head_content.html'; ?>
+		<?php include '../include/head_content.html'; ?>
 
 		<!-- For exporting files in-browser -->
 		<script type="module" src="../../FileSaver.js-master/src/FileSaver.js"></script>
@@ -90,11 +90,11 @@
 	<!-- Page Body -->
 	<body ng-app="HIGE-app">
 		<!-- Shared Site Banner -->
-		<?php include '../../include/site_banner.html'; ?>
+		<?php include '../include/site_banner.html'; ?>
 
 		<div id="MainContent" role="main">
-			<script src="../../include/outdatedbrowser.js"></script> <!-- show site error if outdated -->
-			<?php include '../../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
+			<script src="../include/outdatedbrowser.js"></script> <!-- show site error if outdated -->
+			<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 
 			<!--AngularJS Controller-->
 			<div class="container-fluid" ng-controller="listCtrl" id="listCtrl">
@@ -204,7 +204,7 @@
 </html>
 <?php
 	}else{
-		include '../../include/permission_denied.html';
+		include '../include/permission_denied.html';
 	}
 	$conn = null; //close connection
 ?>
