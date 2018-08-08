@@ -25,7 +25,7 @@ $phpcas_path = 'phpCAS';
 ///////////////////////////////////////
 
 // Full Hostname of your CAS Server
-$cas_host = 'webauth.test.wmich.edu';
+$cas_host = 'webauth.wmich.edu';
 // Context of the CAS Server
 $cas_context = '';
 
@@ -35,10 +35,8 @@ $cas_port = 443;
 // Path to the ca chain that issued the cas server certificate
 
 //$cas_server_ca_cert_path = '../../webauth.test.wmich.edu.pem';
-$cas_server_ca_cert_path = '/wamp64/www/IEFDF/include/phpCAS/webauth.test.wmich.edu.pem';
-
-//$cas_server_ca_cert_path = '../../cacert.pem';
-//$cas_server_ca_cert_path = '/home/egf897jck0fu/public_html/include/phpCAS/cacert.pem';
+//$cas_server_ca_cert_path = '/wamp64/www/IEFDF/include/phpCAS/webauth.test.wmich.edu.pem';
+$cas_server_ca_cert_path = 'example_path'; //edit this to be the full path of the CAS server pem file
 
 //////////////////////////////////////////
 // Advanced Config for special purposes //
@@ -46,7 +44,7 @@ $cas_server_ca_cert_path = '/wamp64/www/IEFDF/include/phpCAS/webauth.test.wmich.
 
 // The "real" hosts of clustered cas server that send SAML logout messages
 // Assumes the cas server is load balanced across multiple hosts
-$cas_real_hosts = array('webauth.test.wmich.edu:444', 'webauth.test.wmich.edu:445');
+$cas_real_hosts = array('webauth.wmich.edu:444', 'webauth.wmich.edu:445');
 
 /*
 // Client config for cookie hardening
