@@ -80,11 +80,14 @@ caption{
 .page-header #HomeText{
 	font-family: "Source Sans Pro", Arial, Helvetica, sans-serif; /*Source Sans Pro for title*/
 
-	font-size: 2.5em; /*large font*/
 	color: #ffffff; /*plain white*/
 	font-weight: bold; /*bold font*/
 	display: block; /*show underneath image*/
 	transition: all 300ms ease-out; /*cool transition on hover*/
+}
+/*modify secondary hometext to be smaller*/
+h2#HomeText{
+	font-size: 1.5em;
 }
 
 /*home buttons*/
