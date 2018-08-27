@@ -33,7 +33,6 @@ if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddre
 			try
 			{
 				if($status === 'Approved') { $approvalReturn["success"] = approveFinalReport($conn, $appID); }
-				else if($status === 'Denied') { $approvalReturn["success"] = denyFinalReport($conn, $appID); }
 				else if($status === 'Hold') { $approvalReturn["success"] = holdFinalReport($conn, $appID); }
 				else { $approvalReturn["error"] = "Invalid status given"; }
 

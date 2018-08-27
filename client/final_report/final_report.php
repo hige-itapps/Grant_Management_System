@@ -349,7 +349,6 @@
 						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success">SUBMIT FINAL REPORT</button> <!-- For applicant submitting for first time -->
 						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
 						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='holdReport'" class="btn btn-primary">HOLD REPORT</button> <!-- For approver or admin holding -->
-						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='denyReport'" class="btn btn-danger">DENY REPORT</button> <!-- For approver or admin denying -->
 						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>

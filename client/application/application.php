@@ -460,7 +460,7 @@
 					<div id="exampleBudgetHolder">
 						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample">Click here for an example of how to construct a budget!</button>
 						<div id="budgetExample" class="collapse">
-							<img src="../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Details: Conference Registration, Amount($): 450" class="exampleBudget" />
+							<img src="../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Description: Conference Registration, Amount($): 450" class="exampleBudget" />
 						</div>
 					</div>
 					
@@ -474,19 +474,19 @@
 										<select class="form-control" ng-model="budgetItem.expense" ng-disabled="appFieldsDisabled" name="budgetExpense{{$index+1}}" id="budgetExpense{{$index+1}}" value="{{budgetItem.expense}}" >
 											<option ng-repeat="o in options" value="{{o.name}}">{{o.name}}</option>
 										</select>
-										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} expense']" aria-live="polite">{{errors['budgetArray '+($index+1)+' expense']}}</span>
+										<span class="help-block"  ng-if="errors['budgetArray '+($index+1)+' expense']" aria-live="polite">{{errors['budgetArray '+($index+1)+' expense']}}</span>
 									</div>
 								<!--BUDGET:DETAILS-->
 									<div class="form-group col-md-4">
-										<label for="budgetDetails{{$index+1}}">Details{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetDetails-budgetItem.details.length)+" characters remaining)" : ""}}:</label>
+										<label for="budgetDetails{{$index+1}}">Description{{isCreating || isAdminUpdating ? " (Required) ("+(maxBudgetDetails-budgetItem.details.length)+" characters remaining)" : ""}}:</label>
 										<input type="text" class="form-control" ng-model="budgetItem.details" ng-disabled="appFieldsDisabled" maxlength="{{maxBudgetDetails}}" name="budgetDetails{{$index+1}}" id="budgetDetails{{$index+1}}" placeholder="Explain..." />
-										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} details']" aria-live="polite">{{errors['budgetArray '+($index+1)+' details']}}</span>
+										<span class="help-block"  ng-if="errors['budgetArray '+($index+1)+' details']" aria-live="polite">{{errors['budgetArray '+($index+1)+' details']}}</span>
 									</div>
 								<!--BUDGET:AMOUNT-->
 									<div class="form-group col-md-2">
 										<label for="budgetAmount{{$index+1}}">Amount($):</label>
 										<input type="text" class="form-control" ng-model="budgetItem.amount" ng-disabled="appFieldsDisabled" name="budgetAmount{{$index+1}}" id="budgetAmount{{$index+1}}" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
-										<span class="help-block"  ng-show="errors['budgetArray {{$index+1}} amount']" aria-live="polite">{{errors['budgetArray '+($index+1)+' amount']}}</span>
+										<span class="help-block"  ng-if="errors['budgetArray '+($index+1)+' amount']" aria-live="polite">{{errors['budgetArray '+($index+1)+' amount']}}</span>
 									</div>
 								<!--REMOVE BUTTON-->
 									<div class="form-group col-md-2">
@@ -583,6 +583,7 @@
 						<div class="col-md-3"></div>
 						<div class="col-md-6">
 							<h3 class="title">Note: Applications received without the approval of the chair will not be considered.</h3>
+							<h3 class="title" ng-show="isChair">By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.</h3>
 							<div class="form-group">
 								<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxDeptChairApproval-formData.deptChairApproval.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
 								<input type="text" class="form-control" maxlength="{{maxDeptChairApproval}}" ng-model="formData.deptChairApproval" ng-disabled="{{!isChair ? true : false}}" id="deptChairApproval" name="deptChairApproval" placeholder="{{isChair ? 'Type Your Full Name Here' : 'Department Chair Must Type Name Here'}}" />

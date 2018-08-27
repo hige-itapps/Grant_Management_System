@@ -42,7 +42,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     $scope.submit = function(){
         if($scope.submitFunction === 'insertReport'){$scope.insertReport();}
         else if($scope.submitFunction === 'approveReport'){$scope.approveReport('Approved');}
-        else if($scope.submitFunction === 'denyReport'){$scope.approveReport('Denied');}
         else if($scope.submitFunction === 'holdReport'){$scope.approveReport('Hold');}
         else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
     }
@@ -252,7 +251,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     };
 
 
-    //approve or deny report with the status parameter
+    //approve or hold report with the status parameter
     $scope.approveReport = function(status){
 
         if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this report's status to " + status + "?"))

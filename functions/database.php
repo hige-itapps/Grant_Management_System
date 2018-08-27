@@ -1298,25 +1298,6 @@
 			}
 		}
 	}
-	
-	/*Update a Final Report to be denied*/
-	if(!function_exists('denyFinalReport')){
-		function denyFinalReport($conn, $id)
-		{
-			if ($id != "") //valid application id
-			{
-				/*Update any application with the given id*/
-				$sql = $conn->prepare("UPDATE final_reports SET Status = 'Denied' WHERE ApplicationID = :id");
-				$sql->bindParam(':id', $id);
-				$sql->execute();
-				
-				$ret = $sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
-				/* Close finished query and connection */
-				$sql = null;
-				return $ret;
-			}
-		}
-	}
 
 	/*Update a Final Report to be on hold*/
 	if(!function_exists('holdFinalReport')){

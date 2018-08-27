@@ -77,8 +77,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         if($scope.formData.budgetItems.length > 1)
         {
             $scope.formData.budgetItems.splice(index, 1);
-        }
-           
+        }  
     }
     //Get total budget cost
     $scope.getTotal = function(){
@@ -431,7 +430,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //let the department chair approve this application
     $scope.chairApproval = function(){
 
-        if(confirm ('By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.'))
+        if(confirm ('Are you sure you want to approve this application?'))
         {
             //start a loading alert
             $scope.loadingAlert();

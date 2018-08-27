@@ -36,7 +36,7 @@
 		$footer = "
 		
 		<strong>Please do not reply to this email, this account is not being monitored.
-		If you need more information, please contact the IEFDF administrator directly.</strong>";
+		If you need more information, please contact the IEFDF administrator (michelle.metro-roland@wmich.edu or 7-3908).</strong>";
 
 		$fullMessage = $customMessage . $footer; //combine everything
 
@@ -104,8 +104,6 @@
 			5. At the bottom of the page, type your name in the signature field
 
 			6. Submit
-
-			If you have questions please contact Dr. Michelle Metro-Roland (michelle.metro-roland@wmich.edu or 7-3908).
 			
 			Best Regards, Dr. Michelle Metro-Roland";
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
