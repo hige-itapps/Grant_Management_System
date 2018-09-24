@@ -99,7 +99,9 @@
 
 			3. Log in with your bronco net id
 
-			4. Click on the link to view the application
+			4. Click on the 'Approve Applications' link
+
+			5. Find the application you want to review, and click the 'View Application' link
 
 			5. At the bottom of the page, type your name in the signature field
 

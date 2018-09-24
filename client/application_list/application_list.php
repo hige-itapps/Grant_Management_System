@@ -177,8 +177,8 @@
 									<td>{{ application.dateSubmitted | date: 'MM/dd/yyyy'}}</td>
 									<td class="{{application.status}}">{{ application.status }}</td>
 									<td>{{application.deptChairApproval}}</td>
-									<td><a href="../application/application.php?id={{application.id}}">Application</a></td>
-									<td ng-if="application.FinalReport"><a href="../final_report/final_report.php?id={{application.id}}">Final Report</a></td>					<td class="{{application.FinalReport.status}}" ng-if="application.FinalReport">{{application.FinalReport.status}}</td>
+									<td><a href="../application/application.php?id={{application.id}}">View Application</a></td>
+									<td ng-if="application.FinalReport"><a href="../final_report/final_report.php?id={{application.id}}">View Final Report</a></td>					<td class="{{application.FinalReport.status}}" ng-if="application.FinalReport">{{application.FinalReport.status}}</td>
 										<td ng-if="application.FinalReportCreate"><a href="../final_report/final_report.php?id={{application.id}}">Create Final Report</a></td>	<td ng-if="application.FinalReportCreate">N/A</td>
 										<td ng-if="!application.FinalReport && !application.FinalReportCreate">N/A</td>										<td ng-if="!application.FinalReport && !application.FinalReportCreate">N/A</td>
 								</tr>
