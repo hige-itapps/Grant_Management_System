@@ -40,49 +40,53 @@
 				if (!file_exists($uploadTo)){ mkdir($uploadTo); } //First, try to make the directory for this file if it doesn't already exist.
 				//$file = $files["tmp_name"];
 				//$doc = "P" . $id . "-" . $files["name"];
-				
-				foreach ($files as $filename => $file) //try to upload each file
-				{
-					$prefix = null; //set to a valid prefix based on the type of upload (supporting document, proposal narrative, etc.)
-					if(strncmp($filename, "supportingDoc", 13) === 0){
-						$totalExisting = count(preg_grep('~^SD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
-						$prefix = "SD".($totalExisting+1)."_";//increment the prefix
-					}
-					else if(strncmp($filename, "proposalNarrative", 17) === 0){
-						$totalExisting = count(preg_grep('~^PN.*~', scandir($uploadTo)));//find number of already existing files with this prefix
-						$prefix = "PN".($totalExisting+1)."_";//increment the prefix
-					}
-					else if(strncmp($filename, "finalReportDoc", 11) === 0){
-						$totalExisting = count(preg_grep('~^FD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
-						$prefix = "FD".($totalExisting+1)."_";//increment the prefix
-					}
 
-					if($prefix !== null)//upload prefix accepted
+				if (file_exists($uploadTo)){ //if the directory was created
+					foreach ($files as $filename => $file) //try to upload each file
 					{
-						$target = $uploadTo."/".$prefix.$file["name"];
-						$fileType = strtolower(pathinfo($target, PATHINFO_EXTENSION));//get the file's type
-
-						if($fileType == "txt" || $fileType == "rtf" || $fileType == "doc" || $fileType == "docx" || $fileType == "xls" 
-							|| $fileType == "xlsx" || $fileType == "ppt" || $fileType == "pptx" || $fileType == "pdf" || $fileType == "jpg"
-							|| $fileType == "png" || $fileType == "bmp" || $fileType == "tif")//make sure file type is an accepted format
-						{
-							if(!move_uploaded_file($file["tmp_name"], $target))//move file to the uploads directory
-							{
-								$res["error"] = "Unable to move file to uploads directory"; //if it failed to move
-								break; //prematurely exit loop
-							} 
+						$prefix = null; //set to a valid prefix based on the type of upload (supporting document, proposal narrative, etc.)
+						if(strncmp($filename, "supportingDoc", 13) === 0){
+							$totalExisting = count(preg_grep('~^SD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+							$prefix = "SD".($totalExisting+1)."_";//increment the prefix
 						}
-						else
+						else if(strncmp($filename, "proposalNarrative", 17) === 0){
+							$totalExisting = count(preg_grep('~^PN.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+							$prefix = "PN".($totalExisting+1)."_";//increment the prefix
+						}
+						else if(strncmp($filename, "finalReportDoc", 11) === 0){
+							$totalExisting = count(preg_grep('~^FD.*~', scandir($uploadTo)));//find number of already existing files with this prefix
+							$prefix = "FD".($totalExisting+1)."_";//increment the prefix
+						}
+
+						if($prefix !== null)//upload prefix accepted
 						{
-							$res["error"] = "Filetype: ".$fileType." not accepted";
+							$target = $uploadTo."/".$prefix.$file["name"];
+							$fileType = strtolower(pathinfo($target, PATHINFO_EXTENSION));//get the file's type
+
+							if($fileType == "txt" || $fileType == "rtf" || $fileType == "doc" || $fileType == "docx" || $fileType == "xls" 
+								|| $fileType == "xlsx" || $fileType == "ppt" || $fileType == "pptx" || $fileType == "pdf" || $fileType == "jpg"
+								|| $fileType == "png" || $fileType == "bmp" || $fileType == "tif")//make sure file type is an accepted format
+							{
+								if(!move_uploaded_file($file["tmp_name"], $target))//move file to the uploads directory
+								{
+									$res["error"] = "Unable to move file to uploads directory"; //if it failed to move
+									break; //prematurely exit loop
+								} 
+							}
+							else
+							{
+								$res["error"] = "Filetype: ".$fileType." not accepted";
+								break; //prematurely exit loop
+							}
+						}
+						else //not accepted
+						{
+							$res["error"] = "Upload prefix not accepted";
 							break; //prematurely exit loop
 						}
 					}
-					else //not accepted
-					{
-						$res["error"] = "Upload prefix not accepted";
-						break; //prematurely exit loop
-					}
+				}else{
+					$res["error"] = "Unable to create upload directory";
 				}
 
 				if(!isset($res["error"])){$res = true;} //no errors, so success!
