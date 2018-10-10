@@ -4,7 +4,8 @@ var higeApp = angular.module('HIGE-app', []);
 /*App Controller*/
 higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce){
     //get PHP init variables
-   
+    $scope.maxUploadSize = scope_maxUploadSize;
+    
     //char limits
     $scope.maxProjectSummary = scope_maxProjectSummary;
     //user permissions
@@ -289,7 +290,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                             $scope.alertType = "warning";
                             $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
                         }
-                        $scope.populateForm(); //refresh the form again
                     }
                     else//didn't update
                     {
@@ -303,6 +303,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                     $scope.alertType = "danger";
                     $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
                 }
+                $scope.populateForm(); //refresh the form again
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
@@ -390,7 +391,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                         {
                             $scope.alertType = "success";
                             $scope.alertMessage = "Success! Your files have been uploaded.";
-                            $scope.uploadDocs = []; //empty array
                         }
                         else if(response.data === "false")//didn't update
                         {
@@ -402,7 +402,6 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                             $scope.alertType = "danger";
                             $scope.alertMessage = "There was an unexpected error with your upload! Error: " + response.data;
                         }
-                        $scope.populateForm(null);//refresh form so that new files show up
                     }
                     else //failure!
                     {
@@ -410,6 +409,8 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                         $scope.alertType = "danger";
                         $scope.alertMessage = "There was an error with your upload! Error: " + response.data.error;
                     }
+                    $scope.uploadDocs = []; //empty array
+                    $scope.populateForm(null);//refresh form so that new files show up
                 },function (error){
                     console.log(error, 'can not get data.');
                     $scope.alertType = "danger";
@@ -478,8 +479,21 @@ higeApp.directive('readdocuments', ['$parse', function ($parse) {
             scope.$apply(function(){
                 var newFiles = Array.from(element[0].files) //save the new files in an array, not a FileList
                 var allFiles = scope[attrs.readdocuments].concat(newFiles); //add new files to the full array
-                //console.log(allFiles);
-                modelSetter(scope, allFiles); //set to all files
+                var allSmallEnough = true; //set to false if a file is too large
+
+                allFiles.forEach(function (file){ //iterate over all selected files
+                    if(file.size > scope.maxUploadSize){//file is too large
+                        allSmallEnough = false;
+                    }
+                });
+
+                if(!allSmallEnough){ //one or more files are too large
+                    scope.alertType = "danger";
+                    scope.alertMessage = "One or more files are too large to upload! Max file size is "+(scope.maxUploadSize/1048576)+"MB.";
+                }
+                else{
+                    modelSetter(scope, allFiles); //set to all files
+                }
 
                 element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });

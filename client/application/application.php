@@ -12,8 +12,12 @@
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../functions/documents.php");
 		
-	/*save the current date*/
+	//save the current date
 	$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+	
+	//get the max file upload size
+	$maxUploadSize = file_upload_max_size();
+
 	//initialize next/current cycles to null, set depending on whether the app has been submitted yet
 	$thisCycle = null;
 	$nextCycle = null;
@@ -116,6 +120,7 @@
 		<!-- Set values from PHP on startup, accessible by the AngularJS Script -->
 		<script type="text/javascript">
 			var scope_currentDate = <?php echo json_encode($currentDate->format('Y-m-d')); ?>;
+			var scope_maxUploadSize = <?php echo json_encode($maxUploadSize); ?>;
 			var scope_thisCycle = <?php echo json_encode($thisCycle); ?>;
 			var scope_nextCycle = <?php echo json_encode($nextCycle); ?>;
 			var scope_maxName = <?php echo json_encode($maxName); ?>;
@@ -524,7 +529,7 @@
 					
 					<div class="row">
 						<h2 class="title">Attachments:</h2>
-						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Proposal Narrative, Conference Acceptance, Letter Of Invitation For Research, Etc.)</h3>
+						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Proposal Narrative, Conference Acceptance, Letter Of Invitation For Research, Etc.). The maximum allowed size for each file is {{maxUploadSize/1048576}}MB. </h3>
 					</div>
 					
 					
@@ -536,7 +541,7 @@
 								<hr>
 								<div class="upload-button-holder">
 									<label class="btn btn-primary">
-										UPLOAD PROPOSAL NARRATIVE<input type="file" hidden readproposalnarrative="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+										UPLOAD PROPOSAL NARRATIVE<input type="file" readproposalnarrative="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 									</label>
 								</div>
 								<h4>Your selected proposal narrative:</h4>
@@ -558,7 +563,7 @@
 								<hr>
 								<div class="upload-button-holder">
 									<label class="btn btn-primary">
-										UPLOAD SUPPORTING DOCUMENTS<input type="file" hidden readsupportingdocs="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+										UPLOAD SUPPORTING DOCUMENTS<input type="file" readsupportingdocs="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 									</label>
 								</div>
 								<h4>Your selected supporting documents:</h4>

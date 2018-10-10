@@ -5,6 +5,7 @@ var higeApp = angular.module('HIGE-app', []);
 higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce, $filter){
     //get PHP init variables
     $scope.currentDate = scope_currentDate;
+    $scope.maxUploadSize = scope_maxUploadSize;
     //either from the submit date or the current date
     $scope.thisCycle = scope_thisCycle;
     $scope.nextCycle = scope_nextCycle;
@@ -404,7 +405,6 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                             $scope.alertType = "warning";
                             $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
                         }
-                        $scope.populateForm(); //refresh the form again
                     }
                     else//didn't update
                     {
@@ -418,6 +418,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     $scope.alertType = "danger";
                     $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
                 }
+                $scope.populateForm(); //refresh the form again
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
@@ -553,8 +554,6 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                         {
                             $scope.alertType = "success";
                             $scope.alertMessage = "Success! Your files have been uploaded.";
-                            $scope.uploadProposalNarrative = []; //empty array
-                            $scope.uploadSupportingDocs = []; //empty array
                         }
                         else if(response.data === "false")//didn't update
                         {
@@ -566,7 +565,6 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                             $scope.alertType = "danger";
                             $scope.alertMessage = "There was an unexpected error with your upload! Error: " + response.data;
                         }
-                        $scope.populateForm(null);//refresh form so that new files show up
                     }
                     else //failure!
                     {
@@ -574,6 +572,9 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                         $scope.alertType = "danger";
                         $scope.alertMessage = "There was an error with your upload! Error: " + response.data.error;
                     }
+                    $scope.uploadProposalNarrative = []; //empty array
+                    $scope.uploadSupportingDocs = []; //empty array
+                    $scope.populateForm(null);//refresh form so that new files show up
                 },function (error){
                     console.log(error, 'can not get data.');
                     $scope.alertType = "danger";
@@ -667,8 +668,21 @@ higeApp.directive('readsupportingdocs', ['$parse', function ($parse) {
             scope.$apply(function(){
                 var newFiles = Array.from(element[0].files) //save the new files in an array, not a FileList
                 var allFiles = scope[attrs.readsupportingdocs].concat(newFiles); //add new files to the full array
-                //console.log(allFiles);
-                modelSetter(scope, allFiles); //set to all files
+                var allSmallEnough = true; //set to false if a file is too large
+
+                allFiles.forEach(function (file){ //iterate over all selected files
+                    if(file.size > scope.maxUploadSize){//file is too large
+                        allSmallEnough = false;
+                    }
+                });
+
+                if(!allSmallEnough){ //one or more files are too large
+                    scope.alertType = "danger";
+                    scope.alertMessage = "One or more files are too large to upload! Max file size is "+(scope.maxUploadSize/1048576)+"MB.";
+                }
+                else{
+                    modelSetter(scope, allFiles); //set to all files
+                }
 
                 element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });
@@ -689,7 +703,13 @@ higeApp.directive('readproposalnarrative', ['$parse', function ($parse) {
         element.bind('change', function(){
             scope.$apply(function(){
                 var newFile = Array.from(element[0].files) //save the new file only
-                modelSetter(scope, newFile); //set to only the newly chosen file
+                if(newFile[0].size <= scope.maxUploadSize){//file isn't too large
+                    modelSetter(scope, newFile); //set to only the newly chosen file
+                }
+                else{//file is too large
+                    scope.alertType = "danger";
+                    scope.alertMessage = "File is too large to upload! Max file size is "+(scope.maxUploadSize/1048576)+"MB.";
+                }
 
                 element[0].value = null; //reset value (so it doesn't try to remember previous state)
             });

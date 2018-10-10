@@ -12,7 +12,6 @@
 /************* FOR ADDING OR UPDATING FINAL REPORT VIA SUMBISSION ***************/
 
 $insertReturn = null; //will be an array with return code and status, or an array of errors
-//$data = array();    // array to pass back data
 
 $isAdmin = isAdministrator($conn, $CASbroncoNetID);
 

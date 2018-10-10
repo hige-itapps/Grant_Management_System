@@ -11,6 +11,9 @@
 	
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../functions/documents.php");
+
+	//get the max file upload size
+	$maxUploadSize = file_upload_max_size();
 	
 	/*get initial character limits for text fields*/
 	$reportCharMax = getFinalReportsMaxLengths($conn);
@@ -84,6 +87,7 @@
 
 		<!-- Set values from PHP on startup, accessible by the AngularJS Script -->
 		<script type="text/javascript">
+			var scope_maxUploadSize = <?php echo json_encode($maxUploadSize); ?>;
 			var scope_maxProjectSummary = <?php echo json_encode($maxProjectSummary); ?>;
 			var scope_isCreating = <?php echo json_encode($isCreating); ?>;
 			var scope_isReviewing = <?php echo json_encode($isReviewing); ?>;
@@ -267,7 +271,7 @@
 
 					<div class="row">
 						<h2 class="title">Attachments:</h2>
-						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Travel Expense Vouchers, Receipts, Travel Authorization Forms, Etc.)</h3>
+						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Travel Expense Vouchers, Receipts, Travel Authorization Forms, Etc.). The maximum allowed size for each file is {{maxUploadSize/1048576}}MB.</h3>
 					</div>
 					
 					
@@ -279,7 +283,7 @@
 								<hr>
 								<div class="upload-button-holder">
 									<label class="btn btn-primary">
-										UPLOAD DOCUMENTS<input type="file" hidden readdocuments="uploadDocs" name="uploadDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+										UPLOAD DOCUMENTS<input type="file" readdocuments="uploadDocs" name="uploadDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 									</label>
 								</div>
 								<h4>Your selected documents:</h4>
