@@ -592,7 +592,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
     //let anyone on the page download one of the associated files. NOTE- this technically isn't AJAX, just a php redirection, since AJAX file downloads from the server aren't possible.
     $scope.downloadFile = function(filename){
-        window.location.href = "../ajax/download_file.php?appID="+$scope.formData.updateID+"&filename="+filename; //redirect to download script
+        window.location.href = "../ajax/download_file.php?appID="+$scope.formData.updateID+"&filename="+encodeURIComponent(filename); //redirect to download script
     };
 
 

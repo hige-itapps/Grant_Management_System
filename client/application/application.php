@@ -539,10 +539,9 @@
 						<div class="col-md-6">
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
-								<div class="upload-button-holder">
-									<label class="btn btn-primary">
-										UPLOAD PROPOSAL NARRATIVE<input type="file" readproposalnarrative="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
-									</label>
+								<div class="upload-button btn btn-primary">
+									<label for="uploadProposalNarrative">UPLOAD PROPOSAL NARRATIVE</label>
+									<input type="file" readproposalnarrative="uploadProposalNarrative" id="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 								</div>
 								<h4>Your selected proposal narrative:</h4>
 								<ul>
@@ -561,10 +560,9 @@
 						<div class="col-md-6">
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
-								<div class="upload-button-holder">
-									<label class="btn btn-primary">
-										UPLOAD SUPPORTING DOCUMENTS<input type="file" readsupportingdocs="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
-									</label>
+								<div class="upload-button btn btn-primary">
+									<label for="uploadSupportingDocs">UPLOAD SUPPORTING DOCUMENTS</label>
+									<input type="file" readsupportingdocs="uploadSupportingDocs" id="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 								</div>
 								<h4>Your selected supporting documents:</h4>
 								<ul>

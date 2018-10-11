@@ -281,10 +281,9 @@
 						<div class="col-md-12">
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
-								<div class="upload-button-holder">
-									<label class="btn btn-primary">
-										UPLOAD DOCUMENTS<input type="file" readdocuments="uploadDocs" name="uploadDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
-									</label>
+								<div class="upload-button btn btn-primary">
+									<label for="uploadDocs">UPLOAD DOCUMENTS</label>
+									<input type="file" readdocuments="uploadDocs" id="uploadDocs" name="uploadDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
 								</div>
 								<h4>Your selected documents:</h4>
 								<ul>

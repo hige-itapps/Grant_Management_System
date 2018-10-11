@@ -230,20 +230,28 @@ h1, h2, h3, h4, h5{
 }
 
 /*Style the upload buttons*/
-.upload-button-holder{
-	text-align: center;
-}
-.upload-button-holder > label{
+.upload-button{
 	position: relative;
 }
+.upload-button > label{
+	margin: 0;
+}
+/*make focus obvious just like with other buttons*/
+.upload-button:focus-within{
+	background-color: #165a9e!important;
+	border-color: #104376!important;
+	outline: #ff8703 3px solid!important;
+	outline-offset: -2px;
+}
 /*hide inputs so that they are still focusable but not visually detracting*/
-.upload-button-holder > label > input{
+.upload-button > input{
 	width: 100%;
     height: 100%;
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0;
+	opacity: 0;
+	cursor: pointer;
 }
 
 /*Style the uploaded files lists*/
