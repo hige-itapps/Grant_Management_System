@@ -170,6 +170,9 @@
 					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning">TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
 					<button type="button" ng-click="populateForm(null)" class="btn btn-warning">RELOAD SAVED DATA</button>
 					<button type="button" ng-click="insertApplication()" class="btn btn-warning">SUBMIT CHANGES</button>
+					<div class="delete-button-holder">
+						<button type="button" ng-click="deleteApplication()" class="btn btn-danger">DELETE APPLICATION</button>
+					</div>
 				</div>
 
 					<!-- application form -->

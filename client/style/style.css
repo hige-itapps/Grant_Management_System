@@ -121,6 +121,16 @@ h2.HomeText{
 .buttons-group{
 	text-align: center;
 }
+.buttons-group > .btn{
+	margin-bottom: 5px;
+}
+.delete-button-holder{
+	display: inline-block;
+	float: right;
+	padding: 30px;
+    background-color: rgba(255, 0, 0, 0.2);
+    border-radius: 5px;
+}
 .bottom-buttons{
 	margin-top: 20px;
 	margin-bottom: 20px;

@@ -1326,7 +1326,7 @@
 		$budgetArray[i][1] is the details on the expense
 		$budgetArray[i][2] is the actual cost
 
-	This function returns a data array; If the application is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
+	This function returns a data array; If the application is successfully inserted or updated, then data["success"] is set to true.
 	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the application's fields.
 	
 	*/
@@ -1790,17 +1790,15 @@
 				$data['success'] = false;
 				$data['errors']  = $errors;
 			} else {
-				// if there are no errors, return a message
+				// if there are no errors, return true and the appID
 				$data['success'] = true;
 				if(!$updating)
 				{
 					$data['appID'] = $newAppID;
-					$data['message'] = "Successfully inserted application into database";
 				}
 				else
 				{
 					$data['appID'] = $updateID;
-					$data['message'] = "Successfully updated application in database";
 				}
 			}
 			
@@ -1814,7 +1812,7 @@
 	/*
 	Insert a final report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 
-	This function returns a data array; If the report is successfully inserted or updated, then data["success"] is set to true, and data["message"] is set to a confirmation message.
+	This function returns a data array; If the report is successfully inserted or updated, then data["success"] is set to true.
 	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the report's fields.
 	*/
 	if(!function_exists('insertFinalReport')){
@@ -1964,19 +1962,87 @@
 				$data['success'] = false;
 				$data['errors']  = $errors;
 			} else {
-				// if there are no errors, return a message
+				// if there are no errors, return true
 				$data['success'] = true;
-				if(!$updating)
-				{
-					$data['message'] = "Successfully inserted final report into database";
-				}
-				else
-				{
-					$data['message'] = "Successfully updated final report in database";
-				}
 			}
 			
 			//$data["temp"] = "just a test";
+			return $data; //return both the return code and status
+		}
+	}
+
+
+
+	/*
+	Remove an application from the database. This will remove a final report if present, any associated emails or notes, all budget items, and the base application itself.
+
+	This function returns a data array; If the application is successfully deleted then data["success"] is set to true.
+	Otherwise, data["success"] is set to false, and data["error"] will contain any relevant errors.
+	
+	*/
+	if(!function_exists('removeApplication')){
+		function removeApplication($conn, $appID)
+		{
+			$data = array(); // array to pass back data
+			$data["success"] = false; //set to true if successful
+			
+			try
+			{
+				$conn->beginTransaction(); //begin atomic transaction
+
+				//first, delete a final report if there is one
+				$sql = $conn->prepare("DELETE FROM final_reports WHERE ApplicationID = :appID");
+				$sql->bindParam(':appID', $appID);
+				if($sql->execute() !== TRUE){ //query failed
+					$data["error"][] = "Query failed to remove associated final reports.";
+				}
+
+				if(!isset($data["error"])){ //no errors yet, move on to deleting emails
+					$sql = $conn->prepare("DELETE FROM emails WHERE ApplicationID = :appID");
+					$sql->bindParam(':appID', $appID);
+					if($sql->execute() !== TRUE){ //query failed
+						$data["error"][] = "Query failed to remove associated emails.";
+					}
+				}
+				if(!isset($data["error"])){ //no errors yet, move on to deleting notes
+					$sql = $conn->prepare("DELETE FROM notes WHERE ApplicationID = :appID");
+					$sql->bindParam(':appID', $appID);
+					if($sql->execute() !== TRUE){ //query failed
+						$data["error"][] = "Query failed to remove associated notes.";
+					}
+				}
+				if(!isset($data["error"])){ //no errors yet, move on to deleting budget items
+					$sql = $conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID = :appID");
+					$sql->bindParam(':appID', $appID);
+					if($sql->execute() !== TRUE){ //query failed
+						$data["error"][] = "Query failed to remove associated budget items.";
+					}
+				}
+				if(!isset($data["error"])){ //no errors yet, move on to deleting the base application
+					$sql = $conn->prepare("DELETE FROM applications WHERE ID = :appID");
+					$sql->bindParam(':appID', $appID);
+					if($sql->execute() !== TRUE){ //query failed
+						$data["error"][] = "Query failed to remove the base application.";
+					}
+				}
+
+				if(!isset($data["error"])){ //no errors at all, can commit
+					$conn->commit();
+				}
+				else{ //an error occurred, so rollback
+					$conn->rollback();
+				}
+			}
+			catch(Exception $e)
+			{
+				$data["error"][] = "Exception when trying to delete application: ".$e->getMessage();
+			}
+
+			//response if there are errors
+			if (!isset($data["error"])){
+				$data['success'] = true;
+			}
+			
 			return $data; //return both the return code and status
 		}
 	}

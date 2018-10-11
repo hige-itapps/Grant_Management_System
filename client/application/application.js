@@ -367,6 +367,45 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     };
 
 
+
+    //delete this entire application -- only admins are capable of doing this
+    $scope.deleteApplication = function(){
+        var retVal = prompt("WARNING - BY DELETING THIS APPLICATION, EVERYTHING ASSOCIATED WITH THIS APPLICATION WILL BE WIPED FROM THE DATABASE! YOU WILL NOT BE ABLE TO UNDO THIS OPERATION! To confirm, please type 'DELETE' into the confirmation box: ", "confirm delete");
+        if(retVal !== "DELETE"){
+            return; //exit early if not confirmed
+        }
+        //continue if confirmed, start a loading alert
+        $scope.loadingAlert();
+
+        $http({
+            method  : 'POST',
+            url     : '../ajax/remove_application.php',
+            data    : $.param({appID: $scope.formData.updateID}),  // pass in appID string
+            headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+        .then(function (response) {
+            console.log(response, 'res');
+            if(typeof response.data.error === 'undefined') //ran function as expected
+            {
+                var newAlertType = "success";
+                var newAlertMessage = "Success! The application was deleted.";
+                $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
+            }
+            else //failure!
+            {
+                console.log(response.data.error);
+                $scope.alertType = "danger";
+                $scope.alertMessage = "There was an error when trying to delete this application! Error: " + response.data.error;
+                $scope.populateForm(); //refresh the form again
+            }
+        },function (error){
+            console.log(error, 'can not get data.');
+            $scope.alertType = "danger";
+            $scope.alertMessage = "There was an unexpected error when trying to delete this application!";
+        });
+    }
+
+
     //approve, hold, or deny application with the status parameter
     $scope.approveApplication = function(status){
 
