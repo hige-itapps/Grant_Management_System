@@ -3,21 +3,22 @@
 	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../../functions/database.php");
-	$conn = connection();
+	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../functions/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/cycles.php");
+
+	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
 
 	//Initialize everything with PHP
-	$totalAppsToSign = getNumberOfApplicationsToSign($conn, $CASemail, $CASbroncoNetID); //get number of applications this user needs to sign
-	$totalSignedApps = getNumberOfSignedApplications($conn, $CASemail); //get number of previously signed applications
-	$isUserAllowedToCreateApplication = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true); //Make sure user is allowed to make an application. Check the latest cycle possible
-	$hasPendingApplication = hasPendingApplication($conn, $CASbroncoNetID); //Let the user know they've got a pending application (if they do)
-	$hasApplicationOnHold = hasApplicationOnHold($conn, $CASbroncoNetID); //Let the user know they've got an application on hold (if they do)
-	$totalPrevApps = getNumberOfApplications($conn, $CASbroncoNetID); //Let user see the apps they've submitted, if they have at least 1
-	$isUserAllowedToSeeApplications = isUserAllowedToSeeApplications($conn, $CASbroncoNetID); //Verify that user is allowed to freely see applications
-	$isAdmin = isAdministrator($conn, $CASbroncoNetID); //Verify user as administrator to give link to admin view
+	$totalAppsToSign = $database->getNumberOfApplicationsToSign($CASemail, $CASbroncoNetID); //get number of applications this user needs to sign
+	$totalSignedApps = $database->getNumberOfSignedApplications($CASemail); //get number of previously signed applications
+	$isUserAllowedToCreateApplication = $database->isUserAllowedToCreateApplication($CASbroncoNetID, true); //Make sure user is allowed to make an application. Check the latest cycle possible
+	$hasPendingApplication = $database->hasPendingApplication($CASbroncoNetID); //Let the user know they've got a pending application (if they do)
+	$hasApplicationOnHold = $database->hasApplicationOnHold($CASbroncoNetID); //Let the user know they've got an application on hold (if they do)
+	$totalPrevApps = $database->getNumberOfApplications($CASbroncoNetID); //Let user see the apps they've submitted, if they have at least 1
+	$isUserAllowedToSeeApplications = $database->isUserAllowedToSeeApplications($CASbroncoNetID); //Verify that user is allowed to freely see applications
+	$isAdmin = $database->isAdministrator($CASbroncoNetID); //Verify user as administrator to give link to admin view
 
 	$alertType = isset($_POST["alert_type"]) ? $_POST["alert_type"] : null; //set the alert type if it exists, otherwise set to null
 	$alertMessage = isset($_POST["alert_message"]) ? $_POST["alert_message"] : null; //set the alert type if it exists, otherwise set to null
@@ -25,7 +26,7 @@
 	$nextApplicableCycle = ''; //init next applicable cycle as string
 	if(!$isUserAllowedToCreateApplication && $totalPrevApps > 0) //if user is not allowed to create a new application but they have applied before, let them know when they can next apply
 	{
-		$latestApprovedApplication = getMostRecentApprovedApplication($conn, $CASbroncoNetID); //get the most recent approved application, if any
+		$latestApprovedApplication = $database->getMostRecentApprovedApplication($CASbroncoNetID); //get the most recent approved application, if any
 		if($latestApprovedApplication != null) //actually has one
 		{
 			$nextApplicableCycle = getNextCycleToApplyFor(getCycleName( //get next applicable cycle as a string
@@ -38,10 +39,10 @@
 
 	$finalReportID = -1; //set to a positive number if there is a final report to create
 
-	$mostRecentApplication = getMostRecentApprovedApplication($conn, $CASbroncoNetID); //null if none
+	$mostRecentApplication = $database->getMostRecentApprovedApplication($CASbroncoNetID); //null if none
 	if($mostRecentApplication != null)
 	{
-		if(isUserAllowedToCreateFinalReport($conn, $CASbroncoNetID, $mostRecentApplication->id))
+		if($database->isUserAllowedToCreateFinalReport($CASbroncoNetID, $mostRecentApplication->id))
 		{
 			$finalReportID = $mostRecentApplication->id; //set it to the appropriate ID
 		}
@@ -121,5 +122,5 @@
 	
 </html>
 <?php
-	$conn = null; //close connection
+	$database->close(); //close database connections
 ?>

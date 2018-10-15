@@ -3,20 +3,22 @@
 	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../../functions/database.php");
-	$conn = connection();
+	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 	
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../functions/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/cycles.php");
 	
 	/*Document functions*/
-	include_once(dirname(__FILE__) . "/../../functions/documents.php");
+	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
-	//get the max file upload size
-	$maxUploadSize = file_upload_max_size();
+	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	$documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
+
+	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
+	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
 	
 	/*get initial character limits for text fields*/
-	$reportCharMax = getFinalReportsMaxLengths($conn);
+	$reportCharMax = $database->getFinalReportsMaxLengths();
 
 	$maxProjectSummary = $reportCharMax[array_search('ProjectSummary', array_column($reportCharMax, 0))][1]; //project summary char limit
 	
@@ -40,30 +42,30 @@
 	No matter what, the app ID MUST BE SET*/
 	if(isset($_GET["id"]))
 	{
-		if($permissionSet = $isAdmin = isAdministrator($conn, $CASbroncoNetID)){} //admin check
-		else if($permissionSet = $isFinalReportApprover = isFinalReportApprover($conn, $CASbroncoNetID)){} //final report approver check
-		else if($permissionSet = $isCommittee = isCommitteeMember($conn, $CASbroncoNetID)){} //committee member check
-		else if($permissionSet = $isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
-		else if($permissionSet = $isCreating = isUserAllowedToCreateFinalReport($conn, $CASbroncoNetID, $_GET['id'])){} //applicant creating check
-		else if($permissionSet = $isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id']) && getFinalReport($conn, $_GET['id'])){} //applicant reviewing check
+		if($permissionSet = $isAdmin = $database->isAdministrator($CASbroncoNetID)){} //admin check
+		else if($permissionSet = $isFinalReportApprover = $database->isFinalReportApprover($CASbroncoNetID)){} //final report approver check
+		else if($permissionSet = $isCommittee = $database->isCommitteeMember($CASbroncoNetID)){} //committee member check
+		else if($permissionSet = $isChairReviewing = $database->isUserDepartmentChair($$CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
+		else if($permissionSet = $isCreating = $database->isUserAllowedToCreateFinalReport($CASbroncoNetID, $_GET['id'])){} //applicant creating check
+		else if($permissionSet = $isReviewing = $database->doesUserOwnApplication($CASbroncoNetID, $_GET['id']) && $database->getFinalReport($_GET['id'])){} //applicant reviewing check
 	}
 	
 	/*Verify that user is allowed to render report*/
 	if($permissionSet)
 	{
 		$appID = $_GET["id"];
-		$app = getApplication($conn, $appID); //get application Data
+		$app = $database->getApplication($appID); //get application Data
 
 		/*Initialize variables if report has already been created*/
 		if(!$isCreating)
 		{
-			$report = getFinalReport($conn, $appID); //get final report data
-			$reportFiles = getFileNames($appID);
-			$reportEmails = getEmails($conn, $appID);
+			$report = $database->getFinalReport($appID); //get final report data
+			$reportFiles = $documentsHelper->getFileNames($appID);
+			$reportEmails = $database->getEmails($appID);
 
 			if($isAdmin || $isFinalReportApprover || $isCommittee) //if hige staff, then retrieve staff notes
 			{
-				$staffNotes = getStaffNotes($conn, $appID);
+				$staffNotes = $database->getStaffNotes($appID);
 			}
 		} 
 ?>
@@ -88,6 +90,7 @@
 		<!-- Set values from PHP on startup, accessible by the AngularJS Script -->
 		<script type="text/javascript">
 			var scope_maxUploadSize = <?php echo json_encode($maxUploadSize); ?>;
+			var scope_uploadTypes = <?php echo json_encode($uploadTypes); ?>;
 			var scope_maxProjectSummary = <?php echo json_encode($maxProjectSummary); ?>;
 			var scope_isCreating = <?php echo json_encode($isCreating); ?>;
 			var scope_isReviewing = <?php echo json_encode($isReviewing); ?>;
@@ -283,7 +286,7 @@
 								<hr>
 								<div class="upload-button btn btn-primary">
 									<label for="uploadDocs">UPLOAD DOCUMENTS</label>
-									<input type="file" readdocuments="uploadDocs" id="uploadDocs" name="uploadDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+									<input type="file" readdocuments="uploadDocs" id="uploadDocs" name="uploadDocs" multiple accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected documents:</h4>
 								<ul>
@@ -366,5 +369,5 @@
 	}else{
 		include '../include/permission_denied.html';
 	}
-	$conn = null; //close connection
+	$database->close(); //close database connections
 ?>

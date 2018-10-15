@@ -3,15 +3,16 @@
 	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../../functions/database.php");
-	$conn = connection();
+	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
+
+	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
 		
-	if(isAdministrator($conn, $CASbroncoNetID)) 
+	if($database->isAdministrator($CASbroncoNetID)) 
 	{ 
-		$administrators = getAdministrators($conn);
-		$applicationApprovers = getApplicationApprovers($conn);
-		$committee = getCommittee($conn);
-		$finalReportApprovers = getfinalReportApprovers($conn);
+		$administrators = $database->getAdministrators();
+		$applicationApprovers = $database->getApplicationApprovers();
+		$committee = $database->getCommittee();
+		$finalReportApprovers = $database->getfinalReportApprovers();
 ?>
 
 
@@ -206,5 +207,5 @@
 	}else{
 		include '../include/permission_denied.html';
 	}
-	$conn = null; //close connection
+	$database->close(); //close database connections
 ?>

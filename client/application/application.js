@@ -6,6 +6,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     //get PHP init variables
     $scope.currentDate = scope_currentDate;
     $scope.maxUploadSize = scope_maxUploadSize;
+    $scope.uploadTypes = scope_uploadTypes;
     //either from the submit date or the current date
     $scope.thisCycle = scope_thisCycle;
     $scope.nextCycle = scope_nextCycle;
@@ -149,7 +150,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         {
             $http({
                 method  : 'POST',
-                url     : '../ajax/get_application.php',
+                url     : '../api.php?get_application',
                 data    : $.param({appID: $scope.formData.updateID}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
@@ -281,7 +282,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
             $http({
                 method  : 'POST',
-                url     : '../ajax/submit_application.php',
+                url     : '../api.php?submit_application',
                 data    : fd,  // pass in the FormData object
                 transformRequest: angular.identity,
                 headers : { 'Content-Type': undefined,'Process-Data': false}  //allow for file and text upload
@@ -379,7 +380,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         $http({
             method  : 'POST',
-            url     : '../ajax/remove_application.php',
+            url     : '../api.php?remove_application',
             data    : $.param({appID: $scope.formData.updateID}),  // pass in appID string
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
@@ -416,7 +417,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
             $http({
                 method  : 'POST',
-                url     : '../ajax/approve_application.php',
+                url     : '../api.php?approve_application',
                 data    : $.param({appID: $scope.formData.updateID, status: status, amount: $scope.formData.amountAwarded, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
@@ -477,7 +478,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
             $http({
                 method  : 'POST',
-                url     : '../ajax/chair_approval.php',
+                url     : '../api.php?chair_approval',
                 data    : $.param({appID: $scope.formData.updateID, deptChairApproval: $scope.formData.deptChairApproval}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
@@ -521,7 +522,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         $http({
             method  : 'POST',
-            url     : '../ajax/save_note.php',
+            url     : '../api.php?save_note',
             data    : $.param({appID: $scope.formData.updateID, note: $scope.staffNotes[1]}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
@@ -579,7 +580,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             {
                 $http({
                     method  : 'POST',
-                    url     : '../ajax/upload_file.php',
+                    url     : '../api.php?upload_file',
                     data    : fd,  // pass in the FormData object
                     transformRequest: angular.identity,
                     headers: {'Content-Type': undefined,'Process-Data': false} //allow for file upload
@@ -631,7 +632,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
     //let anyone on the page download one of the associated files. NOTE- this technically isn't AJAX, just a php redirection, since AJAX file downloads from the server aren't possible.
     $scope.downloadFile = function(filename){
-        window.location.href = "../ajax/download_file.php?appID="+$scope.formData.updateID+"&filename="+encodeURIComponent(filename); //redirect to download script
+        window.location.href = "../api.php?download_file&appID="+$scope.formData.updateID+"&filename="+encodeURIComponent(filename); //redirect to download script
     };
 
 

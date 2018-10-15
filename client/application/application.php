@@ -3,20 +3,24 @@
 	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
 	
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../../functions/database.php");
-	$conn = connection();
+	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 	
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../functions/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/cycles.php");
 	
 	/*Document functions*/
-	include_once(dirname(__FILE__) . "/../../functions/documents.php");
-		
-	//save the current date
-	$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d"));
+	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
+
+	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	$documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
+
+	$config_url = dirname(__FILE__).'/../../config.ini'; //set config file url
+	$settings = parse_ini_file($config_url); //get all settings
 	
-	//get the max file upload size
-	$maxUploadSize = file_upload_max_size();
+	$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d")); //save the current date
+	
+	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
+	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
 
 	//initialize next/current cycles to null, set depending on whether the app has been submitted yet
 	$thisCycle = null;
@@ -30,8 +34,8 @@
 	$staffNotes = null; //only set if app exists AND user is a staff member
 	
 	/*get initial character limits for text fields*/
-	$appCharMax = getApplicationsMaxLengths($conn);
-	$appBudgetCharMax = getApplicationsBudgetsMaxLengths($conn);
+	$appCharMax = $database->getApplicationsMaxLengths();
+	$appBudgetCharMax = $database->getApplicationsBudgetsMaxLengths();
 	
 	$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
 	$maxDepartment = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
@@ -60,16 +64,16 @@
 	For everything besides application creation, the app ID MUST BE SET*/
 	if(isset($_GET["id"]))
 	{
-		if($permissionSet = $isAdmin = isAdministrator($conn, $CASbroncoNetID)){} //admin check
-		else if($permissionSet = $isApprover = isApplicationApprover($conn, $CASbroncoNetID)){} //application approver check
-		else if($permissionSet = $isCommittee = isCommitteeMember($conn, $CASbroncoNetID)){} //committee member check
-		else if($permissionSet = $isChair = isUserAllowedToSignApplication($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair check
-		else if($permissionSet = $isChairReviewing = isUserDepartmentChair($conn, $CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
-		else if($permissionSet = $isReviewing = doesUserOwnApplication($conn, $CASbroncoNetID, $_GET['id'])){} //applicant reviewing check
+		if($permissionSet = $isAdmin = $database->isAdministrator($CASbroncoNetID)){} //admin check
+		else if($permissionSet = $isApprover = $database->isApplicationApprover($CASbroncoNetID)){} //application approver check
+		else if($permissionSet = $isCommittee = $database->isCommitteeMember($CASbroncoNetID)){} //committee member check
+		else if($permissionSet = $isChair = $database->isUserAllowedToSignApplication($CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair check
+		else if($permissionSet = $isChairReviewing = $database->isUserDepartmentChair($CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
+		else if($permissionSet = $isReviewing = $database->doesUserOwnApplication($CASbroncoNetID, $_GET['id'])){} //applicant reviewing check
 	}
 	if(!$permissionSet && !isset($_GET["id"])) //applicant creating check. Note- if the app id is set, then by default the application cannot be created
 	{
-		$permissionSet = $isCreating = isUserAllowedToCreateApplication($conn, $CASbroncoNetID, true); //applicant is creating an application (check latest date possible)
+		$permissionSet = $isCreating = $database->isUserAllowedToCreateApplication($CASbroncoNetID, true); //applicant is creating an application (check latest date possible)
 	}
 
 	/*Verify that user is allowed to render application*/
@@ -80,17 +84,17 @@
 		{
 			$appID = $_GET["id"];
 			
-			$app = getApplication($conn, $appID); //get application Data
+			$app = $database->getApplication($appID); //get application Data
 			$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
-			$appFiles = getFileNames($appID);
-			$appEmails = getEmails($conn, $appID);
+			$appFiles = $documentsHelper->getFileNames($appID);
+			$appEmails = $database->getEmails($appID);
 
 			$thisCycle = getCycleName($submitDate, false, true);
 			$nextCycle = getCycleName($submitDate, true, true);
 
 			if($isAdmin || $isApprover || $isCommittee) //if hige staff, then retrieve staff notes
 			{
-				$staffNotes = getStaffNotes($conn, $appID);
+				$staffNotes = $database->getStaffNotes($appID);
 			}
 		}
 		else
@@ -121,6 +125,7 @@
 		<script type="text/javascript">
 			var scope_currentDate = <?php echo json_encode($currentDate->format('Y-m-d')); ?>;
 			var scope_maxUploadSize = <?php echo json_encode($maxUploadSize); ?>;
+			var scope_uploadTypes = <?php echo json_encode($uploadTypes); ?>;
 			var scope_thisCycle = <?php echo json_encode($thisCycle); ?>;
 			var scope_nextCycle = <?php echo json_encode($nextCycle); ?>;
 			var scope_maxName = <?php echo json_encode($maxName); ?>;
@@ -143,7 +148,7 @@
 			var var_appFiles = <?php echo json_encode($appFiles); ?>; //the associated uploaded files
 			var var_appEmails = <?php echo json_encode($appEmails); ?>; //the associated saved emails
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
-			var scope_allowedFirstCycle = <?php echo json_encode(isUserAllowedToCreateApplication($conn, $CASbroncoNetID, false)); ?>;
+			var scope_allowedFirstCycle = <?php echo json_encode($database->isUserAllowedToCreateApplication($CASbroncoNetID, false)); ?>;
 			var scope_shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
 			var scope_staffNotes = <?php echo json_encode($staffNotes); ?>; //the associated staff notes if allowed
 		</script>
@@ -544,7 +549,7 @@
 								<hr>
 								<div class="upload-button btn btn-primary">
 									<label for="uploadProposalNarrative">UPLOAD PROPOSAL NARRATIVE</label>
-									<input type="file" readproposalnarrative="uploadProposalNarrative" id="uploadProposalNarrative" name="uploadProposalNarrative" accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+									<input type="file" readproposalnarrative="uploadProposalNarrative" id="uploadProposalNarrative" name="uploadProposalNarrative" accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected proposal narrative:</h4>
 								<ul>
@@ -565,7 +570,7 @@
 								<hr>
 								<div class="upload-button btn btn-primary">
 									<label for="uploadSupportingDocs">UPLOAD SUPPORTING DOCUMENTS</label>
-									<input type="file" readsupportingdocs="uploadSupportingDocs" id="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept=".txt, .rtf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .jpg, .png, .bmp, .tif"/>
+									<input type="file" readsupportingdocs="uploadSupportingDocs" id="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected supporting documents:</h4>
 								<ul>
@@ -680,5 +685,5 @@
 	}else{
 		include '../include/permission_denied.html';
 	}
-	$conn = null; //close connection
+	$database->close(); //close database connections
 ?>

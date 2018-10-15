@@ -1,6 +1,6 @@
 <?php
 	/*Get DB connection*/
-	include_once(dirname(__FILE__) . "/../functions/database.php");
+	include_once(dirname(__FILE__) . "/DatabaseHelper.php");
 
 	use PHPMailer\PHPMailer\PHPMailer;
 	use PHPMailer\PHPMailer\Exception;
@@ -40,9 +40,9 @@
 
 		$fullMessage = $customMessage . $footer; //combine everything
 
-		$conn = connection();//get DB connection
+		$database = new DatabaseHelper(); //database helper object used for some verification and insertion
 
-		$saveResult = saveEmail($conn, $appID, $customSubject, $fullMessage); //try to save the email message
+		$saveResult = $database->saveEmail($appID, $customSubject, $fullMessage); //try to save the email message
 		$data["saveSuccess"] = $saveResult; //save it to return it later
 
 		if($saveResult === true) //if it saved, then try to send it
@@ -80,7 +80,7 @@
 			}
 		}
 
-		$conn = null; //close connection
+		$database->close(); //close database connections
 
 		return $data; //pass back the data array
 	}
