@@ -1,17 +1,18 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
 	
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 	
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../server/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 	
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
 	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	$cycles = new Cycles(); //Cycles helper object
 	$documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
 
 	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size

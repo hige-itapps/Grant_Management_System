@@ -1,14 +1,23 @@
 <?php
 /*
-    Database helper object for transactions
+    Database helper class for transactions
     This class is built to support all necessary queries to the database.
 */
 
-include_once(dirname(__FILE__) . "/../include/classDefinitions.php");
-include_once('cycles.php');
+/*Application and Final Report classes*/
+include_once(dirname(__FILE__) . "/Application.php");
+include_once(dirname(__FILE__) . "/FinalReport.php");
+
+/*Cycles class to deal with yearly cycles*/
+include_once(dirname(__FILE__) . '/Cycles.php');
+
+/*Logger*/
+include_once(dirname(__FILE__) . "/Logger.php");
 
 class DatabaseHelper
 {
+	private $logger; //for logging to files
+	private $cycles; //for cycle functions
 	private $conn; //pdo database connection object
 	private $sql; //pdo prepared statement
 	private $config_url; //url of config file
@@ -16,6 +25,8 @@ class DatabaseHelper
 
 	/* Constructior retrieves configurations and sets up a connection */
 	public function __construct(){
+		$this->logger = new Logger(); //initialize the logger
+		$this->cycles = new Cycles(); //Cycles object
 		$this->config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$this->settings = parse_ini_file($this->config_url); //get all settings
 		$this->connect();
@@ -477,9 +488,9 @@ class DatabaseHelper
 			
 			if($lastApprovedApp != null){//if a previous application exists
 				$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateSubmitted);
-				$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
-				$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
-				$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
+				$lastCycle = $this->cycles->getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+				$curCycle = $this->cycles->getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+				$lastApproved = $this->cycles->areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycles in function down below
 			}
 			else{//no previous application
 				$lastApproved = true;
@@ -748,10 +759,10 @@ class DatabaseHelper
 
 				foreach($res as $i){//go through all the dates, grab the cycles
 					if(!empty($i)){
-						array_push($pastCycles, getCycleName(DateTime::createFromFormat('Y-m-d', $i[0]), $i[1], false)); //push the cycle name to the array
+						array_push($pastCycles, $this->cycles->getCycleName(DateTime::createFromFormat('Y-m-d', $i[0]), $i[1], false)); //push the cycle name to the array
 					}
 				}
-				$pastCycles = sortCycles($pastCycles); //sort cycles in descending order
+				$pastCycles = $this->cycles->sortCycles($pastCycles); //sort cycles in descending order
 			}
 			
 			/* return value */
@@ -906,7 +917,8 @@ class DatabaseHelper
 			
 		}
 		catch(Exception $e){
-			$errors["other"] = "Exception when sanitizing fields!";
+			$errorMessage = $this->logger->logError("Application not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+			$errors["other"] = "Error: Application not saved, exception when sanitizing fields. ".$errorMessage;
 		}
 		
 		/*Now validate everything that needs it*/
@@ -1005,9 +1017,9 @@ class DatabaseHelper
 			$lastApprovedApp = $this->getMostRecentApprovedApplication($broncoNetID);
 			if($lastApprovedApp != null){//if a previous application exists
 				$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateSubmitted);
-				$lastCycle = getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
-				$curCycle = getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
-				$lastApproved = areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
+				$lastCycle = $this->cycles->getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
+				$curCycle = $this->cycles->getCycleName(DateTime::createFromFormat('Y/m/d', date("Y/m/d")), $nextCycle, false);
+				$lastApproved = $this->cycles->areCyclesFarEnoughApart($lastCycle, $curCycle); //check cycle age
 
 				if(!$lastApproved){
 					$errors["other"] = "Applicant is not allowed to apply for the specified cycle (not enough cycles have passed since last approved application).";
@@ -1109,7 +1121,8 @@ class DatabaseHelper
 									$this->sql->bindParam(':details', $i['details']);
 									
 									if ($this->sql->execute() !== TRUE){//query failed
-										$errors["other"] = "Query failed to insert budget items";
+										$errorMessage = $this->logger->logError("Application not saved, query failed to insert budget items.", $CASbroncoNetID, dirname(__FILE__), true);
+										$errors["other"] = "Error: Application not saved, query failed to insert budget items. ".$errorMessage;
 										break;
 									}
 								}
@@ -1124,15 +1137,18 @@ class DatabaseHelper
 							}
 						}
 						catch(Exception $e){
-							$errors["other"] = "Exception when trying to insert application budget items into database: ".$e->getMessage();
+							$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert budget items: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+							$errors["other"] = "Error: Application not saved, internal exception when trying to insert budget items. ".$errorMessage;
 						}
 					} 
 					else{//query failed
-						$errors["other"] = "Query failed to insert application";
+						$errorMessage = $this->logger->logError("Application not saved, query failed to insert application.", $CASbroncoNetID, dirname(__FILE__), true);
+						$errors["other"] = "Error: Application not saved, query failed to insert application. ".$errorMessage;
 					}
 				}
 				catch(Exception $e){
-					$errors["other"] = "Exception when trying to insert application into database: ".$e->getMessage();
+					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert application: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+					$errors["other"] = "Error: Application not saved, internal exception when trying to insert application. ".$errorMessage;
 				}
 			}
 			else{//just updating
@@ -1186,7 +1202,8 @@ class DatabaseHelper
 									$this->sql->bindParam(':details', $i['details']);
 									
 									if ($this->sql->execute() !== TRUE){//query failed
-										$errors["other"] = "Query failed to insert new budget items";
+										$errorMessage = $this->logger->logError("Application not saved, query failed to insert new budget items.", $CASbroncoNetID, dirname(__FILE__), true);
+										$errors["other"] = "Error: Application not saved, query failed to insert new budget items. ".$errorMessage;
 										break;
 									}
 								}
@@ -1201,15 +1218,18 @@ class DatabaseHelper
 							}
 						}
 						else{
-							$errors["other"] = "Query failed to delete old budget items";
+							$errorMessage = $this->logger->logError("Application not saved, query failed to delete old budget items.", $CASbroncoNetID, dirname(__FILE__), true);
+							$errors["other"] = "Error: Application not saved, query failed to delete old budget items. ".$errorMessage;
 						}
 					} 
 					else{//query failed
-						$errors["other"] = "Query failed to update application";
+						$errorMessage = $this->logger->logError("Application not saved, query failed to update application.", $CASbroncoNetID, dirname(__FILE__), true);
+						$errors["other"] = "Error: Application not saved, query failed to update application. ".$errorMessage;
 					}
 				}
 				catch(Exception $e){
-					$errors["other"] = "Exception when trying to update application in database: ".$e->getMessage();
+					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to update application: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+					$errors["other"] = "Error: Application not saved, internal exception when trying to update application. ".$errorMessage;
 				}
 			}
 		}
@@ -1251,7 +1271,8 @@ class DatabaseHelper
 			$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
 		}
 		catch(Exception $e){
-			$errors["other"] = "Exception when sanitizing fields!";
+			$errorMessage = $this->logger->logError("Final report not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+			$errors["other"] = "Error: Final report not saved, exception when sanitizing fields. ".$errorMessage;
 		}
 		
 		/*Now validate everything that needs it*/
@@ -1319,12 +1340,14 @@ class DatabaseHelper
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
 					} 
 					else{//query failed
-						$errors["other"] = "Query failed to insert final report";
+						$errorMessage = $this->logger->logError("Final report not saved, query failed to insert final report.", $CASbroncoNetID, dirname(__FILE__), true);
+						$errors["other"] = "Error: Final report not saved, query failed to insert final report. ".$errorMessage;
 						$this->conn->rollBack();
 					}
 				}
 				catch(Exception $e){
-					$errors["other"] = "Exception when trying to insert final report into database: ".$e->getMessage();
+					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to insert final report: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+					$errors["other"] = "Error: Final report not saved, internal exception when trying to insert final report. ".$errorMessage;
 				}
 			}
 			else{//just updating
@@ -1345,12 +1368,14 @@ class DatabaseHelper
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
 					} 
 					else{//query failed
-						$errors["other"] = "Query failed to insert final report";
+						$errorMessage = $this->logger->logError("Final report not saved, query failed to update final report.", $CASbroncoNetID, dirname(__FILE__), true);
+						$errors["other"] = "Error: Final report not saved, query failed to update final report. ".$errorMessage;
 						$this->conn->rollBack();
 					}
 				}
 				catch(Exception $e){
-					$errors["other"] = "Exception when trying to insert final report into database: ".$e->getMessage();
+					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to update final report: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+					$errors["other"] = "Error: Final report not saved, internal exception when trying to update final report. ".$errorMessage;
 				}
 			}
 		}
@@ -1390,35 +1415,40 @@ class DatabaseHelper
 			$this->sql = $this->conn->prepare("DELETE FROM final_reports WHERE ApplicationID = :appID");
 			$this->sql->bindParam(':appID', $appID);
 			if($this->sql->execute() !== TRUE){ //query failed
-				$data["error"][] = "Query failed to remove associated final reports.";
+				$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated final reports.", $CASbroncoNetID, dirname(__FILE__), true);
+				$data["error"][] = "Error: Unable to remove application, query failed to remove associated final reports. ".$errorMessage;
 			}
 
 			if(!isset($data["error"])){ //no errors yet, move on to deleting emails
 				$this->sql = $this->conn->prepare("DELETE FROM emails WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$data["error"][] = "Query failed to remove associated emails.";
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated emails.", $CASbroncoNetID, dirname(__FILE__), true);
+					$data["error"][] = "Error: Unable to remove application, query failed to remove associated emails. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting notes
 				$this->sql = $this->conn->prepare("DELETE FROM notes WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$data["error"][] = "Query failed to remove associated notes.";
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated notes.", $CASbroncoNetID, dirname(__FILE__), true);
+					$data["error"][] = "Error: Unable to remove application, query failed to remove associated notes. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting budget items
 				$this->sql = $this->conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$data["error"][] = "Query failed to remove associated budget items.";
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated budget items.", $CASbroncoNetID, dirname(__FILE__), true);
+					$data["error"][] = "Error: Unable to remove application, query failed to remove associated budget items. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting the base application
 				$this->sql = $this->conn->prepare("DELETE FROM applications WHERE ID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$data["error"][] = "Query failed to remove the base application.";
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove the base application.", $CASbroncoNetID, dirname(__FILE__), true);
+					$data["error"][] = "Error: Unable to remove application, query failed to remove the base application. ".$errorMessage;
 				}
 			}
 
@@ -1430,7 +1460,8 @@ class DatabaseHelper
 			}
 		}
 		catch(Exception $e){
-			$data["error"][] = "Exception when trying to delete application: ".$e->getMessage();
+			$errorMessage = $this->logger->logError("Unable to remove application, internal exception when trying to delete application.", $CASbroncoNetID, dirname(__FILE__), true);
+			$data["error"][] = "Error: Unable to remove application, internal exception when trying to delete application. ".$errorMessage;
 		}
 
 		//response if there are errors
@@ -1451,6 +1482,8 @@ class DatabaseHelper
 		}
 		catch(PDOException $e){
 			echo "Connection failed: " . $e->getMessage();
+			$errorMessage = $this->logger->logError("Unable to connect to database: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+			echo "Error: Unable to connect to database. ".$errorMessage;
 		}
 	}
 }

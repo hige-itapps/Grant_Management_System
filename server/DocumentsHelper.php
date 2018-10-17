@@ -2,7 +2,7 @@
 /* This class is used to read and write to documents. */
 
 /*Logger*/
-include_once(dirname(__FILE__) . "/logger.php");
+include_once(dirname(__FILE__) . "/Logger.php");
 
 class DocumentsHelper
 {
@@ -11,10 +11,10 @@ class DocumentsHelper
 
 	/* Constructior retrieves configurations */
 	public function __construct(){
+		$this->logger = new Logger(); //initialize the logger
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
 		$this->uploadDir = dirname(__FILE__) ."/..".$settings["uploads_dir"]; //get absolute path to uploads directory
-		$this->logger = new Logger(); //initialize the logger
 	}
 
 	/* Returns array of all associated file names */
@@ -58,14 +58,14 @@ class DocumentsHelper
 				{
 					//make sure file isn't too large -- this probably won't be useful because the files probably wouldn't have uploaded anyway if they were too large
 					if($file["size"] > $maxUploadSize){
-						$res["error"][] = "File '".$file["name"]."' is too large to upload";
+						$res["error"][] = "Error: File not uploaded, '".$file["name"]."' is too large to upload";
 						continue; //iterate to next item in loop
 					}
 
 					//make sure file size is > 0
 					if($file["size"] <= 0){
-						$errorID = $this->logger->logError("File '".$file["name"]."' is empty", $CASbroncoNetID, dirname(__FILE__));
-						$res["error"][] = "Error: File '".$file["name"]."' is empty. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+						$errorMessage = $this->logger->logError("File not uploaded, '".$file["name"]."' is empty", $CASbroncoNetID, dirname(__FILE__), true);
+						$res["error"][] = "Error: File not uploaded, '".$file["name"]."' is empty. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 
@@ -84,8 +84,8 @@ class DocumentsHelper
 					}
 
 					if($prefix == null){//upload prefix not accepted
-						$errorID = $this->logger->logError("Upload prefix not accepted for file '".$file["name"]."'", $CASbroncoNetID, dirname(__FILE__));
-						$res["error"][] = "Error: Upload prefix not accepted for file '".$file["name"]."'. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+						$errorMessage = $this->logger->logError("File not uploaded, prefix '".$filename."' not accepted for file '".$file["name"]."'", $CASbroncoNetID, dirname(__FILE__), true);
+						$res["error"][] = "Error: File not uploaded, prefix not accepted for file '".$file["name"]."'. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 
@@ -94,28 +94,28 @@ class DocumentsHelper
 
 					//make sure file type is an accepted format
 					if($fileType != "pdf"){
-						$res["error"][] = "Filetype: '".$fileType."' not accepted for file '".$file["name"]."'";
+						$res["error"][] = "Error: File not uploaded, filetype: '".$fileType."' not accepted for file '".$file["name"]."'";
 						continue; //iterate to next item in loop
 					}
 
 					//move file to the uploads directory
 					if(!move_uploaded_file($file["tmp_name"], $target)){ //if it failed to move
-						$errorID = $this->logger->logError("Unable to move file '".$file["name"]."' to uploads directory", $CASbroncoNetID, dirname(__FILE__));
-						$res["error"][] = "Error: Unable to move file '".$file["name"]."' to uploads directory. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+						$errorMessage = $this->logger->logError("File not uploaded, unable to move file '".$file["name"]."' to uploads directory", $CASbroncoNetID, dirname(__FILE__), true);
+						$res["error"][] = "Error: File not uploaded, unable to move file '".$file["name"]."' to uploads directory. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 				}
 			}else{
-				$errorID = $this->logger->logError("Unable to create upload directory", $CASbroncoNetID, dirname(__FILE__));
-				$res["error"][] = "Error: Unable to create upload directory. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+				$errorMessage = $this->logger->logError("File not uploaded, unable to create upload directory", $CASbroncoNetID, dirname(__FILE__), true);
+				$res["error"][] = "Error: File not uploaded, unable to create upload directory. ".$errorMessage;
 			}
 
 			if(!isset($res["error"])){$res = true;} //no errors, so success!
 		}
 		catch(Exception $e)
 		{
-			$errorID = $this->logger->logError("Unable to upload document: " . $e->getMessage(), $CASbroncoNetID, dirname(__FILE__));
-			$res["error"][] = "Error: Unable to upload document due to an internal exception. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+			$errorMessage = $this->logger->logError("File not uploaded, unable to upload document: " . $e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+			$res["error"][] = "Error: File not uploaded, unable to upload document due to an internal exception. ".$errorMessage;
 		}
 
 		return $res;
@@ -143,8 +143,8 @@ class DocumentsHelper
 		}
 		else
 		{
-			$errorID = $this->logger->logError("File '".$filename."' does not exist at '".$file."'", $CASbroncoNetID, dirname(__FILE__));
-			return "Error: File '".$filename."' does not exist in the uploads directory. This has been logged as error id '".$errorID."' Please notify the system admin of this error's id and time of occurence.";
+			$errorMessage = $this->logger->logError("Can't download file, '".$filename."' does not exist at '".$file."'", $CASbroncoNetID, dirname(__FILE__), true);
+			return "Error: Can't download file, '".$filename."' does not exist in the uploads directory. ".$errorMessage;
 		}
 		
 	}

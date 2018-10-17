@@ -174,7 +174,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             try
             {
                 //console.log(existingApp);
-                $scope.formData.cycleChoice = existingApp.nextCycle ? "next" : "this";
+                $scope.formData.cycleChoice = parseInt(existingApp.nextCycle) ? "next" : "this"; //1 = next, 0 = this
                 $scope.formData.name = existingApp.name;
                 $scope.formData.email = existingApp.email;
                 $scope.formData.department = existingApp.department;
@@ -190,17 +190,17 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 $scope.formData.destination = existingApp.destination;
                 $scope.formData.amountRequested = existingApp.amountRequested;
                 //check boxes using conditional (saved as numbers; need to be converted to true/false)
-                $scope.formData.purpose1 = existingApp.purpose1 ? true : false;
-                $scope.formData.purpose2 = existingApp.purpose2 ? true : false;
-                $scope.formData.purpose3 = existingApp.purpose3 ? true : false;
+                $scope.formData.purpose1 = parseInt(existingApp.purpose1) ? true : false;
+                $scope.formData.purpose2 = parseInt(existingApp.purpose2) ? true : false;
+                $scope.formData.purpose3 = parseInt(existingApp.purpose3) ? true : false;
                 $scope.formData.purpose4OtherDummy = existingApp.purpose4 ? true : false; //set to true if any value exists
                 $scope.formData.purpose4Other = existingApp.purpose4;
                 $scope.formData.otherFunding = existingApp.otherFunding;
                 $scope.formData.proposalSummary = existingApp.proposalSummary;
-                $scope.formData.goal1 = existingApp.goal1 ? true : false;
-                $scope.formData.goal2 = existingApp.goal2 ? true : false;
-                $scope.formData.goal3 = existingApp.goal3 ? true : false;
-                $scope.formData.goal4 = existingApp.goal4 ? true : false;
+                $scope.formData.goal1 = parseInt(existingApp.goal1) ? true : false;
+                $scope.formData.goal2 = parseInt(existingApp.goal2) ? true : false;
+                $scope.formData.goal3 = parseInt(existingApp.goal3) ? true : false;
+                $scope.formData.goal4 = parseInt(existingApp.goal4) ? true : false;
 
                 $scope.formData.budgetItems = []; //empty budget items array
                 //add the budget items
@@ -232,8 +232,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     // process the form (AJAX request) - either for new insertion or updating
     $scope.insertApplication = function() {
 
-        if(confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.'))
-        {
+        if(confirm ('By submitting, I affirm that this work meets university requirements for compliance with all research protocols.')){
             //if this is a new application, check to see if any proposal narratives/supporting documents have been set. Give a warning confirmation just in case if they aren't.
             var fd = new FormData();
             var totalSupportingDocs = 0; //iterate for each new supporting document
@@ -247,15 +246,13 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 totalProposalNarratives++;
             });
 
-            if(typeof $scope.formData.updateID === 'undefined')//creating, not updating
-            {
+            if(typeof $scope.formData.updateID === 'undefined'){//creating, not updating
                 var warningConfirmation = null; //a warning for missing files
                 if(totalSupportingDocs === 0 && totalProposalNarratives === 0){ warningConfirmation = "Warning: you have not selected any files to upload with your application. Are you sure you want to submit anyway?";}
                 else if(totalSupportingDocs === 0){ warningConfirmation = "Warning: you have not selected any supporting documents to upload with your application. Are you sure you want to submit anyway?";}
                 else if(totalProposalNarratives === 0){ warningConfirmation = "Warning: you have not selected a proposal narrative to upload with your application. Are you sure you want to submit anyway?";}
 
-                if(warningConfirmation != null) //something is missing, so better confirm
-                {
+                if(warningConfirmation != null){//something is missing, so better confirm
                     if(!confirm(warningConfirmation)) {return;} //exit function early if not confirmed
                 }
             }
@@ -267,13 +264,11 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             for (var key in $scope.formData) {
                 if ($scope.formData.hasOwnProperty(key)) {
                     //Check if this is one of the dates, because if so, we need to format it differently since dates aren't correctly serialized, see: https://stackoverflow.com/questions/11893083/convert-normal-date-to-unix-timestamp
-                    if(key == "travelFrom" || key == "travelTo" || key == "activityFrom" || key == "activityTo")
-                    {
+                    if(key == "travelFrom" || key == "travelTo" || key == "activityFrom" || key == "activityTo"){
                         //console.log(key + " -x-> " + JSON.stringify($scope.formData[key].getTime()/1000));
                         if($scope.formData[key] != null){fd.append(key, JSON.stringify($scope.formData[key].getTime()/1000));}
                     }
-                    else
-                    {
+                    else{
                         //console.log(key + " -> " + JSON.stringify($scope.formData[key]));
                         fd.append(key, JSON.stringify($scope.formData[key]));
                     }
@@ -290,70 +285,82 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             .then(function (response) {
                 console.log(response, 'res');
                 //data = response.data;
-                if(typeof response.data.success === 'undefined') //unexpected result!
-                {
+                if(typeof response.data.insert === 'undefined' || typeof response.data.insert.success === 'undefined'){//unexpected result!
                     console.log(JSON.stringify(response, null, 4));
                     $scope.alertType = "danger";
                     $scope.alertMessage = "There was an unexpected error with your submission! Server response: " + JSON.stringify(response, null, 4);
                 }
-                else if(response.data.success)
-                {
-                    //check for fileUpload success too
+                else if(response.data.insert.success){
                     $scope.errors = []; //clear any old errors
                     var newAlertType = null;
                     var newAlertMessage = null;
 
-                    if($scope.isCreating)//if creating, check the status of the email
-                    {
-                        if(response.data.email.saveSuccess) //email saved correctly
-                        {
-                            if(response.data.email.sendSuccess) //email was sent correctly
-                            {
-                                newAlertType = "success";
-                                newAlertMessage = "Success! The application has been received. Your specified department chair has been notified of your submission. You can return to your application at any time to upload more documents if necessary.";
-                            }
-                            else
-                            {
-                                newAlertType = "warning";
-                                newAlertMessage = "Warning: The application has been received, and an email was created to send to your specified department chair, but it was unable to be sent. Please notify the HIGE IEFDF admin to let them know about this error. You can return to your application at any time to upload more documents if necessary. Error: " + response.data.email.sendError;
-                            }
-                        }
-                        else
-                        {
-                            newAlertType = "warning";
-                            newAlertMessage = "Warning: The application has been received, but your specified department chair could not be notified via email. Please notify the HIGE IEFDF admin to let them know about this error. You can return to your application at any time to upload more documents if necessary.";
-                        }
+                    var fileError = ''; //set to the file upload error if there is one
+                    var emailSaveError = ''; //set to email save error if there is one
+                    var emailSendError = ''; //set to email send error if there is one
+
+                    //check for fileUpload success
+                    if(!response.data.fileSuccess){//error when uploading files
+                        fileError = response.data.fileError;
                     }
-                    else//just updating
-                    {
-                        newAlertType = "success";
-                        newAlertMessage = "Success! The application was updated.";
+                    //check for email saving success and sending success if creating
+                    if($scope.isCreating){
+                        if(!response.data.email.saveSuccess){ //failed save
+                            emailSaveError = response.data.email.saveError;
+                        }
+                        else if(!response.data.email.saveSuccess){ //failed send
+                            emailSendError = response.data.email.sendError;
+                        }
                     }
 
-                    if(!response.data.fileSuccess) //error when uploading files
-                    {
-                        newAlertMessage += " Unfortunately, there was an error when trying to upload your documents. Please double check to see which ones were uploaded correctly."; //append a file upload error message
+                    //if all successful
+                    if(!fileError && !emailSaveError && !emailSendError){
+                        newAlertType = "success";
+                        newAlertMessage = "Success! The application has been received.";
+                        if($scope.isCreating){
+                            newAlertMessage += " Your specified department chair has been notified of your submission. You can return to your application at any time to upload more documents if necessary.";
+                        }
                     }
-                    if(!$scope.isCreating) //updating
-                    {
+                    else{ //a failure
+                        newAlertType = "warning";
+                        newAlertMessage = "Warning: The application has been received, but there was a problem with it:";
+                        //possibly multiple errors
+                        if(fileError){
+                            newAlertMessage += '\n' + fileError;
+                        }
+                        if(emailSaveError){
+                            newAlertMessage += '\n' + emailSaveError;
+                        }
+                        if(emailSendError){
+                            newAlertMessage += '\n' + emailSendError;
+                        }
+
+                        //if($scope.isCreating){ //append more to the message if creating
+                            newAlertMessage += '\n';
+                            //if no email errors
+                            if(!emailSaveError && !emailSendError){
+                                newAlertMessage += "Your specified department chair has been notified of your submission. ";
+                            }
+                            newAlertMessage += "You can return to your application at any time to upload more documents if necessary.";
+                        //}
+                    }
+                    
+                    if(!$scope.isCreating){//updating
                         $scope.populateForm(null);//refresh form so that new files show up
                         $scope.uploadProposalNarrative = []; //empty array
                         $scope.uploadSupportingDocs = []; //empty array
                         $scope.alertType = newAlertType;
                         $scope.alertMessage = newAlertMessage;
                     }
-                    else //creating
-                    {
+                    else{//creating
                         $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
                     }
                    
                 }
-                else
-                {
-                    $scope.errors = response.data.errors;
+                else{
+                    $scope.errors = response.data.insert.errors;
                     $scope.alertType = "danger";
-                    if(typeof $scope.errors["other"] !== 'undefined') //there was an 'other' (non-normal) error
-                    {
+                    if(typeof $scope.errors["other"] !== 'undefined'){//there was an 'other' (non-normal) error
                         if(Object.keys($scope.errors).length === 1){$scope.alertMessage = "There was an uncommon error with your submission: " + $scope.errors["other"];}//just the other error
                         else{$scope.alertMessage = "There was an error with your submission, please double check your form for errors, then try resubmitting. In addition, there was an uncommon error with your submission: " + $scope.errors["other"];}//the other error + normal errors
                     }

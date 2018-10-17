@@ -1,14 +1,15 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
 	
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 	
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../server/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 
 	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	$cycles = new Cycles(); //Cycles helper object
 
 	//Initialize everything with PHP
 	$totalPrevApps = $database->getApplications($CASbroncoNetID);
@@ -47,7 +48,7 @@
 				$curApp->FinalReport = $database->getFinalReport($curApp->id); //load up an existing final report if possible
 			}
 
-			$curApp->cycle = getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false); //retrieve the cycle this application was submitted during
+			$curApp->cycle = $cycles->getCycleName(DateTime::createFromFormat('Y-m-d', $curApp->dateSubmitted), $curApp->nextCycle, false); //retrieve the cycle this application was submitted during
 			if (!in_array($curApp->cycle, $appCycles)) {//push cycle to all cycles if it's not there already
 				$appCycles[] = $curApp->cycle;
 			}
@@ -55,7 +56,7 @@
 			$curApp->pastApprovedCycles = $database->getPastApprovedCycles($curApp->broncoNetID); //save the previously approved cycles for this user
 		}
 		
-		$appCycles = sortCycles($appCycles); //sort cycles in descending order
+		$appCycles = $cycles->sortCycles($appCycles); //sort cycles in descending order
 ?>
 
 

@@ -1,17 +1,18 @@
 <?php
 	/*User validation*/
-	include_once(dirname(__FILE__) . "/../../include/CAS_login.php");
+	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
 	
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 	
 	/*Cycle functions*/
-	include_once(dirname(__FILE__) . "/../../server/cycles.php");
+	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 	
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
 	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	$cycles = new Cycles(); //Cycles helper object
 	$documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
 
 	$config_url = dirname(__FILE__).'/../../config.ini'; //set config file url
@@ -89,8 +90,8 @@
 			$appFiles = $documentsHelper->getFileNames($appID);
 			$appEmails = $database->getEmails($appID);
 
-			$thisCycle = getCycleName($submitDate, false, true);
-			$nextCycle = getCycleName($submitDate, true, true);
+			$thisCycle = $cycles->getCycleName($submitDate, false, true);
+			$nextCycle = $cycles->getCycleName($submitDate, true, true);
 
 			if($isAdmin || $isApprover || $isCommittee) //if hige staff, then retrieve staff notes
 			{
@@ -99,8 +100,8 @@
 		}
 		else
 		{
-			$thisCycle = getCycleName($currentDate, false, true);
-			$nextCycle = getCycleName($currentDate, true, true); 
+			$thisCycle = $cycles->getCycleName($currentDate, false, true);
+			$nextCycle = $cycles->getCycleName($currentDate, true, true); 
 		}
 ?>
 
@@ -149,7 +150,7 @@
 			var var_appEmails = <?php echo json_encode($appEmails); ?>; //the associated saved emails
 			var var_CASemail = <?php echo json_encode($CASemail); ?>;
 			var scope_allowedFirstCycle = <?php echo json_encode($database->isUserAllowedToCreateApplication($CASbroncoNetID, false)); ?>;
-			var scope_shouldWarn = <?php echo json_encode($isCreating && isWithinWarningPeriod($currentDate)); ?>;
+			var scope_shouldWarn = <?php echo json_encode($isCreating && $cycles->isWithinWarningPeriod($currentDate)); ?>;
 			var scope_staffNotes = <?php echo json_encode($staffNotes); ?>; //the associated staff notes if allowed
 		</script>
 		<!-- AngularJS Script -->

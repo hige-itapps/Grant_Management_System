@@ -3,7 +3,7 @@
 Only 1 API function can be called at a time through the GET paramater.*/
 
 /*User validation*/
-include_once(dirname(__FILE__) . "/../include/CAS_login.php");
+include_once(dirname(__FILE__) . "/../CAS/CAS_login.php");
 	
 /*Get DB connection*/
 include_once(dirname(__FILE__) . "/../server/DatabaseHelper.php");
@@ -12,10 +12,11 @@ include_once(dirname(__FILE__) . "/../server/DatabaseHelper.php");
 include_once(dirname(__FILE__) . "/../server/DocumentsHelper.php");
 
 /*For sending custom emails*/
-include_once(dirname(__FILE__) . "/../server/customEmail.php");
+include_once(dirname(__FILE__) . "/../server/EmailHelper.php");
 
 $database = new DatabaseHelper(); //database helper object used for some verification and insertion
 $documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
+$emailHelper = new EmailHelper(); //initialize EmailHelper object
 
 $returnVal = []; //initialize return value as empty. If there is an error, it is expected to be set as $returnVal["error"].
 
@@ -31,7 +32,7 @@ if (array_key_exists('download_file', $_GET)) {
             $returnVal = $documentsHelper->downloadDoc($appID, $file, $CASbroncoNetID);
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to download files for this application.";
         }
     }
     else{
@@ -52,7 +53,7 @@ else if(array_key_exists('upload_file', $_GET)){
             $returnVal = $documentsHelper->uploadDocs($appID, $files, $CASbroncoNetID);
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to upload files for this application.";
         }
     }
     else{
@@ -64,31 +65,25 @@ else if(array_key_exists('upload_file', $_GET)){
 
 //for saving staff notes
 else if(array_key_exists('save_note', $_GET)){
-    if(isset($_POST["appID"]) && isset($_POST["note"]))
-    {
+    if(isset($_POST["appID"]) && isset($_POST["note"])){
         $appID = $_POST["appID"];
         $note = $_POST["note"];
 
         /*Verify that user is allowed to save this note*/
-        if($database->isAdministrator($CASbroncoNetID) || $database->isApplicationApprover($CASbroncoNetID) || $database->isFinalReportApprover($CASbroncoNetID))
-        {
-            try
-            {
+        if($database->isAdministrator($CASbroncoNetID) || $database->isApplicationApprover($CASbroncoNetID) || $database->isFinalReportApprover($CASbroncoNetID)){
+            try{
                 $note = trim($note);
                 $returnVal = $database->saveStaffNotes($appID, $note);
             }
-            catch(Exception $e)
-            {
+            catch(Exception $e){
                 $returnVal["error"] = "Unable to save note: " . $e->getMessage();
             }
         }
-        else
-        {
-            $returnVal["error"] = "Permission denied";
+        else{
+            $returnVal["error"] = "Permission denied, you are not permitted to save notes for this application.";
         }
     }
-    else
-    {
+    else{
         $returnVal["error"] = "AppID and/or note is not set";
     }
 }
@@ -181,7 +176,7 @@ else if(array_key_exists('submit_application', $_GET)){
                     else {$returnVal["fileSuccess"] = true;} //not uploading files
 
                     //now try to email department chair IF creating for the first time
-                    if(!$isAdmin){$returnVal["email"] = chairApprovalEmail($appID, $deptChairEmail, $name, $email);} //get results of trying to save/send email message
+                    if(!$isAdmin){$returnVal["email"] = $emailHelper->chairApprovalEmail($appID, $deptChairEmail, $name, $email);} //get results of trying to save/send email message
                 }
             }
         }
@@ -190,7 +185,7 @@ else if(array_key_exists('submit_application', $_GET)){
         }     
     }
     else{
-        $returnVal["error"] = "Permission denied";
+        $returnVal["error"] = "Permission denied, you are not permitted to create an application at this time.";
     }
 }
 
@@ -253,7 +248,7 @@ else if(array_key_exists('submit_final_report', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to create a final report at this time.";
         }
     }
     else{
@@ -279,7 +274,7 @@ else if(array_key_exists('add_admin', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to add administrators.";
         }
     }
     else{
@@ -305,7 +300,7 @@ else if(array_key_exists('add_application_approver', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to add application approvers.";
         }
     }
     else{
@@ -331,7 +326,7 @@ else if(array_key_exists('add_final_report_approver', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to add final report approvers.";
         }
     }
     else{
@@ -357,7 +352,7 @@ else if(array_key_exists('add_committee_member', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to add committee members.";
         }
     }
     else{
@@ -387,7 +382,7 @@ else if(array_key_exists('chair_approval', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to approve this application as the department chair.";
         }
     }
     else{
@@ -426,7 +421,7 @@ else if(array_key_exists('approve_application', $_GET)){
     
                     //if everything has been successful so far, send off the email as well
                     if(!isset($returnVal["error"])){
-                        $returnVal["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
+                        $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
                     }
                 }
                 catch(Exception $e){
@@ -434,7 +429,7 @@ else if(array_key_exists('approve_application', $_GET)){
                 }
             }
             else{
-                $returnVal["error"] = "Permission denied";
+                $returnVal["error"] = "Permission denied, you are not permitted to approve this application.";
             }
         }
     }
@@ -465,7 +460,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
     
                     //if everything has been successful so far, send off the email as well
                     if(!isset($returnVal["error"])){
-                        $returnVal["email"] = customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
+                        $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null); //get results of trying to save/send email message
                     }
                 }
                 catch(Exception $e){
@@ -473,7 +468,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
                 }
             }
             else{
-                $returnVal["error"] = "Permission denied";
+                $returnVal["error"] = "Permission denied, you are not permitted to approve this final report.";
             }
         }
     }
@@ -495,7 +490,7 @@ else if(array_key_exists('get_admins', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "Permission denied";
+        $returnVal["error"] = "Permission denied, you are not permitted to retrieve the administrators list.";
     }
 }
 
@@ -512,7 +507,7 @@ else if(array_key_exists('get_application_approvers', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "Permission denied";
+        $returnVal["error"] = "Permission denied, you are not permitted to retrieve the application approvers list.";
     }
 }
 
@@ -529,7 +524,7 @@ else if(array_key_exists('get_final_report_approvers', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "Permission denied";
+        $returnVal["error"] = "Permission denied, you are not permitted to retrieve the final report approvers list.";
     }
 }
 
@@ -546,7 +541,7 @@ else if(array_key_exists('get_committee_members', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "Permission denied";
+        $returnVal["error"] = "Permission denied, you are not permitted to retrieve the committee members list.";
     }
 }
 
@@ -569,7 +564,7 @@ else if(array_key_exists('get_application', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to retrieve this application.";
         }
     }
     else{
@@ -596,7 +591,7 @@ else if(array_key_exists('get_final_report', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to retrieve this final report";
         }
     }
     else{
@@ -626,7 +621,7 @@ else if(array_key_exists('remove_admin', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to remove administrators.";
         }
     }
     else{
@@ -651,7 +646,7 @@ else if(array_key_exists('remove_application_approver', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to remove application approvers.";
         }
     }
     else{
@@ -676,7 +671,7 @@ else if(array_key_exists('remove_final_report_approver', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to remove final report approvers.";
         }
     }
     else{
@@ -701,7 +696,7 @@ else if(array_key_exists('remove_committee_member', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to remove committee members.";
         }
     }
     else{
@@ -726,7 +721,7 @@ else if(array_key_exists('remove_application', $_GET)){
             }
         }
         else{
-            $returnVal["error"] = "Permission denied";
+            $returnVal["error"] = "Permission denied, you are not permitted to remove applications.";
         }
     }
     else{
