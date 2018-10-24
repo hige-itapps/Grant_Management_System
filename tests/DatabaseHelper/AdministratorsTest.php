@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -51,6 +52,9 @@ final class AdministratorsTest extends TestCase
 
     public function testGetAdministrators()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $testArray = array(
             array(0 => "rot1222", 1 => "Guy"),
             array(0 => "cvb5233", 1 => "Tom"),
@@ -60,7 +64,7 @@ final class AdministratorsTest extends TestCase
         //test array in no particular order
         $this->assertEquals(
             $testArray,
-            getAdministrators($this->pdo),
+            $database->getAdministrators(),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
     }
@@ -68,46 +72,58 @@ final class AdministratorsTest extends TestCase
 
     public function testAddAdmin_Existing()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingAdminID = "rot1222"; $existingAdminName = "Guy";
 
         $this->expectException(PDOException::class);
 
-        addAdmin($this->pdo, $existingAdminID, $existingAdminName);
+        $database->addAdmin($existingAdminID, $existingAdminName);
     }
 
     public function testAddAdmin_New()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newAdminID = "red7778"; $newAdminName = "Redson";
         $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
 
-        addAdmin($this->pdo, $newAdminID, $newAdminName);
+        $database->addAdmin($newAdminID, $newAdminName);
         $this->assertEquals(4, $this->getConnection()->getRowCount('administrators'));
     }
 
 
     public function testRemoveAdmin()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingAdminID = "rot1222";
         $newAdminID = "red7778";
 
         $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
 
-        removeAdmin($this->pdo, $newAdminID);
+        $database->removeAdmin($newAdminID);
         $this->assertEquals(3, $this->getConnection()->getRowCount('administrators'));
 
-        removeAdmin($this->pdo, $existingAdminID);
+        $database->removeAdmin($existingAdminID);
         $this->assertEquals(2, $this->getConnection()->getRowCount('administrators'));
     }
 
 
     public function testIsAdministrator()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingAdminID = "rot1222";
         $newAdminID = "red7778";
 
-        $this->assertEquals(false, isAdministrator($this->pdo, $newAdminID));
+        $this->assertEquals(false, $database->isAdministrator($newAdminID));
 
-        $this->assertEquals(true, isAdministrator($this->pdo, $existingAdminID));
+        $this->assertEquals(true, $database->isAdministrator($existingAdminID));
     }
 }
 

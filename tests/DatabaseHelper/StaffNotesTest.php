@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -60,11 +61,14 @@ final class StaffNotesTest extends TestCase
 
     public function testSaveStaffNotes()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newNote = 'New Note';
 
         $this->assertEquals(3, $this->getConnection()->getRowCount('notes')); //start with 3 notes
 
-        saveStaffNotes($this->pdo, 4, $newNote);
+        $database->saveStaffNotes(4, $newNote, null);
         
         $this->assertEquals(4, $this->getConnection()->getRowCount('notes')); //there should be 4 notes now
     }
@@ -72,8 +76,11 @@ final class StaffNotesTest extends TestCase
 
     public function testGetStaffNotes()
     {
-        $this->assertNotNull(getStaffNotes($this->pdo, 1));
-        $this->assertNull(getStaffNotes($this->pdo, 4));
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
+        $this->assertNotNull($database->getStaffNotes(1));
+        $this->assertNull($database->getStaffNotes(4));
     }
 }
 

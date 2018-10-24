@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -51,6 +52,9 @@ final class ApplicantsTest extends TestCase
 
     public function testGetApplicants()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $testArray = array(
             array(0 => "abc1234"),
             array(0 => "zyx4321"),
@@ -60,7 +64,7 @@ final class ApplicantsTest extends TestCase
         //test array in no particular order
         $this->assertEquals(
             $testArray,
-            getApplicants($this->pdo),
+            $database->getApplicants(),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
     }
@@ -68,15 +72,18 @@ final class ApplicantsTest extends TestCase
 
     public function testInsertApplicantIfNew()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingApplicant = "abc1234";
         $newApplicant = "plo9770";
         
         $this->assertEquals(3, $this->getConnection()->getRowCount('applicants'));
 
-        insertApplicantIfNew($this->pdo, $existingApplicant);
+        $database->insertApplicantIfNew($existingApplicant);
         $this->assertEquals(3, $this->getConnection()->getRowCount('applicants'));
 
-        insertApplicantIfNew($this->pdo, $newApplicant);
+        $database->insertApplicantIfNew($newApplicant);
         $this->assertEquals(4, $this->getConnection()->getRowCount('applicants'));
     }
 }

@@ -11,9 +11,13 @@
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
-	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	/*Logger*/
+	include_once(dirname(__FILE__) . "/../server/Logger.php");
+
+	$logger = new Logger(); //for logging to files
+	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 	$cycles = new Cycles(); //Cycles helper object
-	$documentsHelper = new DocumentsHelper(); //initialize DocumentsHelper object
+	$documentsHelper = new DocumentsHelper($logger); //initialize DocumentsHelper object
 
 	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
 	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
@@ -321,11 +325,11 @@
 
 					<!--PREVIOUSLY SENT EMAILS-->
 					<div id="previousEmailsHolder" ng-show="!isCreating">
-						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see sent emails associated with this application</button>
+						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see saved emails associated with this application</button>
 						<ol id="previousEmails" class="collapse list-group">
-							<li class="list-group-item" ng-if="reportEmails.length <= 0">There are no sent emails!</li>
+							<li class="list-group-item" ng-if="reportEmails.length <= 0">There are no saved emails!</li>
 							<li class="list-group-item" ng-repeat="email in reportEmails">
-								<h5 class="list-group-item-heading">{{email[2]}}: sent {{email[4]}}</h5>
+								<h5 class="list-group-item-heading">{{email[2]}}: saved {{email[4]}}</h5>
 								<hr>
 								<p class="list-group-item-text" ng-bind-html="email[3]"></p>
 							</li>

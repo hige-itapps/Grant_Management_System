@@ -10,8 +10,8 @@ class DocumentsHelper
 	private $uploadDir; //file uploads directory
 
 	/* Constructior retrieves configurations */
-	public function __construct(){
-		$this->logger = new Logger(); //initialize the logger
+	public function __construct($logger){
+		$this->logger = $logger;
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
 		$this->uploadDir = dirname(__FILE__) ."/..".$settings["uploads_dir"]; //get absolute path to uploads directory

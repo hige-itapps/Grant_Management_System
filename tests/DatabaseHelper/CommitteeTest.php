@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -51,6 +52,9 @@ final class CommitteeTest extends TestCase
 
     public function testGetCommittee()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $testArray = array(
             array(0 => "lke4568", 1 => "Luke"),
             array(0 => "lia4441", 1 => "Leia"),
@@ -60,7 +64,7 @@ final class CommitteeTest extends TestCase
         //test array in no particular order
         $this->assertEquals(
             $testArray,
-            getCommittee($this->pdo),
+            $database->getCommittee(),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
     }
@@ -68,46 +72,58 @@ final class CommitteeTest extends TestCase
 
     public function testAddCommittee_Existing()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $exisitingCommitteeID = "lke4568"; $exisitingCommitteeName = "Luke";
 
         $this->expectException(PDOException::class);
 
-        addCommittee($this->pdo, $exisitingCommitteeID, $exisitingCommitteeName);
+        $database->addCommittee($exisitingCommitteeID, $exisitingCommitteeName);
     }
 
     public function testAddCommittee_New()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newCommitteeID = "chw3333"; $newCommitteeName = "Chewy";
         $this->assertEquals(3, $this->getConnection()->getRowCount('committee'));
 
-        addCommittee($this->pdo, $newCommitteeID, $newCommitteeName);
+        $database->addCommittee($newCommitteeID, $newCommitteeName);
         $this->assertEquals(4, $this->getConnection()->getRowCount('committee'));
     }
 
 
     public function testRemoveCommittee()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $exisitingCommitteeID = "lke4568";
         $newCommitteeID = "chw3333";
 
         $this->assertEquals(3, $this->getConnection()->getRowCount('committee'));
 
-        removeCommittee($this->pdo, $newCommitteeID);
+        $database->removeCommittee($newCommitteeID);
         $this->assertEquals(3, $this->getConnection()->getRowCount('committee'));
 
-        removeCommittee($this->pdo, $exisitingCommitteeID);
+        $database->removeCommittee($exisitingCommitteeID);
         $this->assertEquals(2, $this->getConnection()->getRowCount('committee'));
     }
 
 
     public function testIsCommitteeMember()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $exisitingCommitteeID = "lke4568";
         $newCommitteeID = "chw3333";
 
-        $this->assertEquals(false, isCommitteeMember($this->pdo, $newCommitteeID));
+        $this->assertEquals(false, $database->isCommitteeMember($newCommitteeID));
 
-        $this->assertEquals(true, isCommitteeMember($this->pdo, $exisitingCommitteeID));
+        $this->assertEquals(true, $database->isCommitteeMember($exisitingCommitteeID));
     }
 }
 

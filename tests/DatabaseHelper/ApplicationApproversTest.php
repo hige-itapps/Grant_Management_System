@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -51,6 +52,9 @@ final class ApplicationApproversTest extends TestCase
 
     public function testGetApplicationApprovers()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $testArray = array(
             array(0 => "alg4357", 1 => "Algernon"),
             array(0 => "jim6345", 1 => "Jimmy"),
@@ -60,7 +64,7 @@ final class ApplicationApproversTest extends TestCase
         //test array in no particular order
         $this->assertEquals(
             $testArray,
-            getApplicationApprovers($this->pdo),
+            $database->getApplicationApprovers(),
             "\$canonicalize = true", $delta = 0.0, $maxDepth = 10, $canonicalize = true
         );
     }
@@ -68,46 +72,58 @@ final class ApplicationApproversTest extends TestCase
 
     public function testAddApplicationApprover_Existing()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingApproverID = "pte5211"; $existingApproverName = "Petey";
 
         $this->expectException(PDOException::class);
 
-        addApplicationApprover($this->pdo, $existingApproverID, $existingApproverName);
+        $database->addApplicationApprover($existingApproverID, $existingApproverName);
     }
 
     public function testAddApplicationApprover_New()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newApproverID = "gry9922"; $newApproverName = "Gary";
         $this->assertEquals(3, $this->getConnection()->getRowCount('application_approval'));
 
-        addApplicationApprover($this->pdo, $newApproverID, $newApproverName);
+        $database->addApplicationApprover($newApproverID, $newApproverName);
         $this->assertEquals(4, $this->getConnection()->getRowCount('application_approval'));
     }
 
 
     public function testRemoveApplicationApprover()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingApproverID = "pte5211";
         $newApproverID = "gry9922";
 
         $this->assertEquals(3, $this->getConnection()->getRowCount('application_approval'));
 
-        removeApplicationApprover($this->pdo, $newApproverID);
+        $database->removeApplicationApprover($newApproverID);
         $this->assertEquals(3, $this->getConnection()->getRowCount('application_approval'));
 
-        removeApplicationApprover($this->pdo, $existingApproverID);
+        $database->removeApplicationApprover($existingApproverID);
         $this->assertEquals(2, $this->getConnection()->getRowCount('application_approval'));
     }
 
 
     public function testIsApplicationApprover()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $existingApproverID = "pte5211";
         $newApproverID = "gry9922";
 
-        $this->assertEquals(false, isApplicationApprover($this->pdo, $newApproverID));
+        $this->assertEquals(false, $database->isApplicationApprover($newApproverID));
 
-        $this->assertEquals(true, isApplicationApprover($this->pdo, $existingApproverID));
+        $this->assertEquals(true, $database->isApplicationApprover($existingApproverID));
     }
 }
 

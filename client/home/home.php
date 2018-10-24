@@ -8,7 +8,11 @@
 	/*Cycle functions*/
 	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 
-	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	/*Logger*/
+	include_once(dirname(__FILE__) . "/../server/Logger.php");
+
+	$logger = new Logger(); //for logging to files
+	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 	$cycles = new Cycles(); //Cycles helper object
 
 	//Initialize everything with PHP

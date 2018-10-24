@@ -1,6 +1,7 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -60,12 +61,15 @@ final class EmailsTest extends TestCase
 
     public function testSaveEmail()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newSubject = 'New Subject';
         $newMessage = 'New Message';
 
         $this->assertEquals(3, $this->getConnection()->getRowCount('emails')); //start with 3 emails
 
-        saveEmail($this->pdo, 1, $newSubject, $newMessage);
+        $database->saveEmail(1, $newSubject, $newMessage);
         
         $this->assertEquals(4, $this->getConnection()->getRowCount('emails')); //there should be 4 emails now
     }
@@ -73,8 +77,11 @@ final class EmailsTest extends TestCase
 
     public function testGetEmails()
     {
-        $this->assertEquals(3, count(getEmails($this->pdo, 1)));
-        $this->assertEquals(0, count(getEmails($this->pdo, 4)));
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
+        $this->assertEquals(3, count($database->getEmails(1)));
+        $this->assertEquals(0, count($database->getEmails(4)));
     }
 }
 

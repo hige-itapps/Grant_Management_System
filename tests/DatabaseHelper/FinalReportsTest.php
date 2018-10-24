@@ -1,8 +1,8 @@
 <?php
 
-include_once(dirname(__FILE__) . "/../../functions/database.php"); //the associated file
-
-include_once(dirname(__FILE__) . "/../../include/classDefinitions.php");//for final report class
+include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php"); //the associated file
+include_once(dirname(__FILE__) . "/../../server/FinalReport.php");//for final report class
+include_once(dirname(__FILE__) . "/../../server/Logger.php"); //Logger is used to generate mock Logger object
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -62,6 +62,9 @@ final class FinalReportsTest extends TestCase
     //test getting a single final report- make sure all fields are correct!
     public function testGetFinalReport()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $exisitingAppID = 1;
         $existingReportArray = array(
             0 => "1", 1 => "2012-05-25", 2 => "2012-06-05", 3 => "2012-06-23", 4 => "2012-06-08", 5 => "2012-06-13", 6 => number_format((float)700, 2, '.', ''), //format budget as decimal to 2 places
@@ -69,11 +72,11 @@ final class FinalReportsTest extends TestCase
         );
         $existingReport = new FinalReport($existingReportArray);
         //should exist
-        $this->assertEquals($existingReport, getFinalReport($this->pdo, $exisitingAppID));
+        $this->assertEquals($existingReport, $database->getFinalReport($exisitingAppID));
 
         $newAppID = 6;
         //shouldn't exist
-        $this->assertEquals(0, getApplication($this->pdo, $newAppID));
+        $this->assertEquals(0, $database->getApplication($newAppID));
     }
 
 
@@ -81,11 +84,14 @@ final class FinalReportsTest extends TestCase
     //Check if app has a final report already
     public function testHasFinalReport()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $reportApp = 1;
         $noReportApp = 2;
 
-        $this->assertEquals(true, hasFinalReport($this->pdo, $reportApp));
-        $this->assertEquals(false, hasFinalReport($this->pdo, $noReportApp));
+        $this->assertEquals(true, $database->hasFinalReport($reportApp));
+        $this->assertEquals(false, $database->hasFinalReport($noReportApp));
     }
 
 
@@ -93,7 +99,10 @@ final class FinalReportsTest extends TestCase
     //Check the max lengths of the reports columns (no point in testing specific numbers since this could easily change depending on MySQL/schema configuration)
     public function testGetFinalReportsMaxLengths()
     {
-        $this->assertEquals(9, count(getFinalReportsMaxLengths($this->pdo)));
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
+        $this->assertEquals(9, count($database->getFinalReportsMaxLengths()));
     }
 
 
@@ -101,29 +110,18 @@ final class FinalReportsTest extends TestCase
     /*Test approving a final report*/
     public function testApproveFinalReport()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $approvedAppID = 1;
         $pendingAppID = 3;
         $deniedAppID = 4;
         $newAppID = 6;
 
-        $this->assertEquals(false, approveFinalReport($this->pdo, $approvedAppID));
-        $this->assertEquals(true, approveFinalReport($this->pdo, $deniedAppID));
-        $this->assertEquals(true, approveFinalReport($this->pdo, $pendingAppID));
-        $this->assertEquals(false, approveFinalReport($this->pdo, $newAppID));
-    }
-
-    /*Test denying a final report*/
-    public function testDenyFinalReport()
-    {
-        $approvedAppID = 1;
-        $pendingAppID = 3;
-        $deniedAppID = 4;
-        $newAppID = 6;
-
-        $this->assertEquals(true, denyFinalReport($this->pdo, $approvedAppID));
-        $this->assertEquals(false, denyFinalReport($this->pdo, $deniedAppID));
-        $this->assertEquals(true, denyFinalReport($this->pdo, $pendingAppID));
-        $this->assertEquals(false, denyFinalReport($this->pdo, $newAppID));
+        $this->assertEquals(false, $database->approveFinalReport($approvedAppID, null));
+        $this->assertEquals(true, $database->approveFinalReport($deniedAppID, null));
+        $this->assertEquals(true, $database->approveFinalReport($pendingAppID, null));
+        $this->assertEquals(false, $database->approveFinalReport($newAppID, null));
     }
 
 
@@ -131,6 +129,9 @@ final class FinalReportsTest extends TestCase
     /*Test inserting a final report. There are more errors than usual to check for*/
     public function testInsertFinalReport()
     {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
         $newReportID = 5; //application 5 shouldn't have a report yet
 
         //new, acceptable variables
@@ -141,14 +142,14 @@ final class FinalReportsTest extends TestCase
         $validProjectSummary = "Lorem Ipsum";
         $validTotalAwardSpent = 300;
 
-        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, $database->hasFinalReport($newReportID)); //shouldn't have a report yet
 
         /*for inserting new reports*/
 
         //pass in empty values for all fields
-        $testReturn = insertFinalReport($this->pdo, false, $newReportID, "", "", "", "", "", "");
+        $testReturn = $database->insertFinalReport(false, $newReportID, "", "", "", "", "", "", null);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
-        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, $database->hasFinalReport($newReportID)); //shouldn't have a report yet
 
         //every field should have an error regarding missing data
         $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
@@ -160,18 +161,18 @@ final class FinalReportsTest extends TestCase
 
 
         //pass in an invalid travel date
-        $testReturn = insertFinalReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = $database->insertFinalReport(false, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent, null);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
-        $this->assertEquals(false, hasFinalReport($this->pdo, $newReportID)); //shouldn't have a report yet
+        $this->assertEquals(false, $database->hasFinalReport($newReportID)); //shouldn't have a report yet
 
         //just check for invalid travel date
         $this->assertArrayHasKey('travelFrom', $testReturn['errors']);
 
 
         //insert an acceptable new final report
-        $testReturn = insertFinalReport($this->pdo, false, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = $database->insertFinalReport(false, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent, null);
         $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
-        $this->assertEquals(true, hasFinalReport($this->pdo, $newReportID)); //should now have a report
+        $this->assertEquals(true, $database->hasFinalReport($newReportID)); //should now have a report
 
 
 
@@ -180,7 +181,7 @@ final class FinalReportsTest extends TestCase
         /*for updating reports*/
 
         //pass in empty values for all fields
-        $testReturn = insertFinalReport($this->pdo, true, $newReportID, "", "", "", "", "", "");
+        $testReturn = $database->insertFinalReport(true, $newReportID, "", "", "", "", "", "", null);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
 
         //every field should have an error regarding missing data
@@ -193,7 +194,7 @@ final class FinalReportsTest extends TestCase
 
 
         //pass in an invalid travel date
-        $testReturn = insertFinalReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = $database->insertFinalReport(true, $newReportID, $validTravelFrom, $validTravelTo, date('Y-m-d h:i:s', mktime(0, 0, 0, 6, 1, 2018)), $validActivityTo, $validProjectSummary, $validTotalAwardSpent, null);
         $this->assertEquals(false, $testReturn['success']);//insert should have failed
 
         //just check for invalid travel date
@@ -201,7 +202,7 @@ final class FinalReportsTest extends TestCase
 
 
         //insert an acceptable new final report
-        $testReturn = insertFinalReport($this->pdo, true, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent);
+        $testReturn = $database->insertFinalReport(true, $newReportID, $validTravelFrom, $validTravelTo, $validActivityFrom, $validActivityTo, $validProjectSummary, $validTotalAwardSpent, null);
         $this->assertEquals(true, $testReturn['success']);//insert should have succeeded
     }
 }

@@ -33,8 +33,8 @@ class EmailHelper
 	private $customFooter; //custom email footer to be attached to the bottom of every sent message
 
 	/* Constructior retrieves configurations and initializes private vars */
-	public function __construct(){
-		$this->logger = new Logger(); //initialize the logger
+	public function __construct($logger){
+		$this->logger = $logger;
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
 		$this->mailHost = $settings["mail_host"]; //load mail host
@@ -52,7 +52,9 @@ class EmailHelper
 
 	//Send an email to a specific address, with a custom message and subject. If the subject is left blank, a default one is prepared instead.
 	//NOTE- must save to the database first! Use the appID to save it correctly.
-	public function customEmail($appID, $toAddress, $customMessage, $customSubject) {
+	public function customEmail($appID, $toAddress, $customMessage, $customSubject, $CASbroncoNetID) {
+		$this->logger->logInfo("Sending Email", $CASbroncoNetID, dirname(__FILE__));
+
 		$data = array(); // array to pass back data
 
 		$customSubject = trim($customSubject); //remove surrounding spaces
@@ -62,7 +64,7 @@ class EmailHelper
 
 		$fullMessage = $customMessage . $this->customFooter; //combine everything
 
-		$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+		$database = new DatabaseHelper($this->logger); //database helper object used for some verification and insertion
 
 		$saveResult = $database->saveEmail($appID, $customSubject, $fullMessage); //try to save the email message
 		$data["saveSuccess"] = $saveResult; //save it to return it later
@@ -94,14 +96,23 @@ class EmailHelper
 				$mail->Body    = $fullMessage;
 
 				$data["sendSuccess"] = $mail->send(); //notify of successful sending of message (or unsuccessful if it fails)
+				if(!$data["sendSuccess"]){ //error
+					$errorMessage = $this->logger->logError("Email message could not be sent: ".$mail->ErrorInfo, $CASbroncoNetID, dirname(__FILE__), true);
+					$data["sendError"] = "Error: Email message could not be sent. ".$errorMessage;
+				}
+			}
+			catch (phpmailerException $e) { //catch phpMailer specific exceptions
+				$errorMessage = $this->logger->logError("Email message could not be sent: ".$e->errorMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+				$data["sendError"] = "Error: Email message could not be sent. ".$errorMessage;
 			}
 			catch (Exception $e) {
-				$data["sendSuccess"] = false; //notify of message sending failure
-				$data["sendError"] = 'Message could not be sent. Mailer Error: '.$mail->ErrorInfo;
+				$errorMessage = $this->logger->logError("Email message could not be sent: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+				$data["sendError"] = "Error: Email message could not be sent. ".$errorMessage;
 			}
 		}
 		else{
-			$data["saveError"] = 'Email could not be saved to the database.';
+			$errorMessage = $this->logger->logError("Email could not be saved to the database.", $CASbroncoNetID, dirname(__FILE__), true);
+			$data["saveError"] = "Error: Email could not be saved to the database. ".$errorMessage;
 		}
 
 		$database->close(); //close database connections
@@ -110,7 +121,7 @@ class EmailHelper
 	}
 
 	//The email to send to the department chair to let them know of their needed approval. Let them know the applicant's name and email
-	public function chairApprovalEmail($appID, $toAddress, $applicantName, $applicantEmail){
+	public function chairApprovalEmail($appID, $toAddress, $applicantName, $applicantEmail, $CASbroncoNetID){
 		$subject = "IEFDF Application - Chair Approval Required";
 
 		$body = "Dear Department Chair, 

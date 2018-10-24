@@ -5,7 +5,11 @@
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
 
-	$database = new DatabaseHelper(); //database helper object used for some verification and insertion
+	/*Logger*/
+	include_once(dirname(__FILE__) . "/../server/Logger.php");
+
+	$logger = new Logger(); //for logging to files
+	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 		
 	if($database->isAdministrator($CASbroncoNetID)) 
 	{ 
