@@ -1437,7 +1437,7 @@ class DatabaseHelper
 			$this->sql->bindParam(':appID', $appID);
 			if($this->sql->execute() !== TRUE){ //query failed
 				$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated final reports.", $broncoNetID, dirname(__FILE__), true);
-				$data["error"][] = "Error: Unable to remove application, query failed to remove associated final reports. ".$errorMessage;
+				$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated final reports. ".$errorMessage;
 			}
 
 			if(!isset($data["error"])){ //no errors yet, move on to deleting emails
@@ -1445,7 +1445,7 @@ class DatabaseHelper
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
 					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated emails.", $broncoNetID, dirname(__FILE__), true);
-					$data["error"][] = "Error: Unable to remove application, query failed to remove associated emails. ".$errorMessage;
+					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated emails. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting notes
@@ -1453,7 +1453,7 @@ class DatabaseHelper
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
 					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated notes.", $broncoNetID, dirname(__FILE__), true);
-					$data["error"][] = "Error: Unable to remove application, query failed to remove associated notes. ".$errorMessage;
+					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated notes. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting budget items
@@ -1461,7 +1461,7 @@ class DatabaseHelper
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
 					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated budget items.", $broncoNetID, dirname(__FILE__), true);
-					$data["error"][] = "Error: Unable to remove application, query failed to remove associated budget items. ".$errorMessage;
+					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated budget items. ".$errorMessage;
 				}
 			}
 			if(!isset($data["error"])){ //no errors yet, move on to deleting the base application
@@ -1469,7 +1469,7 @@ class DatabaseHelper
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
 					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove the base application.", $broncoNetID, dirname(__FILE__), true);
-					$data["error"][] = "Error: Unable to remove application, query failed to remove the base application. ".$errorMessage;
+					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove the base application. ".$errorMessage;
 				}
 			}
 
@@ -1482,7 +1482,7 @@ class DatabaseHelper
 		}
 		catch(Exception $e){
 			$errorMessage = $this->logger->logError("Unable to remove application, internal exception when trying to delete application.", $broncoNetID, dirname(__FILE__), true);
-			$data["error"][] = "Error: Unable to remove application, internal exception when trying to delete application. ".$errorMessage;
+			$data["error"][] = PHP_EOL."Error: Unable to remove application, internal exception when trying to delete application. ".$errorMessage;
 		}
 
 		//response if there are errors

@@ -145,7 +145,7 @@ class EmailHelper
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
 		$body = str_replace("#email", nl2br($applicantEmail), $body); //insert the applicant's email into the message
 
-		return customEmail($appID, $toAddress, $body, $subject);
+		return $this->customEmail($appID, $toAddress, $body, $subject, $CASbroncoNetID);
 	}
 }
 	

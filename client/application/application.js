@@ -323,7 +323,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     }
                     else{ //a failure
                         newAlertType = "warning";
-                        newAlertMessage = "Warning: The application has been received, but there was a problem with it:";
+                        newAlertMessage = "Warning: The application has been received, but there was a problem with it: ";
                         //possibly multiple errors
                         if(fileError){
                             newAlertMessage += '\n' + fileError;
@@ -378,7 +378,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
     //delete this entire application -- only admins are capable of doing this
     $scope.deleteApplication = function(){
-        var retVal = prompt("WARNING - BY DELETING THIS APPLICATION, EVERYTHING ASSOCIATED WITH THIS APPLICATION WILL BE WIPED FROM THE DATABASE! YOU WILL NOT BE ABLE TO UNDO THIS OPERATION! To confirm, please type 'DELETE' into the confirmation box: ", "confirm delete");
+        var retVal = prompt("WARNING - BY DELETING THIS APPLICATION, EVERYTHING ASSOCIATED WITH THIS APPLICATION, EXCEPT FOR UPLOADED FILES, WILL BE PERMANENTLY WIPED! YOU WILL NOT BE ABLE TO UNDO THIS OPERATION! To confirm, please type 'DELETE' into the confirmation box: ", "confirm delete");
         if(retVal !== "DELETE"){
             return; //exit early if not confirmed
         }
@@ -403,7 +403,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to delete this application! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to delete this application: " + response.data.error;
                 $scope.populateForm(); //refresh the form again
             }
         },function (error){
@@ -444,7 +444,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                             else
                             {
                                 $scope.alertType = "warning";
-                                $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant. Error: " + response.data.email.sendError;
+                                $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
                             }
                         }
                         else
@@ -463,7 +463,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 {
                     console.log(response.data.error);
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
+                    $scope.alertMessage = "There was an error with your approval: " + response.data.error;
                 }
                 $scope.populateForm(); //refresh the form again
             },function (error){
@@ -508,7 +508,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 {
                     console.log(response.data.error);
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
+                    $scope.alertMessage = "There was an error with your approval: " + response.data.error;
                 }
             },function (error){
                 console.log(error, 'can not get data.');
@@ -553,7 +553,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to save your note! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to save your note: " + response.data.error;
             }
         },function (error){
             console.log(error, 'can not get data.');
@@ -610,14 +610,14 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                         else
                         {
                             $scope.alertType = "danger";
-                            $scope.alertMessage = "There was an unexpected error with your upload! Error: " + response.data;
+                            $scope.alertMessage = "There was an unexpected error with your upload: " + response.data;
                         }
                     }
                     else //failure!
                     {
                         console.log(response.data.error);
                         $scope.alertType = "danger";
-                        $scope.alertMessage = "There was an error with your upload! Error: " + response.data.error;
+                        $scope.alertMessage = "There was an error with your upload: " + response.data.error;
                     }
                     $scope.uploadProposalNarrative = []; //empty array
                     $scope.uploadSupportingDocs = []; //empty array

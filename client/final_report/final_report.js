@@ -218,7 +218,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                      else
                      {
                          newAlertType = "warning";
-                         newAlertMessage = "Warning: The report has been received, but there was an error when trying to upload your documents. You can return to your report to upload more documents. Error: " + response.data.fileError;
+                         newAlertMessage = "Warning: The report has been received, but there was an error when trying to upload your documents. You can return to your report to upload more documents: " + response.data.fileError;
                      }
                      if(!$scope.isCreating) //updating
                      {
@@ -282,7 +282,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                             else
                             {
                                 $scope.alertType = "warning";
-                                $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant. Error: " + response.data.email.sendError;
+                                $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
                             }
                         }
                         else
@@ -301,7 +301,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 {
                     console.log(response.data.error);
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an error with your approval! Error: " + response.data.error;
+                    $scope.alertMessage = "There was an error with your approval: " + response.data.error;
                 }
                 $scope.populateForm(); //refresh the form again
             },function (error){
@@ -347,7 +347,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to save your note! Error: " + response.data.error;
+                $scope.alertMessage = "There was an error when trying to save your note: " + response.data.error;
             }
         },function (error){
             console.log(error, 'can not get data.');
@@ -400,14 +400,14 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                         else
                         {
                             $scope.alertType = "danger";
-                            $scope.alertMessage = "There was an unexpected error with your upload! Error: " + response.data;
+                            $scope.alertMessage = "There was an unexpected error with your upload: " + response.data;
                         }
                     }
                     else //failure!
                     {
                         console.log(response.data.error);
                         $scope.alertType = "danger";
-                        $scope.alertMessage = "There was an error with your upload! Error: " + response.data.error;
+                        $scope.alertMessage = "There was an error with your upload: " + response.data.error;
                     }
                     $scope.uploadDocs = []; //empty array
                     $scope.populateForm(null);//refresh form so that new files show up

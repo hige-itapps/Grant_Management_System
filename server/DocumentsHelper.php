@@ -8,6 +8,7 @@ class DocumentsHelper
 {
 	private $logger; //for logging to files
 	private $uploadDir; //file uploads directory
+	private $fileTypes; //array of allowed file types for file uploads
 
 	/* Constructior retrieves configurations */
 	public function __construct($logger){
@@ -15,6 +16,7 @@ class DocumentsHelper
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
 		$this->uploadDir = dirname(__FILE__) ."/..".$settings["uploads_dir"]; //get absolute path to uploads directory
+		$this->fileTypes = explode(',', $settings["upload_types"]); //get array of file types
 	}
 
 	/* Returns array of all associated file names */
@@ -58,14 +60,14 @@ class DocumentsHelper
 				{
 					//make sure file isn't too large -- this probably won't be useful because the files probably wouldn't have uploaded anyway if they were too large
 					if($file["size"] > $maxUploadSize){
-						$res["error"][] = "Error: File not uploaded, '".$file["name"]."' is too large to upload";
+						$res["error"][] = PHP_EOL."Error: File not uploaded, '".$file["name"]."' is too large to upload";
 						continue; //iterate to next item in loop
 					}
 
 					//make sure file size is > 0
 					if($file["size"] <= 0){
 						$errorMessage = $this->logger->logError("File not uploaded, '".$file["name"]."' is empty", $CASbroncoNetID, dirname(__FILE__), true);
-						$res["error"][] = "Error: File not uploaded, '".$file["name"]."' is empty. ".$errorMessage;
+						$res["error"][] = PHP_EOL."Error: File not uploaded, '".$file["name"]."' is empty. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 
@@ -85,29 +87,29 @@ class DocumentsHelper
 
 					if($prefix == null){//upload prefix not accepted
 						$errorMessage = $this->logger->logError("File not uploaded, prefix '".$filename."' not accepted for file '".$file["name"]."'", $CASbroncoNetID, dirname(__FILE__), true);
-						$res["error"][] = "Error: File not uploaded, prefix not accepted for file '".$file["name"]."'. ".$errorMessage;
+						$res["error"][] = PHP_EOL."Error: File not uploaded, prefix not accepted for file '".$file["name"]."'. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 
 					$target = $uploadTo."/".$prefix.$file["name"];
-					$fileType = strtolower(pathinfo($target, PATHINFO_EXTENSION));//get the file's type
+					$fileType = ".".strtolower(pathinfo($target, PATHINFO_EXTENSION));//get the file's type (append a . to make compatible with the specified list of file extensions)
 
 					//make sure file type is an accepted format
-					if($fileType != "pdf"){
-						$res["error"][] = "Error: File not uploaded, filetype: '".$fileType."' not accepted for file '".$file["name"]."'";
+					if (!in_array($fileType, $this->fileTypes)) {
+						$res["error"][] = PHP_EOL."Error: File not uploaded, filetype: '".$fileType."' not accepted for file '".$file["name"]."'";
 						continue; //iterate to next item in loop
 					}
 
 					//move file to the uploads directory
 					if(!move_uploaded_file($file["tmp_name"], $target)){ //if it failed to move
 						$errorMessage = $this->logger->logError("File not uploaded, unable to move file '".$file["name"]."' to uploads directory", $CASbroncoNetID, dirname(__FILE__), true);
-						$res["error"][] = "Error: File not uploaded, unable to move file '".$file["name"]."' to uploads directory. ".$errorMessage;
+						$res["error"][] = PHP_EOL."Error: File not uploaded, unable to move file '".$file["name"]."' to uploads directory. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 				}
 			}else{
 				$errorMessage = $this->logger->logError("File not uploaded, unable to create upload directory", $CASbroncoNetID, dirname(__FILE__), true);
-				$res["error"][] = "Error: File not uploaded, unable to create upload directory. ".$errorMessage;
+				$res["error"][] = PHP_EOL."Error: File not uploaded, unable to create upload directory. ".$errorMessage;
 			}
 
 			if(!isset($res["error"])){$res = true;} //no errors, so success!
@@ -115,7 +117,7 @@ class DocumentsHelper
 		catch(Exception $e)
 		{
 			$errorMessage = $this->logger->logError("File not uploaded, unable to upload document: " . $e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
-			$res["error"][] = "Error: File not uploaded, unable to upload document due to an internal exception. ".$errorMessage;
+			$res["error"][] = PHP_EOL."Error: File not uploaded, unable to upload document due to an internal exception. ".$errorMessage;
 		}
 
 		return $res;
