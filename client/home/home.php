@@ -9,7 +9,7 @@
 	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 
 	/*Logger*/
-	include_once(dirname(__FILE__) . "/../server/Logger.php");
+	include_once(dirname(__FILE__) . "/../../server/Logger.php");
 
 	$logger = new Logger(); //for logging to files
 	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
