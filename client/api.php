@@ -422,13 +422,31 @@ else if(array_key_exists('approve_application', $_GET)){
                 try{
                     if($status === 'Approved'){ 
                         if(isset($_POST["amount"])){
-                            if($_POST["amount"] > 0){ $returnVal["success"] = $database->approveApplication($appID, $_POST["amount"], $CASbroncoNetID); }
+                            if($_POST["amount"] > 0){ 
+                                $returnVal["success"] = $database->approveApplication($appID, $_POST["amount"], $CASbroncoNetID); 
+                                if(!$returnVal["success"]){
+                                    $errorMessage = $logger->logError("Unable to approve application.", $CASbroncoNetID, dirname(__FILE__), true);
+                                    $returnVal["error"] = "Error: Unable to approve application. ".$errorMessage;
+                                }
+                            }
                             else {$returnVal["error"] = "Amount awarded must be greater than $0";}
                         }
                         else {$returnVal["error"] = "No amount specified";}
                     }
-                    else if($status === 'Hold') { $returnVal["success"] = $database->holdApplication($appID, $CASbroncoNetID); }
-                    else if($status === 'Denied') { $returnVal["success"] = $database->denyApplication($appID, $CASbroncoNetID); }
+                    else if($status === 'Hold') { 
+                        $returnVal["success"] = $database->holdApplication($appID, $CASbroncoNetID); 
+                        if(!$returnVal["success"]){
+                            $errorMessage = $logger->logError("Unable to hold application.", $CASbroncoNetID, dirname(__FILE__), true);
+			                $returnVal["error"] = "Error: Unable to hold application. ".$errorMessage;
+                        }
+                    }
+                    else if($status === 'Denied') { 
+                        $returnVal["success"] = $database->denyApplication($appID, $CASbroncoNetID); 
+                        if(!$returnVal["success"]){
+                            $errorMessage = $logger->logError("Unable to deny application.", $CASbroncoNetID, dirname(__FILE__), true);
+			                $returnVal["error"] = "Error: Unable to deny application. ".$errorMessage;
+                        }
+                    }
                     else { $returnVal["error"] = "Invalid status given"; }
     
                     //if everything has been successful so far, send off the email as well
@@ -467,8 +485,20 @@ else if(array_key_exists('approve_final_report', $_GET)){
             /*Verify that user is allowed to approve a report*/
             if($database->isFinalReportApprover($CASbroncoNetID) || $database->isAdministrator($CASbroncoNetID)){
                 try{
-                    if($status === 'Approved') { $returnVal["success"] = $database->approveFinalReport($appID, $CASbroncoNetID); }
-                    else if($status === 'Hold') { $returnVal["success"] = $database->holdFinalReport($appID, $CASbroncoNetID); }
+                    if($status === 'Approved') { 
+                        $returnVal["success"] = $database->approveFinalReport($appID, $CASbroncoNetID);
+                        if(!$returnVal["success"]){
+                            $errorMessage = $logger->logError("Unable to approve final report.", $CASbroncoNetID, dirname(__FILE__), true);
+			                $returnVal["error"] = "Error: Unable to approve final report. ".$errorMessage;
+                        }
+                    }
+                    else if($status === 'Hold') { 
+                        $returnVal["success"] = $database->holdFinalReport($appID, $CASbroncoNetID);
+                        if(!$returnVal["success"]){
+                            $errorMessage = $logger->logError("Unable to hold final report.", $CASbroncoNetID, dirname(__FILE__), true);
+			                $returnVal["error"] = "Error: Unable to hold final report. ".$errorMessage;
+                        }
+                    }
                     else { $returnVal["error"] = "Invalid status given"; }
     
                     //if everything has been successful so far, send off the email as well

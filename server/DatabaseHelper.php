@@ -811,8 +811,7 @@ class DatabaseHelper
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Approved', AmountAwarded = :aw WHERE ID = :id");
 			$this->sql->bindParam(':aw', $amount);
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 	
@@ -823,8 +822,7 @@ class DatabaseHelper
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Denied', AmountAwarded = 0 WHERE ID = :id");
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 	
@@ -836,8 +834,7 @@ class DatabaseHelper
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Hold', AmountAwarded = 0 WHERE ID = :id");
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 	
@@ -849,8 +846,7 @@ class DatabaseHelper
 			$this->sql = $this->conn->prepare("UPDATE applications SET DepartmentChairSignature = :sig WHERE ID = :id");
 			$this->sql->bindParam(':sig', $signature);
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 	
@@ -863,8 +859,7 @@ class DatabaseHelper
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE final_reports SET Status = 'Approved' WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 
@@ -875,8 +870,7 @@ class DatabaseHelper
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE final_reports SET Status = 'Hold' WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $id);
-			$this->sql->execute();
-			return $this->sql->rowCount() ? true : false; //will be true if the row was updated to a new amount
+			return $this->sql->execute();
 		}
 	}
 	
