@@ -47,7 +47,7 @@ class EmailHelper
 		$this->customFooter = "
 		
 		<strong>Please do not reply to this email, this account is not being monitored.
-		If you need more information, please contact the IEFDF administrator (michelle.metro-roland@wmich.edu or 7-3908).</strong>";
+		If you need more information, please contact the IEFDF administrator (michelle.metro-roland@wmich.edu or 387-3908).</strong>";
 	}
 
 	//Send an email to a specific address, with a custom message and subject. If the subject is left blank, a default one is prepared instead.
@@ -125,21 +125,21 @@ class EmailHelper
 		$subject = "IEFDF Application - Chair Approval Required";
 
 		$body = "Dear Department Chair, 
-			Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and therefore, eligible to receive IEFDF funds. Directions:
+			Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and is therefore eligible to receive IEFDF funds. Directions:
 
-			1. Go to the IEFDF website at www.wmich.edu/international/iefdf
+			1. Go to the IEFDF website at iefdf.wmich.edu
 
-			2. Click on the application system log in
+			2. Log in with your Bronco NetID
 
-			3. Log in with your bronco net id
+			3. Click on the 'Approve Applications' link
 
-			4. Click on the 'Approve Applications' link
+			4. Navigate to the application you want to review, and click the 'View Application' link
 
-			5. Find the application you want to review, and click the 'View Application' link
+			5. At the bottom of the page, type your name into the department chair approval field
 
-			5. At the bottom of the page, type your name in the signature field
+			6. Click the 'Approve Application' button
 
-			6. Submit
+			If there are no errors, you should then be redirected to the homepage with a confirmation message. You can go back to the site at any point to review applications that you have approved.
 			
 			Best Regards, Dr. Michelle Metro-Roland";
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
