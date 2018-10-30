@@ -314,10 +314,17 @@ final class ApplicationsTest extends TestCase
         $pendingAppID = 3;
         $newAppID = 6;
 
-        $this->assertEquals(false, $database->approveApplication($approvedAppID, 700, null)); //awarded amount has to be the same if already approved, otherwise that will be updated
-        $this->assertEquals(true, $database->approveApplication($unapprovedAppID, 700, null));
-        $this->assertEquals(true, $database->approveApplication($pendingAppID, 700, null));
-        $this->assertEquals(false, $database->approveApplication($newAppID, 700, null));
+        $database->approveApplication($approvedAppID, 700, null); //awarded amount has to be the same if already approved, otherwise that will be updated
+        $this->assertEquals("Approved", $database->getApplication($approvedAppID)->status);
+
+        $database->approveApplication($unapprovedAppID, 700, null);
+        $this->assertEquals("Approved", $database->getApplication($unapprovedAppID)->status);
+
+        $database->approveApplication($pendingAppID, 700, null);
+        $this->assertEquals("Approved", $database->getApplication($pendingAppID)->status);
+
+        $database->approveApplication($newAppID, 700, null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
     }
 
     /*Test denying an application*/
@@ -331,10 +338,17 @@ final class ApplicationsTest extends TestCase
         $pendingAppID = 3;
         $newAppID = 6;
 
-        $this->assertEquals(true, $database->denyApplication($approvedAppID, null));
-        $this->assertEquals(true, $database->denyApplication($unapprovedAppID, null));
-        $this->assertEquals(true, $database->denyApplication($pendingAppID, null));
-        $this->assertEquals(false, $database->denyApplication($newAppID, null));
+        $database->denyApplication($approvedAppID, null);
+        $this->assertEquals("Denied", $database->getApplication($approvedAppID)->status);
+
+        $database->denyApplication($unapprovedAppID, null);
+        $this->assertEquals("Denied", $database->getApplication($unapprovedAppID)->status);
+
+        $database->denyApplication($pendingAppID, null);
+        $this->assertEquals("Denied", $database->getApplication($pendingAppID)->status);
+
+        $database->denyApplication($newAppID, null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
     }
 
     /*Test holding an application*/
@@ -349,11 +363,20 @@ final class ApplicationsTest extends TestCase
         $heldAppID = 4;
         $newAppID = 6;
 
-        $this->assertEquals(true, $database->holdApplication($approvedAppID, null));
-        $this->assertEquals(true, $database->holdApplication($unapprovedAppID, null));
-        $this->assertEquals(true, $database->holdApplication($pendingAppID, null));
-        $this->assertEquals(true, $database->holdApplication($heldAppID, null));
-        $this->assertEquals(false, $database->holdApplication($newAppID, null));
+        $database->holdApplication($approvedAppID, null);
+        $this->assertEquals("Hold", $database->getApplication($approvedAppID)->status);
+
+        $database->holdApplication($unapprovedAppID, null);
+        $this->assertEquals("Hold", $database->getApplication($unapprovedAppID)->status);
+
+        $database->holdApplication($pendingAppID, null);
+        $this->assertEquals("Hold", $database->getApplication($pendingAppID)->status);
+
+        $database->holdApplication($heldAppID, null);
+        $this->assertEquals("Hold", $database->getApplication($heldAppID)->status);
+
+        $database->holdApplication($newAppID, null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
     }
 
     /*Test signing an application*/
@@ -366,10 +389,17 @@ final class ApplicationsTest extends TestCase
         $unsignedAppID = 3;
         $newAppID = 6;
 
-        $this->assertEquals(false, $database->signApplication($signedAppID, "Sam", null));
-        $this->assertEquals(true, $database->signApplication($unsignedAppID, "Sam", null));
-        $this->assertEquals(false, $database->signApplication($newAppID, "Sam", null));
-        $this->assertEquals(true, $database->signApplication($signedAppID, "Dude", null)); //try signing an already signed app with a new sig
+        $database->signApplication($signedAppID, "Sam", null);
+        $this->assertEquals("Sam", $database->getApplication($signedAppID)->deptChairApproval);
+
+        $database->signApplication($unsignedAppID, "Sam", null);
+        $this->assertEquals("Sam", $database->getApplication($unsignedAppID)->deptChairApproval);
+
+        $database->signApplication($newAppID, "Sam", null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
+
+        $database->signApplication($signedAppID, "Dude", null); //try signing an already signed app with a new sig
+        $this->assertEquals("Dude", $database->getApplication($signedAppID)->deptChairApproval);
     }
 
 

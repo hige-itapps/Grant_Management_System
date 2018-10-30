@@ -77,6 +77,7 @@ final class FinalReportsTest extends TestCase
         $newAppID = 6;
         //shouldn't exist
         $this->assertEquals(0, $database->getApplication($newAppID));
+        $this->assertEquals(0, $database->getFinalReport($newAppID));
     }
 
 
@@ -118,10 +119,45 @@ final class FinalReportsTest extends TestCase
         $deniedAppID = 4;
         $newAppID = 6;
 
-        $this->assertEquals(false, $database->approveFinalReport($approvedAppID, null));
-        $this->assertEquals(true, $database->approveFinalReport($deniedAppID, null));
-        $this->assertEquals(true, $database->approveFinalReport($pendingAppID, null));
-        $this->assertEquals(false, $database->approveFinalReport($newAppID, null));
+        $database->approveFinalReport($approvedAppID, null);
+        $this->assertEquals("Approved", $database->getFinalReport($approvedAppID)->status);
+
+        $database->approveFinalReport($deniedAppID, null);
+        $this->assertEquals("Approved", $database->getFinalReport($deniedAppID)->status);
+
+        $database->approveFinalReport($pendingAppID, null);
+        $this->assertEquals("Approved", $database->getFinalReport($pendingAppID)->status);
+
+        $database->approveFinalReport($newAppID, null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
+        $this->assertEquals(0, $database->getFinalReport($newAppID));
+    }
+
+
+
+    /*Test holding a final report*/
+    public function testHoldFinalReport()
+    {
+        $mockLogger = $this->createMock(Logger::class); //create mock Logger object
+        $database = new DatabaseHelper($mockLogger, $this->pdo); //initialize database helper object
+
+        $approvedAppID = 1;
+        $pendingAppID = 3;
+        $deniedAppID = 4;
+        $newAppID = 6;
+
+        $database->holdFinalReport($approvedAppID, null);
+        $this->assertEquals("Hold", $database->getFinalReport($approvedAppID)->status);
+
+        $database->holdFinalReport($deniedAppID, null);
+        $this->assertEquals("Hold", $database->getFinalReport($deniedAppID)->status);
+
+        $database->holdFinalReport($pendingAppID, null);
+        $this->assertEquals("Hold", $database->getFinalReport($pendingAppID)->status);
+
+        $database->holdFinalReport($newAppID, null);
+        $this->assertEquals(0, $database->getApplication($newAppID)); //shouldn't exist
+        $this->assertEquals(0, $database->getFinalReport($newAppID));
     }
 
 
