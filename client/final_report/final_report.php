@@ -219,7 +219,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="travelFrom">Travel Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-								<input type="date" class="form-control" ng-model="formData.travelFrom" ng-disabled="reportFieldsDisabled" id="travelFrom" name="travelFrom" />
+								<input type="date" class="form-control" ng-model="formData.travelFrom" ng-disabled="reportFieldsDisabled" id="travelFrom" name="travelFrom" placeholder="yyyy-mm-dd" datepicker/>
 								<span class="help-block" ng-show="errors.travelFrom" aria-live="polite">{{ errors.travelFrom }}</span> 
 							</div>
 						</div>
@@ -227,7 +227,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="travelTo">Travel Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-								<input type="date" class="form-control" ng-model="formData.travelTo" ng-disabled="reportFieldsDisabled" id="travelTo" name="travelTo" />
+								<input type="date" class="form-control" ng-model="formData.travelTo" ng-disabled="reportFieldsDisabled" id="travelTo" name="travelTo" placeholder="yyyy-mm-dd" datepicker/>
 								<span class="help-block" ng-show="errors.travelTo" aria-live="polite">{{ errors.travelTo }}</span> 
 							</div>
 						</div>
@@ -235,7 +235,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="activityFrom">Activity Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-								<input type="date" class="form-control" ng-model="formData.activityFrom"ng-disabled="reportFieldsDisabled"  id="activityFrom" name="activityFrom" />
+								<input type="date" class="form-control" ng-model="formData.activityFrom"ng-disabled="reportFieldsDisabled"  id="activityFrom" name="activityFrom" placeholder="yyyy-mm-dd" datepicker/>
 								<span class="help-block" ng-show="errors.activityFrom" aria-live="polite">{{ errors.activityFrom }}</span> 
 							</div>
 						</div>
@@ -243,7 +243,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="activityTo">Activity Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
-								<input type="date" class="form-control" ng-model="formData.activityTo" ng-disabled="reportFieldsDisabled" id="activityTo" name="activityTo" />
+								<input type="date" class="form-control" ng-model="formData.activityTo" ng-disabled="reportFieldsDisabled" id="activityTo" name="activityTo" placeholder="yyyy-mm-dd" datepicker/>
 								<span class="help-block" ng-show="errors.activityTo" aria-live="polite">{{ errors.activityTo }}</span> 
 							</div>
 						</div>

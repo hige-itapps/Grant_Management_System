@@ -35,6 +35,59 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
 
 
+     /*support browsers that don't have built-in datepicker input functionality (looking at you Safari...)
+    source: http://www.javascriptkit.com/javatutors/createelementcheck2.shtml */
+    var datefield=document.createElement("input");
+    datefield.setAttribute("type", "date");
+    if (datefield.type!="date"){ //if browser doesn't support input type="date", initialize date picker widget:
+        jQuery(function($){ //on document.ready
+            $('#travelFrom').datepicker({ dateFormat: 'yy-mm-dd' });
+            $('#travelTo').datepicker({ dateFormat: 'yy-mm-dd' });
+            $('#activityFrom').datepicker({ dateFormat: 'yy-mm-dd' });
+            $('#activityTo').datepicker({ dateFormat: 'yy-mm-dd' });
+        })
+
+        //Custom directive for JQuery Datepicker field (only necessary for when the browser doesn't natively support it, like with Safari)
+        //Source: https://stackoverflow.com/questions/18144142/jquery-ui-datepicker-with-angularjs
+        higeApp.directive("datepicker", function () {
+            return {
+                restrict: "A",
+                require: "ngModel",
+                link: function (scope, element, attrs, ngModelCtrl) {
+                    element.datepicker({
+                        dateFormat: 'yy-mm-dd',
+                        onSelect: function (date) {
+                            //dates require a bit of extra work to convert properly! Javascript offsets the dates based on timezones, and one way to combat that is by replacing hyphens with slashes (don't ask me why)
+                            var saveDate = new Date(date.replace(/-/g, '\/'));
+
+                            var ngModelName = this.attributes['ng-model'].value;
+
+                            // if value for the specified ngModel is a property of 
+                            // another object on the scope
+                            if (ngModelName.indexOf(".") != -1) {
+                                var objAttributes = ngModelName.split(".");
+                                var lastAttribute = objAttributes.pop();
+                                var partialObjString = objAttributes.join(".");
+                                var partialObj = eval("scope." + partialObjString);
+
+                                partialObj[lastAttribute] = saveDate;
+                            }
+                            // if value for the specified ngModel is directly on the scope
+                            else {
+                                scope[ngModelName] = saveDate;
+                            }
+                            scope.$apply();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+
+
+
     
 
     /*Functions*/
