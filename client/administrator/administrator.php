@@ -8,8 +8,12 @@
 	/*Logger*/
 	include_once(dirname(__FILE__) . "/../../server/Logger.php");
 
+	/*Site Warning*/
+	include_once(dirname(__FILE__) . "/../../server/SiteWarning.php");
+
 	$logger = new Logger(); //for logging to files
 	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
+	$siteWarning = new SiteWarning($database); //used to determine if a site warning exists and should be displayed
 		
 	if($database->isAdministrator($CASbroncoNetID)) 
 	{ 
@@ -17,6 +21,7 @@
 		$applicationApprovers = $database->getApplicationApprovers();
 		$committee = $database->getCommittee();
 		$finalReportApprovers = $database->getfinalReportApprovers();
+		$siteWarningString = $database->getSiteWarning();
 ?>
 
 
@@ -36,6 +41,7 @@
 			var scope_committee = <?php echo json_encode($committee); ?>;
 			var scope_applicationApprovers = <?php echo json_encode($applicationApprovers); ?>;
 			var scope_finalReportApprovers = <?php echo json_encode($finalReportApprovers); ?>;
+			var scope_siteWarningString = <?php echo json_encode($siteWarningString); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="administrator.js"></script>
@@ -48,6 +54,7 @@
 		<?php include '../include/site_banner.html'; ?>
 
 		<div id="MainContent" role="main">
+			<?php $siteWarning->showIfExists() ?> <!-- show site warning if it exists -->
 			<script src="../include/outdatedbrowser.js" nomodule></script> <!-- show site error if outdated -->
 			<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 	
@@ -190,6 +197,19 @@
 						<button type="submit" class="btn btn-success">Submit</button>
 					</form>
 
+					<hr>
+
+					<!-- Basic Site Warning Option -->
+					<h3>Site Warning Notification</h3>
+					<h4>Use this option to specify a warning that will appear on the top of every page of the site in a striped yellow banner. This can be used to do things like schedule upcoming down times for site maintenance. If enabled, it will show up upon subsequent page refreshes.</h4>
+					<form class="form-inline site-warning-form" ng-submit="saveSiteWarning()"> 
+						<div class="form-group">
+							<label for="siteWarning">Site Warning Message:</label>
+							<textarea class="form-control" ng-model="siteWarning" id="siteWarning" name="siteWarning" placeholder="Enter Warning Message" rows="2"> </textarea>
+						</div>
+						<button type="submit" class="btn btn-success">Save Message</button>
+						<button type="button" class="btn btn-danger" ng-click="clearSiteWarning()">Clear Message</button>
+					</form>
 					<hr>
 
 					<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">

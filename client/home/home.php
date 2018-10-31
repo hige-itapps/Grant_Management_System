@@ -11,9 +11,13 @@
 	/*Logger*/
 	include_once(dirname(__FILE__) . "/../../server/Logger.php");
 
+	/*Site Warning*/
+	include_once(dirname(__FILE__) . "/../../server/SiteWarning.php");
+
 	$logger = new Logger(); //for logging to files
 	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 	$cycles = new Cycles(); //Cycles helper object
+	$siteWarning = new SiteWarning($database); //used to determine if a site warning exists and should be displayed
 
 	//Initialize everything with PHP
 	$totalAppsToSign = $database->getNumberOfApplicationsToSign($CASemail, $CASbroncoNetID); //get number of applications this user needs to sign
@@ -87,6 +91,7 @@
 		<?php include '../include/site_banner.html'; ?>
 	
 		<div id="MainContent" role="main">
+			<?php $siteWarning->showIfExists() ?> <!-- show site warning if it exists -->
 			<script src="../include/outdatedbrowser.js" nomodule></script> <!-- show site error if outdated -->
 			<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 

@@ -786,6 +786,53 @@ else if(array_key_exists('remove_application', $_GET)){
 
 
 
+//for saving a site warning
+else if(array_key_exists('save_site_warning', $_GET)){
+    if(isset($_POST["siteWarning"])){
+        $siteWarning = $_POST["siteWarning"];
+
+        if(isset($siteWarning) && trim($siteWarning) !== ''){ //must not be an empty string
+            //must have permission to do this
+            if($database->isAdministrator($CASbroncoNetID)){
+                try{
+                    $returnVal = $database->saveSiteWarning(trim($siteWarning));
+                }
+                catch(Exception $e){
+                    $errorMessage = $logger->logError("Unable to save site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                    $returnVal["error"] = "Error: Unable to save site warning due to an internal exception. ".$errorMessage;
+                }
+            }
+            else{
+                $returnVal["error"] = "Permission denied, you are not permitted to save site warnings.";
+            }
+        }
+        else{
+            $returnVal["error"] = "Warning message is empty";
+        }
+    }
+    else{
+        $returnVal["error"] = "Warning message is not set";
+    }
+}
+//for clearing a site warning
+else if(array_key_exists('clear_site_warning', $_GET)){
+    //must have permission to do this
+    if($database->isAdministrator($CASbroncoNetID)){
+        try{
+            $returnVal = $database->saveSiteWarning("");
+        }
+        catch(Exception $e){
+            $errorMessage = $logger->logError("Unable to clear site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $returnVal["error"] = "Error: Unable to clear site warning due to an internal exception. ".$errorMessage;
+        }
+    }
+    else{
+        $returnVal["error"] = "Permission denied, you are not permitted to clear site warnings.";
+    }
+}
+
+
+
 //no appropriate function called
 else{
     $returnVal = json_encode("No function called");

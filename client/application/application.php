@@ -14,10 +14,14 @@
 	/*Logger*/
 	include_once(dirname(__FILE__) . "/../../server/Logger.php");
 
+	/*Site Warning*/
+	include_once(dirname(__FILE__) . "/../../server/SiteWarning.php");
+
 	$logger = new Logger(); //for logging to files
 	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 	$cycles = new Cycles(); //Cycles helper object
 	$documentsHelper = new DocumentsHelper($logger); //initialize DocumentsHelper object
+	$siteWarning = new SiteWarning($database); //used to determine if a site warning exists and should be displayed
 
 	$config_url = dirname(__FILE__).'/../../config.ini'; //set config file url
 	$settings = parse_ini_file($config_url); //get all settings
@@ -168,6 +172,7 @@
 		<?php include '../include/site_banner.html'; ?>
 
 	<div id="MainContent" role="main">
+		<?php $siteWarning->showIfExists() ?> <!-- show site warning if it exists -->
 		<script src="../include/outdatedbrowser.js" nomodule></script> <!-- show site error if outdated -->
 		<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 

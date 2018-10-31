@@ -1487,6 +1487,24 @@ class DatabaseHelper
 		return $data; //return both the return code and status
 	}
 
+
+
+	/*Retrieve the site warning, if any*/
+	public function getSiteWarning(){
+		$this->sql = $this->conn->prepare("SELECT v.Value FROM variables v WHERE v.Name = 'SiteWarning'");
+		$this->sql->execute();
+		return $this->sql->fetch(PDO::FETCH_COLUMN); //return value only
+	}
+	/*Save a new site warning*/
+	public function saveSiteWarning($warning){
+		$this->sql = $this->conn->prepare("UPDATE variables v SET v.Value = :warning WHERE v.Name = 'SiteWarning'");
+		$this->sql->bindParam(':warning', $warning);
+		return $this->sql->execute();
+	}
+
+
+
+
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	private function connect(){
 		try{

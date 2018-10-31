@@ -150,6 +150,14 @@ h2.HomeText{
 #adminCtrl caption{
 	font-size: 2em;
 }
+.site-warning-form > .form-group{
+	display: block!important;
+	margin-bottom: 15px!important;
+}
+.site-warning-form > .form-group > textarea{
+	width: 100%;
+	text-align: center;
+}
 
 #applicantTableButton, #applicationTableButton{	
 	margin-top: 60px;
@@ -290,6 +298,28 @@ hr{
     text-align: center;
 	font-size: 20px;
 	padding: 15px 0px;
+}
+
+/*style the site-warning div that appears when there is a warning saved in the database*/
+#site-warning-banner{
+    width: 100%;
+    background: repeating-linear-gradient(
+		135deg,
+		#fffdc4,
+		#fffdc4 15px,
+		#f4f184 15px,
+		#f4f184 30px
+	);
+    text-align: center;
+	font-size: 20px;
+	padding: 15px 0px;
+}
+#site-warning-banner > p{ 
+	margin: 0;
+	display: inline-block;
+	background-color: #fffdc4;
+	border-radius: 3px;
+    padding: 5px;
 }
 
 /*format the home page content*/
