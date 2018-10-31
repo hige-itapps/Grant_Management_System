@@ -266,7 +266,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
                 existingApp.appEmails.forEach(function (email){ //iterate over sent emails
                     email[3] = $sce.trustAsHtml(email[3]); //allow html to render correctly
-                    email[4] = new Date(email[4] + ' UTC').toString();//convert timestamp to local time
+                    email[4] = new Date(email[4].replace(/-/g, '\/') + ' UTC').toString();//convert timestamp to local time
                 });
                 $scope.appEmails = existingApp.appEmails;//refresh the associated emails
             }
@@ -743,7 +743,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         //add a blank budget item
         $scope.addBudgetItem();
 
-        alert("Please complete your application fully; applications in progress cannot be saved. Your proposal narrative and supporting documents may be uploaded later if preferred, however. Uploaded files cannot be deleted once submitted.");
+        alert("Please complete your application fully; applications in progress cannot be saved. Your proposal narrative and supporting documents may be uploaded later if preferred. Uploaded files cannot be deleted once submitted.");
     }
 
 }]);

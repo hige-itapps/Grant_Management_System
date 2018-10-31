@@ -192,7 +192,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
                 existingReport.reportEmails.forEach(function (email){ //iterate over sent emails
                     email[3] = $sce.trustAsHtml(email[3]); //allow html to render correctly
-                    email[4] = new Date(email[4] + ' UTC').toString();//convert timestamp to local time
+                    email[4] = new Date(email[4].replace(/-/g, '\/') + ' UTC').toString();//convert timestamp to local time
                 });
                 $scope.reportEmails = existingReport.reportEmails;//refresh the associated emails
                 $scope.reportStatus = existingReport.status; //set the report's status
@@ -512,7 +512,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     }
     else //otherwise alert user with warning
     {
-        alert("Please complete your final report fully; reports in progress cannot be saved. Additional documents may be uploaded later if preferred, however. Uploaded files cannot be deleted once submitted.");
+        alert("Please complete your final report fully; reports in progress cannot be saved. Additional documents may be uploaded later if preferred. Uploaded files cannot be deleted once submitted.");
     }
 }]);
 

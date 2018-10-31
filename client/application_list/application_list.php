@@ -134,14 +134,14 @@
 					<div class="col-md-2">
 						<div class="form-group">
 							<label for="filterDateFrom">Filter date after:</label>
-							<input type="date" ng-model="filterFrom" class="listInput form-control" id="filterDateFrom" name="filterDateFrom" />
+							<input type="date" ng-model="filterFrom" class="listInput form-control" id="filterDateFrom" name="filterDateFrom" placeholder="yyyy-mm-dd" datepicker/>
 						</div>
 					</div>
 				<!--Filter last date-->
 					<div class="col-md-2">
 						<div class="form-group">
 							<label for="filterDateTo">Filter date up to:</label>
-							<input type="date" ng-model="filterTo" class="listInput form-control" id="filterDateTo" name="filterDateTo" />
+							<input type="date" ng-model="filterTo" class="listInput form-control" id="filterDateTo" name="filterDateTo" placeholder="yyyy-mm-dd" datepicker/>
 						</div>
 					</div>
 				<!--Filter status-->

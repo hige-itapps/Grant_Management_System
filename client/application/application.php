@@ -604,6 +604,7 @@
 						<div class="col-md-3"></div>
 						<div class="col-md-6">
 							<h3 class="title">Note: Applications received without the approval of the chair will not be considered.</h3>
+							<h3 class="title" ng-show="isCreating || isReviewing || isAdminUpdating">Upon submission, an email will automatically be sent out to your department chair so that they may review your application.</h3>
 							<h3 class="title" ng-show="isChair">By approving this application, you affirm that this applicant holds a board-appointed faculty rank and is a member of the bargaining unit.</h3>
 							<div class="form-group">
 								<label for="deptChairApproval">{{isChair ? "Your Approval ("+(maxDeptChairApproval-formData.deptChairApproval.length)+" characters remaining):" : "Department Chair Approval:"}}</label>
