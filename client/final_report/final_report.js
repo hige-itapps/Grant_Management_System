@@ -250,13 +250,12 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             .then(function (response) {
                 console.log(response, 'res');
                 //data = response.data;
-                if(typeof response.data.success === 'undefined') //unexpected result!
-                {
+                if(typeof response.data.insert === 'undefined' || typeof response.data.insert.success === 'undefined'){//unexpected result!
                     console.log(JSON.stringify(response, null, 4));
                     $scope.alertType = "danger";
                     $scope.alertMessage = "There was an unexpected error with your submission! Please let an administrator know the details and time of this issue.";
                 }
-                else if(response.data.success)
+                else if(response.data.insert.success)
                 {
                      //check for fileUpload success too
                      $scope.errors = []; //clear any old errors
@@ -287,7 +286,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 }
                 else
                 {
-                    $scope.errors = response.data.errors;
+                    $scope.errors = response.data.insert.errors;
                     $scope.alertType = "danger";
                     if(typeof $scope.errors["other"] !== 'undefined') //there was an 'other' (non-normal) error
                     {

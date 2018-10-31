@@ -75,6 +75,7 @@
 	{
 		if($permissionSet = $isAdmin = $database->isAdministrator($CASbroncoNetID)){} //admin check
 		else if($permissionSet = $isApprover = $database->isApplicationApprover($CASbroncoNetID)){} //application approver check
+		else if($permissionSet = $isFinalReportApprover = $database->isFinalReportApprover($CASbroncoNetID)){} //final report approver check, only used for viewing this page
 		else if($permissionSet = $isCommittee = $database->isCommitteeMember($CASbroncoNetID)){} //committee member check
 		else if($permissionSet = $isChair = $database->isUserAllowedToSignApplication($CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair check
 		else if($permissionSet = $isChairReviewing = $database->isUserDepartmentChair($CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
