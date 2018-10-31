@@ -216,7 +216,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an unexpected error when trying to retrieve the application: " + error;
+                $scope.alertMessage = "There was an unexpected error when trying to retrieve the application! Please let an administrator know the details and time of this issue.";
             });
         }
         else //if it exists, then populate form
@@ -274,7 +274,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             {
                 console.log(e);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an unexpected error when trying to populate the form: " + e;
+                $scope.alertMessage = "There was an unexpected error when trying to populate the form! Please let an administrator know the details and time of this issue.";
             }
         }
     }
@@ -337,7 +337,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 if(typeof response.data.insert === 'undefined' || typeof response.data.insert.success === 'undefined'){//unexpected result!
                     console.log(JSON.stringify(response, null, 4));
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an unexpected error with your submission! Server response: " + JSON.stringify(response, null, 4);
+                    $scope.alertMessage = "There was an unexpected error with your submission! Please let an administrator know the details and time of this issue.";
                 }
                 else if(response.data.insert.success){
                     $scope.errors = []; //clear any old errors
@@ -418,7 +418,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an unexpected error when trying to insert the application!";
+                $scope.alertMessage = "There was an unexpected error when trying to insert the application! Please let an administrator know the details and time of this issue.";
             });
         }
     };
@@ -458,7 +458,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         },function (error){
             console.log(error, 'can not get data.');
             $scope.alertType = "danger";
-            $scope.alertMessage = "There was an unexpected error when trying to delete this application!";
+            $scope.alertMessage = "There was an unexpected error when trying to delete this application! Please let an administrator know the details and time of this issue.";
         });
     }
 
@@ -518,7 +518,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an unexpected error with your approval!";
+                $scope.alertMessage = "There was an unexpected error with your approval! Please let an administrator know the details and time of this issue.";
             });
         }
     };
@@ -562,7 +562,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             },function (error){
                 console.log(error, 'can not get data.');
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an unexpected error with your approval!";
+                $scope.alertMessage = "There was an unexpected error with your approval! Please let an administrator know the details and time of this issue.";
             });
         }
     };
@@ -607,7 +607,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         },function (error){
             console.log(error, 'can not get data.');
             $scope.alertType = "danger";
-            $scope.alertMessage = "There was an unexpected error when trying to save your note!";
+            $scope.alertMessage = "There was an unexpected error when trying to save your note! Please let an administrator know the details and time of this issue.";
         });
     };
 
@@ -659,7 +659,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                         else
                         {
                             $scope.alertType = "danger";
-                            $scope.alertMessage = "There was an unexpected error with your upload: " + response.data;
+                            $scope.alertMessage = "There was an unexpected error with your upload! Please let an administrator know the details and time of this issue.";
                         }
                     }
                     else //failure!
@@ -674,7 +674,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 },function (error){
                     console.log(error, 'can not get data.');
                     $scope.alertType = "danger";
-                    $scope.alertMessage = "There was an unexpected error when trying to upload your files!";
+                    $scope.alertMessage = "There was an unexpected error when trying to upload your files! Please let an administrator know the details and time of this issue.";
                 });
             }
             else
