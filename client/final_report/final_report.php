@@ -23,6 +23,9 @@
 	$documentsHelper = new DocumentsHelper($logger); //initialize DocumentsHelper object
 	$siteWarning = new SiteWarning($database); //used to determine if a site warning exists and should be displayed
 
+	$config_url = dirname(__FILE__).'/../../config.ini'; //set config file url
+	$settings = parse_ini_file($config_url); //get all settings
+
 	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
 	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
 	
@@ -54,7 +57,7 @@
 		if($permissionSet = $isAdmin = $database->isAdministrator($CASbroncoNetID)){} //admin check
 		else if($permissionSet = $isFinalReportApprover = $database->isFinalReportApprover($CASbroncoNetID)){} //final report approver check
 		else if($permissionSet = $isCommittee = $database->isCommitteeMember($CASbroncoNetID)){} //committee member check
-		else if($permissionSet = $isChairReviewing = $database->isUserDepartmentChair($$CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
+		else if($permissionSet = $isChairReviewing = $database->isUserDepartmentChair($CASemail, $_GET['id'], $CASbroncoNetID)){} //department chair reviewing check
 		else if($permissionSet = $isCreating = $database->isUserAllowedToCreateFinalReport($CASbroncoNetID, $_GET['id'])){} //applicant creating check
 		else if($permissionSet = $isReviewing = $database->doesUserOwnApplication($CASbroncoNetID, $_GET['id']) && $database->getFinalReport($_GET['id'])){} //applicant reviewing check
 	}
