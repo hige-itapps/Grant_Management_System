@@ -426,64 +426,36 @@ class DatabaseHelper
 
 
 
-	/*Checks if a user is an administrator-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	/*Checks if a user is an administrator (true or false)*/
 	public function isAdministrator($broncoNetID){
-		$is = false; //initialize boolean to false
-		$adminList = $this->getAdministrators();//grab admin list
-		
-		foreach($adminList as $i){//loop through admins
-			$newID = $i[0];
-			if(strcmp($newID, $broncoNetID) == 0){
-				$is = true;
-				break; //no need to continue loop
-			}
-		}
-		return $is;
+		$this->sql = $this->conn->prepare("Select * FROM administrators WHERE BroncoNetID = :id");
+		$this->sql->bindParam(':id', $broncoNetID);
+		$this->sql->execute();
+		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
 	
-	/*Checks if a user is an application approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	/*Checks if a user is an application approver (true or false)*/
 	public function isApplicationApprover($broncoNetID){
-		$is = false; //initialize boolean to false
-		$approverList = $this->getApplicationApprovers();//grab application approver list
-		
-		foreach($approverList as $i){//loop through approvers
-			$newID = $i[0];
-			if($newID == $broncoNetID){
-				$is = true;
-				break; //no need to continue loop
-			}
-		}
-		return $is;
+		$this->sql = $this->conn->prepare("Select * FROM application_approval WHERE BroncoNetID = :id");
+		$this->sql->bindParam(':id', $broncoNetID);
+		$this->sql->execute();
+		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
 	
-	/*Checks if a user is a final report approver-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	/*Checks if a user is a final report approver (true or false)*/
 	public function isFinalReportApprover($broncoNetID){
-		$is = false; //initialize boolean to false
-		$approverList = $this->getFinalReportApprovers();//grab final report approver list
-		
-		foreach($approverList as $i){//loop through approvers
-			$newID = $i[0];
-			if($newID == $broncoNetID){
-				$is = true;
-				break; //no need to continue loop
-			}
-		}
-		return $is;
+		$this->sql = $this->conn->prepare("Select * FROM final_report_approval WHERE BroncoNetID = :id");
+		$this->sql->bindParam(':id', $broncoNetID);
+		$this->sql->execute();
+		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
 	
-	/*Checks if a user is a committee member-returns a boolean; NEEDS DATABASE CONNECTION OBJECT TO WORK*/
+	/*Checks if a user is a committee member (true or false)*/
 	public function isCommitteeMember($broncoNetID){
-		$is = false; //initialize boolean to false
-		$committeeList = $this->getCommittee();//grab committee member list
-		
-		foreach($committeeList as $i){//loop through committee members
-			$newID = $i[0];
-			if($newID == $broncoNetID){
-				$is = true;
-				break; //no need to continue loop
-			}
-		}
-		return $is;
+		$this->sql = $this->conn->prepare("Select * FROM committee WHERE BroncoNetID = :id");
+		$this->sql->bindParam(':id', $broncoNetID);
+		$this->sql->execute();
+		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
 	
 	/*Checks if a user is allowed to create an application

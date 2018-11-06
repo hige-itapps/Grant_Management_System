@@ -658,7 +658,7 @@ else if(array_key_exists('remove_admin', $_GET)){
     
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
-            if($CASbroncoNetID !== $broncoNetID){ //not trying to remove self
+            if(strcasecmp($CASbroncoNetID, $broncoNetID) != 0){ //not trying to remove self
                 try{
                     $returnVal = $database->removeAdmin($broncoNetID);
                 }
