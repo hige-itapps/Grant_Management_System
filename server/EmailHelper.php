@@ -68,6 +68,7 @@ class EmailHelper
 
 		$saveResult = $database->saveEmail($appID, $customSubject, $fullMessage); //try to save the email message
 		$data["saveSuccess"] = $saveResult; //save it to return it later
+		$data["sendSuccess"] = false; //initialize to false, set to true if it sends correctly
 
 		if($saveResult === true){//if it saved, then try to send it
 			//insert <br>s where newlines are so the message renders correctly in email clients

@@ -691,6 +691,9 @@
 			</div>
 
 		</div>	
+
+		<!-- Shared Site Footer -->
+		<?php include '../include/site_footer.php'; ?>
 	</body>
 </html>
 <?php

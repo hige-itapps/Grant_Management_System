@@ -420,6 +420,7 @@ else if(array_key_exists('approve_application', $_GET)){
             if($database->isApplicationApprover($CASbroncoNetID) || $database->isAdministrator($CASbroncoNetID))
             {
                 try{
+                    $returnVal["success"] = false; //default to failure just in case
                     if($status === 'Approved'){ 
                         if(isset($_POST["amount"])){
                             if($_POST["amount"] > 0){ 
@@ -450,7 +451,7 @@ else if(array_key_exists('approve_application', $_GET)){
                     else { $returnVal["error"] = "Invalid status given"; }
     
                     //if everything has been successful so far, send off the email as well
-                    if(!isset($returnVal["error"])){
+                    if(!$returnVal["success"]){
                         $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
                     }
                 }
@@ -485,6 +486,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
             /*Verify that user is allowed to approve a report*/
             if($database->isFinalReportApprover($CASbroncoNetID) || $database->isAdministrator($CASbroncoNetID)){
                 try{
+                    $returnVal["success"] = false; //default to failure, just in case
                     if($status === 'Approved') { 
                         $returnVal["success"] = $database->approveFinalReport($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
@@ -502,7 +504,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
                     else { $returnVal["error"] = "Invalid status given"; }
     
                     //if everything has been successful so far, send off the email as well
-                    if(!isset($returnVal["error"])){
+                    if($returnVal["success"]){
                         $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
                     }
                 }

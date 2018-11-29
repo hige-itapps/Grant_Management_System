@@ -3,7 +3,7 @@
 RewriteEngine On
 RewriteBase /
 #IP exceptions go here; specify your appropriate IP address, and you will be able to access the site like normal while other users get redirected
-RewriteCond %{REMOTE_ADDR} !^10\.80\.174\.94$
+RewriteCond %{REMOTE_ADDR} !^10\.80\.173\.111$
 #Prevent infinite recursion by not redirecting users who go to the maintenance page
 RewriteCond %{REQUEST_URI} !maintenance.php$
 #Allow access to subdirectories that contain common resources, so that pages can visually look the same during maintenance

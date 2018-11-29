@@ -14,6 +14,22 @@
 	font-family: "Open Sans";
 }
 
+html {
+	height: 100%;
+	box-sizing: border-box;
+}
+
+body{
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: 100vh; /* Avoid the IE 10-11 `min-height` bug. */
+}
+
+#MainContent{
+	flex: 1 0 auto; /* Prevent Chrome, Opera, and Safari from letting these items shrink to smaller than their content's default minimum size. */
+}
+
 /*WMU LOGO*/
 .logo {
 	width: 25%;
@@ -105,6 +121,37 @@ h2.HomeText{
 }
 .btn-home:focus{
 	background-color: #eb9901!important;
+}
+
+/*Format page footer*/
+.page-footer{
+	width: 100%;
+	flex-shrink: 0; /* Prevent Chrome, Opera, and Safari from letting these items shrink to smaller than their content's default minimum size. */
+	padding: 1rem;
+	background-color: #333333;
+	color: #ffffff;
+	text-align: center;
+}
+.page-footer h1{
+	font-size: 1.6rem!important;
+}
+.page-footer h2, .page-footer a, .page-footer input{
+	font-size: 1.4rem!important;
+	color: #c2c2c2;
+}
+.page-footer a{
+	text-decoration: underline;
+}
+.page-footer a:hover, .page-footer a:focus{
+	color: #ffffff;
+}
+/*Condense address info lines*/
+.page-footer .address-info h2{
+	margin-top:0;
+	margin-bottom: 5px;
+}
+.page-footer .address-info h1{
+	margin-bottom: 5px;
 }
 
 /*link to main content -- hide it visually, but make it visible for screen readers*/
