@@ -948,6 +948,14 @@ class DatabaseHelper
 				}
 			}
 
+			//make sure department chair's email address is different than applicant's email address
+			if(!isset($errors["deptChairEmail"]) && !isset($errors["email"])){
+				if($email === $deptChairEmail){
+					$errors["deptChairEmail"] = "Department chair's email address must be different than yours.";
+				}
+			}
+
+
 			if($travelFrom == null || $travelFrom === ''){
 				$errors["travelFrom"] = "Travel From field is required.";
 			}
