@@ -813,7 +813,7 @@ class DatabaseHelper
 	/*Update an application to be signed*/
 	public function signApplication($id, $signature, $broncoNetID){
 		if ($id != "" && $signature != ""){//valid application id & sig
-			$this->logger->logInfo("Signing pplication id: ".$id." with signature: ".$signature, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Signing application id: ".$id." with signature: ".$signature, $broncoNetID, dirname(__FILE__));
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET DepartmentChairSignature = :sig WHERE ID = :id");
 			$this->sql->bindParam(':sig', $signature);

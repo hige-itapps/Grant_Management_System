@@ -451,7 +451,7 @@ else if(array_key_exists('approve_application', $_GET)){
                     else { $returnVal["error"] = "Invalid status given"; }
     
                     //if everything has been successful so far, send off the email as well
-                    if(!$returnVal["success"]){
+                    if($returnVal["success"]){
                         $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
                     }
                 }
