@@ -192,6 +192,8 @@ myApp.controller('adminCtrl', function($scope, $http) {
 
     //remove an admin
     $scope.removeAdmin = function(id){
+        if(!confirm ("Are you sure you want to remove this person with id '"+id+"' from the administrators list?")) {return;} //delete confirmation required
+
         $scope.loadingAlert();
         $http({
             method  : 'POST',
@@ -229,6 +231,8 @@ myApp.controller('adminCtrl', function($scope, $http) {
 
     //remove a committee member
     $scope.removeCommittee = function(id){
+        if(!confirm ("Are you sure you want to remove this person with id '"+id+"' from the committee members list?")) {return;} //delete confirmation required
+
         $scope.loadingAlert();
         $http({
             method  : 'POST',
@@ -266,6 +270,8 @@ myApp.controller('adminCtrl', function($scope, $http) {
 
     //remove an application approver
     $scope.removeApplicationApprover = function(id){
+        if(!confirm ("Are you sure you want to remove this person with id '"+id+"' from the application approvers list?")) {return;} //delete confirmation required
+
         $scope.loadingAlert();
         $http({
             method  : 'POST',
@@ -303,6 +309,8 @@ myApp.controller('adminCtrl', function($scope, $http) {
 
     //remove a final report approver
     $scope.removeFinalReportApprover = function(id){
+        if(!confirm ("Are you sure you want to remove this person with id '"+id+"' from the final report approvers list?")) {return;} //delete confirmation required
+
         $scope.loadingAlert();
         $http({
             method  : 'POST',

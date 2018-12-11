@@ -77,7 +77,7 @@
 							<tr ng-repeat="admin in administrators">
 								<td>{{ admin[0] }}</td>
 								<td>{{ admin[1] }}</td>
-								<td><button type="button" ng-click="removeAdmin(admin[0])" class="btn btn-danger">REMOVE</button></td> 
+								<td><button type="button" ng-click="removeAdmin(admin[0])" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>REMOVE</button></td> 
 							</tr>
 						</tbody>
 					</table>
@@ -92,7 +92,7 @@
 							<label for="addAdminName">Name:</label>
 							<input type="text" ng-model="addAdminName" id="addAdminName" name="addAdminName">
 						</div>
-						<button type="submit" class="btn btn-success">Submit</button>
+						<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Submit</button>
 					</form>
 
 					<hr>
@@ -111,7 +111,7 @@
 							<tr ng-repeat="member in committee">
 								<td>{{ member[0] }}</td>
 								<td>{{ member[1] }}</td>
-								<td><button type="button" ng-click="removeCommittee(member[0])" class="btn btn-danger">REMOVE</button></td> 
+								<td><button type="button" ng-click="removeCommittee(member[0])" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>REMOVE</button></td> 
 							</tr>
 						</tbody>
 					</table>
@@ -126,7 +126,7 @@
 							<label for="addCommitteeName">Name:</label>
 							<input type="text" ng-model="addCommitteeName" id="addCommitteeName" name="addCommitteeName">
 						</div>
-						<button type="submit" class="btn btn-success">Submit</button>
+						<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Submit</button>
 					</form>
 
 					<hr>
@@ -145,7 +145,7 @@
 							<tr ng-repeat="approver in applicationApprovers">
 								<td>{{ approver[0] }}</td>
 								<td>{{ approver[1] }}</td>
-								<td><button type="button" ng-click="removeApplicationApprover(approver[0])" class="btn btn-danger">REMOVE</button></td> 
+								<td><button type="button" ng-click="removeApplicationApprover(approver[0])" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>REMOVE</button></td> 
 							</tr>
 						</tbody>
 					</table>
@@ -160,7 +160,7 @@
 							<label for="addApplicationApproverName">Name:</label>
 							<input type="text" ng-model="addApplicationApproverName" id="addApplicationApproverName" name="addApplicationApproverName">
 						</div>
-						<button type="submit" class="btn btn-success">Submit</button>
+						<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Submit</button>
 					</form>
 
 					<hr>
@@ -179,7 +179,7 @@
 							<tr ng-repeat="approver in finalReportApprovers">
 								<td>{{ approver[0] }}</td>
 								<td>{{ approver[1] }}</td>
-								<td><button type="button" ng-click="removeFinalReportApprover(approver[0])" class="btn btn-danger">REMOVE</button></td> 
+								<td><button type="button" ng-click="removeFinalReportApprover(approver[0])" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>REMOVE</button></td> 
 							</tr>
 						</tbody>
 					</table>
@@ -194,7 +194,7 @@
 							<label for="addFinalReportApproverName">Name:</label>
 							<input type="text" ng-model="addFinalReportApproverName" id="addFinalReportApproverName" name="addFinalReportApproverName">
 						</div>
-						<button type="submit" class="btn btn-success">Submit</button>
+						<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Submit</button>
 					</form>
 
 					<hr>
@@ -207,8 +207,8 @@
 							<label for="siteWarning">Site Warning Message:</label>
 							<textarea class="form-control" ng-model="siteWarning" id="siteWarning" name="siteWarning" placeholder="Enter Warning Message" rows="2"> </textarea>
 						</div>
-						<button type="submit" class="btn btn-success">Save Message</button>
-						<button type="button" class="btn btn-danger" ng-click="clearSiteWarning()">Clear Message</button>
+						<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Save Message</button>
+						<button type="button" class="btn btn-danger" ng-click="clearSiteWarning()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Clear Message</button>
 					</form>
 					<hr>
 
@@ -218,7 +218,7 @@
 
 
 					<div class="buttons-group bottom-buttons"> 
-						<a href="../home/home.php" class="btn btn-info">LEAVE PAGE</a>
+						<a href="../home/home.php" class="btn btn-info"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a>
 					</div>
 				</div>
 

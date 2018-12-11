@@ -462,3 +462,8 @@ Source: https://codepen.io/scottloway/pen/Xjazjw*/
 .btn:focus{
 	outline: #ff8703 3px solid!important;
 }
+
+/*give margin to glyphicon spans so words don't need to have hard-coded spaces*/
+span.glyphicon{
+	margin-right: 5px;
+}

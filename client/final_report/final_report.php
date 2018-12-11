@@ -138,9 +138,9 @@
 				<h1 ng-cloak ng-show="!isCreating" class="{{reportStatus}}-background status-bar">Report Status: {{reportStatus}}</h1>
 
 				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group"> 
-					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning">TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
-					<button type="button" ng-click="populateForm(null)" class="btn btn-warning">RELOAD SAVED DATA</button>
-					<button type="button" ng-click="insertReport()" class="btn btn-warning">SUBMIT CHANGES</button>
+					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning"><span class="glyphicon" ng-class="{'glyphicon-unchecked': isAdminUpdating, 'glyphicon-edit': !isAdminUpdating}" aria-hidden="true"></span>TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
+					<button type="button" ng-click="populateForm(null)" class="btn btn-warning"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>RELOAD SAVED DATA</button>
+					<button type="button" ng-click="insertReport()" class="btn btn-warning"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>SUBMIT CHANGES</button>
 				</div>
 				
 				<!-- final report form -->
@@ -299,7 +299,7 @@
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
 								<div class="upload-button btn btn-primary">
-									<label for="uploadDocs">UPLOAD DOCUMENTS</label>
+									<label for="uploadDocs"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>UPLOAD DOCUMENTS</label>
 									<input type="file" readdocuments="uploadDocs" id="uploadDocs" name="uploadDocs" multiple accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected documents:</h4>
@@ -325,7 +325,7 @@
 						<div class="col-md-6">
 							<label for="staffNotes">Staff Notes:</label>
 							<textarea class="form-control" ng-disabled="!isAdmin && !isFinalReportApprover" ng-model="staffNotes[1]" id="staffNotes" name="staffNotes" rows=10 /></textarea>
-							<button type="button" ng-show="isAdmin || isFinalReportApprover" ng-click="saveNote()" class="btn btn-success">SAVE NOTE</button>
+							<button type="button" ng-show="isAdmin || isFinalReportApprover" ng-click="saveNote()" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SAVE NOTE</button>
 						</div>
 						<div class="col-md-3"></div>
 					</div>
@@ -334,7 +334,7 @@
 
 					<!--PREVIOUSLY SENT EMAILS-->
 					<div id="previousEmailsHolder" ng-show="!isCreating">
-						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see saved emails associated with this application</button>
+						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails"><span class="glyphicon glyphicon-list" aria-hidden="true"></span>Click here to see saved emails associated with this application</button>
 						<ol id="previousEmails" class="collapse list-group">
 							<li class="list-group-item" ng-if="reportEmails.length <= 0">There are no saved emails!</li>
 							<li class="list-group-item" ng-repeat="email in reportEmails">
@@ -366,11 +366,11 @@
 
 
 					<div class="buttons-group bottom-buttons"> 
-						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success">SUBMIT FINAL REPORT</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success">APPROVE REPORT</button> <!-- For approver or admin approving -->
-						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='holdReport'" class="btn btn-primary">HOLD REPORT</button> <!-- For approver or admin holding -->
-						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing report -->
-						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
+						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SUBMIT FINAL REPORT</button> <!-- For applicant submitting for first time -->
+						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE REPORT</button> <!-- For approver or admin approving -->
+						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='holdReport'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD REPORT</button> <!-- For approver or admin holding -->
+						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>UPLOAD DOCS</button> <!-- For applicant reviewing report -->
+						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>
 

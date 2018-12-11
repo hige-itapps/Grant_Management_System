@@ -183,11 +183,11 @@
 				<h1 ng-cloak ng-show="!isCreating" class="{{appStatus}}-background status-bar">Application Status: {{appStatus}}</h1>
 
 				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group"> 
-					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning">TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
-					<button type="button" ng-click="populateForm(null)" class="btn btn-warning">RELOAD SAVED DATA</button>
-					<button type="button" ng-click="insertApplication()" class="btn btn-warning">SUBMIT CHANGES</button>
+					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning"><span class="glyphicon" ng-class="{'glyphicon-unchecked': isAdminUpdating, 'glyphicon-edit': !isAdminUpdating}" aria-hidden="true"></span>TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
+					<button type="button" ng-click="populateForm(null)" class="btn btn-warning"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>RELOAD SAVED DATA</button>
+					<button type="button" ng-click="insertApplication()" class="btn btn-warning"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>SUBMIT CHANGES</button>
 					<div class="delete-button-holder">
-						<button type="button" ng-click="deleteApplication()" class="btn btn-danger">DELETE APPLICATION</button>
+						<button type="button" ng-click="deleteApplication()" class="btn btn-danger"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>DELETE APPLICATION</button>
 					</div>
 				</div>
 
@@ -482,7 +482,7 @@
 					</div>
 					
 					<div id="exampleBudgetHolder">
-						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample">Click here for an example of how to construct a budget!</button>
+						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample"><span class="glyphicon glyphicon-list" aria-hidden="true"></span>Click here for an example of how to construct a budget!</button>
 						<div id="budgetExample" class="collapse">
 							<img src="../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Description: Conference Registration, Amount($): 450" class="exampleBudget" />
 						</div>
@@ -514,7 +514,7 @@
 									</div>
 								<!--REMOVE BUTTON-->
 									<div class="form-group col-md-2">
-										<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="removeBudgetItem($index)" class="btn btn-danger removeBudget">Delete Item</button>
+										<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="removeBudgetItem($index)" class="btn btn-danger removeBudget"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Delete Item</button>
 										<h3>Item {{$index+1}}</h3>
 									</div>
 								</li>
@@ -528,7 +528,7 @@
 					<div class="row" ng-show="isCreating || isAdminUpdating">
 						<div class="col-md-3"></div>
 						<div id="budgetButtons" class="col-md-6">
-							<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="addBudgetItem()" class="btn btn-primary" id="addBudget">Add Budget Item</button>
+							<button type="button" ng-cloak ng-show="isCreating || isAdminUpdating" ng-click="addBudgetItem()" class="btn btn-primary" id="addBudget"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add Budget Item</button>
 						</div>
 						<div class="col-md-3"></div>
 					</div>
@@ -559,7 +559,7 @@
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
 								<div class="upload-button btn btn-primary">
-									<label for="uploadProposalNarrative">UPLOAD PROPOSAL NARRATIVE</label>
+									<label for="uploadProposalNarrative"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>UPLOAD PROPOSAL NARRATIVE</label>
 									<input type="file" readproposalnarrative="uploadProposalNarrative" id="uploadProposalNarrative" name="uploadProposalNarrative" accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected proposal narrative:</h4>
@@ -580,7 +580,7 @@
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
 								<div class="upload-button btn btn-primary">
-									<label for="uploadSupportingDocs">UPLOAD SUPPORTING DOCUMENTS</label>
+									<label for="uploadSupportingDocs"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>UPLOAD SUPPORTING DOCUMENTS</label>
 									<input type="file" readsupportingdocs="uploadSupportingDocs" id="uploadSupportingDocs" name="uploadSupportingDocs" multiple accept="{{uploadTypes}}"/>
 								</div>
 								<h4>Your selected supporting documents:</h4>
@@ -623,7 +623,7 @@
 						<div class="col-md-6">
 							<label for="staffNotes">Staff Notes:</label>
 							<textarea class="form-control" ng-disabled="!isAdmin && !isApprover" ng-model="staffNotes[1]" id="staffNotes" name="staffNotes" rows=10 /></textarea>
-							<button type="button" ng-show="isAdmin || isApprover" ng-click="saveNote()" class="btn btn-success">SAVE NOTE</button>
+							<button type="button" ng-show="isAdmin || isApprover" ng-click="saveNote()" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SAVE NOTE</button>
 						</div>
 						<div class="col-md-3"></div>
 					</div>
@@ -632,7 +632,7 @@
 
 					<!--PREVIOUSLY SENT EMAILS-->
 					<div id="previousEmailsHolder" ng-show="!isCreating">
-						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails">Click here to see saved emails associated with this application</button>
+						<button type="button" id="previousEmailsButton" data-toggle="collapse" class="btn btn-info" data-target="#previousEmails"><span class="glyphicon glyphicon-list" aria-hidden="true"></span>Click here to see saved emails associated with this application</button>
 						<ol id="previousEmails" class="collapse list-group">
 							<li class="list-group-item" ng-if="appEmails.length <= 0">There are no saved emails!</li>
 							<li class="list-group-item" ng-repeat="email in appEmails">
@@ -678,13 +678,13 @@
 
 
 					<div class="buttons-group bottom-buttons"> 
-						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertApplication'" class="btn btn-success">SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveApplication'" class="btn btn-success">APPROVE APPLICATION</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='holdApplication'" class="btn btn-primary">HOLD APPLICATION</button> <!-- For approver or admin holding -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyApplication'" class="btn btn-danger">DENY APPLICATION</button> <!-- For approver or admin denying -->
-						<button ng-show="isChair" type="submit" ng-click="submitFunction='chairApproval'" class="btn btn-success">APPROVE APPLICATION</button> <!-- For department chair approving -->
-						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success">UPLOAD DOCS</button> <!-- For applicant reviewing application -->
-						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)">LEAVE PAGE</a> <!-- For anyone to leave the page -->
+						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertApplication'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveApplication'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button> <!-- For approver or admin approving -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='holdApplication'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD APPLICATION</button> <!-- For approver or admin holding -->
+						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyApplication'" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>DENY APPLICATION</button> <!-- For approver or admin denying -->
+						<button ng-show="isChair" type="submit" ng-click="submitFunction='chairApproval'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button> <!-- For department chair approving -->
+						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>UPLOAD DOCS</button> <!-- For applicant reviewing application -->
+						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>
 				</form>
 

@@ -204,8 +204,8 @@
 				</div>
 
 				<div class="buttons-group bottom-buttons"> 
-					<button type="button" ng-click="exportExcelSheet()" class="btn btn-success">DOWNLOAD SUMMARY SHEET</button> <!-- For anyone to download excel sheet of current data -->
-					<a href="../home/home.php" class="btn btn-info">LEAVE PAGE</a> <!-- For anyone to leave the page -->
+					<button type="button" ng-click="exportExcelSheet()" class="btn btn-success"><span class="glyphicon glyphicon-save" aria-hidden="true"></span>DOWNLOAD SUMMARY SHEET</button> <!-- For anyone to download excel sheet of current data -->
+					<a href="../home/home.php" class="btn btn-info"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
 				</div>
 
 			</div>
