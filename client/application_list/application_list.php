@@ -108,7 +108,7 @@
 			<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 
 			<!--AngularJS Controller-->
-			<div class="container-fluid" ng-controller="listCtrl" id="listCtrl">
+			<div class="container-fluid" ng-controller="listCtrl" id="listCtrl" ng-cloak>
 				<div class="row">
 					<h1 class="title">All Applications</h1>
 				</div>

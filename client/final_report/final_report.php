@@ -133,7 +133,7 @@
 		<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 		
 			<!--AngularJS Controller-->
-			<div class="container-fluid" ng-controller="reportCtrl" id="reportCtrl">
+			<div class="container-fluid" ng-controller="reportCtrl" id="reportCtrl" ng-cloak>
 
 				<h1 ng-cloak ng-show="!isCreating" class="{{reportStatus}}-background status-bar">Report Status: {{reportStatus}}</h1>
 

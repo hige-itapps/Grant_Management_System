@@ -178,7 +178,7 @@
 		<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 
 			<!--AngularJS Controller-->
-			<div class="container-fluid" ng-controller="appCtrl" id="appCtrl">
+			<div class="container-fluid" ng-controller="appCtrl" id="appCtrl" ng-cloak>
 
 				<h1 ng-cloak ng-show="!isCreating" class="{{appStatus}}-background status-bar">Application Status: {{appStatus}}</h1>
 

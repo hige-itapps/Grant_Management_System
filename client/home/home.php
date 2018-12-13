@@ -96,7 +96,7 @@
 			<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
 
 			<!--AngularJS Controller-->
-			<div class="container-fluid" ng-controller="homeCtrl" id="homeCtrl">
+			<div class="container-fluid" ng-controller="homeCtrl" id="homeCtrl" ng-cloak>
 
 				<h1 class="title" ng-if="totalViews > 0">Your Accessible Pages:</h1>
 				<h1 class="title" ng-if="totalViews <= 0">You Have No Accessible Pages!</h1>
