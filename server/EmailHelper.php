@@ -25,8 +25,9 @@ class EmailHelper
 {
 	private $logger; //for logging to files
 	private $mailHost; //mail server information from config.ini
-	private $mailUsername;
-	private $mailNoReply;
+	private $mailAddress; //public address
+	private $mailUsername; //private login username
+	private $mailNoReply; //noreply address
 	private $mailPassword;
 	private $mailPort;
 	private $defaultSubject; //the default subject line for when it isn't specified
@@ -38,6 +39,7 @@ class EmailHelper
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
 		$this->mailHost = $settings["mail_host"]; //load mail host
+		$this->mailAddress = $settings["mail_address"]; //load mail address
 		$this->mailUsername = $settings["mail_username"]; //load mail username
 		$this->mailNoReply = $settings["mail_noreply"]; //load mail no-reply address
 		$this->mailPassword = $settings["mail_password"]; //load mail password
@@ -87,7 +89,7 @@ class EmailHelper
 				$mail->Port = $this->mailPort;                              // TCP port to connect to
 
 				//Recipients
-				$mail->setFrom($this->mailUsername, 'Mailer');
+				$mail->setFrom($this->mailAddress, 'Mailer');
 				$mail->addReplyTo($this->mailNoReply, 'No-Reply');
 					
 				//Content
