@@ -23,7 +23,7 @@
 		$committee = $database->getCommittee();
 		$finalReportApprovers = $database->getfinalReportApprovers();
 		$siteWarningString = $database->getSiteWarning();
-		$databaseLastBackedUp = 0; //timestamp of the last time the database was backed up
+		$databaseLastBackedUp = $database->getDatabaseLastBackedUpTime();
 ?>
 
 
