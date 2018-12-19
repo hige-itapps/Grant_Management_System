@@ -6,12 +6,15 @@ include_once(dirname(__FILE__) . "/Logger.php");
 
 class DocumentsHelper
 {
+	private $thisLocation; //get current location of file for logging purposes;
 	private $logger; //for logging to files
 	private $uploadDir; //file uploads directory
 	private $fileTypes; //array of allowed file types for file uploads
 
 	/* Constructior retrieves configurations */
 	public function __construct($logger){
+		$this->thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__);
+
 		$this->logger = $logger;
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
@@ -40,7 +43,7 @@ class DocumentsHelper
 	/* Upload files for the associated application */
 	public function uploadDocs($appID, $files, $CASbroncoNetID)
 	{
-		$this->logger->logInfo("Uploading documents", $CASbroncoNetID, dirname(__FILE__));
+		$this->logger->logInfo("Uploading documents", $CASbroncoNetID, $this->thisLocation);
 
 		$res = null; //return value. res["error"] will contain an array of any given errors.
 
@@ -66,7 +69,7 @@ class DocumentsHelper
 
 					//make sure file size is > 0
 					if($file["size"] <= 0){
-						$errorMessage = $this->logger->logError("File not uploaded, '".$file["name"]."' is empty", $CASbroncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("File not uploaded, '".$file["name"]."' is empty", $CASbroncoNetID, $this->thisLocation, true);
 						$res["error"][] = PHP_EOL."Error: File not uploaded, '".$file["name"]."' is empty. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
@@ -86,7 +89,7 @@ class DocumentsHelper
 					}
 
 					if($prefix == null){//upload prefix not accepted
-						$errorMessage = $this->logger->logError("File not uploaded, prefix '".$filename."' not accepted for file '".$file["name"]."'", $CASbroncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("File not uploaded, prefix '".$filename."' not accepted for file '".$file["name"]."'", $CASbroncoNetID, $this->thisLocation, true);
 						$res["error"][] = PHP_EOL."Error: File not uploaded, prefix not accepted for file '".$file["name"]."'. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
@@ -102,13 +105,13 @@ class DocumentsHelper
 
 					//move file to the uploads directory
 					if(!move_uploaded_file($file["tmp_name"], $target)){ //if it failed to move
-						$errorMessage = $this->logger->logError("File not uploaded, unable to move file '".$file["name"]."' to uploads directory", $CASbroncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("File not uploaded, unable to move file '".$file["name"]."' to uploads directory", $CASbroncoNetID, $this->thisLocation, true);
 						$res["error"][] = PHP_EOL."Error: File not uploaded, unable to move file '".$file["name"]."' to uploads directory. ".$errorMessage;
 						continue; //iterate to next item in loop
 					}
 				}
 			}else{
-				$errorMessage = $this->logger->logError("File not uploaded, unable to create upload directory", $CASbroncoNetID, dirname(__FILE__), true);
+				$errorMessage = $this->logger->logError("File not uploaded, unable to create upload directory", $CASbroncoNetID, $this->thisLocation, true);
 				$res["error"][] = PHP_EOL."Error: File not uploaded, unable to create upload directory. ".$errorMessage;
 			}
 
@@ -116,7 +119,7 @@ class DocumentsHelper
 		}
 		catch(Exception $e)
 		{
-			$errorMessage = $this->logger->logError("File not uploaded, unable to upload document: " . $e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("File not uploaded, unable to upload document: " . $e->getMessage(), $CASbroncoNetID, $this->thisLocation, true);
 			$res["error"][] = PHP_EOL."Error: File not uploaded, unable to upload document due to an internal exception. ".$errorMessage;
 		}
 
@@ -145,7 +148,7 @@ class DocumentsHelper
 		}
 		else
 		{
-			$errorMessage = $this->logger->logError("Can't download file, '".$filename."' does not exist at '".$file."'", $CASbroncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("Can't download file, '".$filename."' does not exist at '".$file."'", $CASbroncoNetID, $this->thisLocation, true);
 			return "Error: Can't download file, '".$filename."' does not exist in the uploads directory. ".$errorMessage;
 		}
 		

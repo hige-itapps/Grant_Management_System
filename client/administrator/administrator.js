@@ -10,6 +10,9 @@ myApp.controller('adminCtrl', function($scope, $http) {
 
     $scope.siteWarning = scope_siteWarningString;
 
+    var tempDatabaseBackupDate = new Date(parseInt(var_databaseLastBackedUp+"000")); //set the date w/seconds and convert to milliseconds by moving 3 decimal places
+    $scope.databaseLastBackedUp = tempDatabaseBackupDate.toLocaleString(); //get the datetime as a local time string (day/month/year hour/minute/second)
+
     /*Functions*/
 
     //remove the alert from the page

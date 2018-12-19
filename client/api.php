@@ -1,6 +1,7 @@
 <?php
 /*This file serves as the project's RESTful API. Simply send a GET request to this file with a specified function name, with additional POST data where necessary. 
 Only 1 API function can be called at a time through the GET paramater.*/
+$thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__); //get current location of file for logging purposes;
 
 /*User validation*/
 include_once(dirname(__FILE__) . "/../CAS/CAS_login.php");
@@ -80,7 +81,7 @@ else if(array_key_exists('save_note', $_GET)){
                 $returnVal = $database->saveStaffNotes($appID, $note, $CASbroncoNetID);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to save note due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to save note due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to save note due to an internal exception. ".$errorMessage;
             }
         }
@@ -186,7 +187,7 @@ else if(array_key_exists('submit_application', $_GET)){
             }
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to insert application and/or upload files due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to insert application and/or upload files due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to insert application and/or upload files due to an internal exception. ".$errorMessage;
         }     
     }
@@ -250,7 +251,7 @@ else if(array_key_exists('submit_final_report', $_GET)){
                 }
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to insert final report and/or upload files due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to insert final report and/or upload files due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to insert final report and/or upload files due to an internal exception. ".$errorMessage;
             }
         }
@@ -277,7 +278,7 @@ else if(array_key_exists('add_admin', $_GET)){
                 $returnVal = $database->addAdmin($broncoNetID, $name);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to insert administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to insert administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to insert administrator due to an internal exception. ".$errorMessage;
             }
         }
@@ -304,7 +305,7 @@ else if(array_key_exists('add_application_approver', $_GET)){
                 $returnVal = $database->addApplicationApprover($broncoNetID, $name);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to insert application approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to insert application approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to insert application approver due to an internal exception. ".$errorMessage;
             }
         }
@@ -331,7 +332,7 @@ else if(array_key_exists('add_final_report_approver', $_GET)){
                 $returnVal = $database->addFinalReportApprover($broncoNetID, $name);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to insert final report approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to insert final report approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to insert final report approver due to an internal exception. ".$errorMessage;
             }
         }
@@ -358,7 +359,7 @@ else if(array_key_exists('add_committee_member', $_GET)){
                 $returnVal = $database->addCommittee($broncoNetID, $name);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to insert committee member due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to insert committee member due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to insert committee member due to an internal exception. ".$errorMessage;
             }
         }
@@ -389,7 +390,7 @@ else if(array_key_exists('chair_approval', $_GET)){
                 else {$returnVal["error"] = "No name specified, you must type your name to approve this application";}
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to approve application as the department chair due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to approve application as the department chair due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to approve application as the department chair due to an internal exception. ".$errorMessage;
             }
         }
@@ -426,7 +427,7 @@ else if(array_key_exists('approve_application', $_GET)){
                             if($_POST["amount"] > 0){ 
                                 $returnVal["success"] = $database->approveApplication($appID, $_POST["amount"], $CASbroncoNetID); 
                                 if(!$returnVal["success"]){
-                                    $errorMessage = $logger->logError("Unable to approve application.", $CASbroncoNetID, dirname(__FILE__), true);
+                                    $errorMessage = $logger->logError("Unable to approve application.", $CASbroncoNetID, $thisLocation, true);
                                     $returnVal["error"] = "Error: Unable to approve application. ".$errorMessage;
                                 }
                             }
@@ -437,14 +438,14 @@ else if(array_key_exists('approve_application', $_GET)){
                     else if($status === 'Hold') { 
                         $returnVal["success"] = $database->holdApplication($appID, $CASbroncoNetID); 
                         if(!$returnVal["success"]){
-                            $errorMessage = $logger->logError("Unable to hold application.", $CASbroncoNetID, dirname(__FILE__), true);
+                            $errorMessage = $logger->logError("Unable to hold application.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to hold application. ".$errorMessage;
                         }
                     }
                     else if($status === 'Denied') { 
                         $returnVal["success"] = $database->denyApplication($appID, $CASbroncoNetID); 
                         if(!$returnVal["success"]){
-                            $errorMessage = $logger->logError("Unable to deny application.", $CASbroncoNetID, dirname(__FILE__), true);
+                            $errorMessage = $logger->logError("Unable to deny application.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to deny application. ".$errorMessage;
                         }
                     }
@@ -456,7 +457,7 @@ else if(array_key_exists('approve_application', $_GET)){
                     }
                 }
                 catch(Exception $e){
-                    $errorMessage = $logger->logError("Unable to approve application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                    $errorMessage = $logger->logError("Unable to approve application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			        $returnVal["error"] = "Error: Unable to approve application due to an internal exception. ".$errorMessage;
                 }
             }
@@ -490,14 +491,14 @@ else if(array_key_exists('approve_final_report', $_GET)){
                     if($status === 'Approved') { 
                         $returnVal["success"] = $database->approveFinalReport($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
-                            $errorMessage = $logger->logError("Unable to approve final report.", $CASbroncoNetID, dirname(__FILE__), true);
+                            $errorMessage = $logger->logError("Unable to approve final report.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to approve final report. ".$errorMessage;
                         }
                     }
                     else if($status === 'Hold') { 
                         $returnVal["success"] = $database->holdFinalReport($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
-                            $errorMessage = $logger->logError("Unable to hold final report.", $CASbroncoNetID, dirname(__FILE__), true);
+                            $errorMessage = $logger->logError("Unable to hold final report.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to hold final report. ".$errorMessage;
                         }
                     }
@@ -509,7 +510,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
                     }
                 }
                 catch(Exception $e){
-                    $errorMessage = $logger->logError("Unable to approve final report due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                    $errorMessage = $logger->logError("Unable to approve final report due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			        $returnVal["error"] = "Error: Unable to approve final report due to an internal exception. ".$errorMessage;
                 }
             }
@@ -532,7 +533,7 @@ else if(array_key_exists('get_admins', $_GET)){
             $returnVal = $database->getAdministrators();
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to retrieve administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to retrieve administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to retrieve administrator due to an internal exception. ".$errorMessage;
         }
     }
@@ -550,7 +551,7 @@ else if(array_key_exists('get_application_approvers', $_GET)){
             $returnVal = $database->getApplicationApprovers();
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to retrieve application approvers due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to retrieve application approvers due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to retrieve application approvers due to an internal exception. ".$errorMessage;
         }
     }
@@ -568,7 +569,7 @@ else if(array_key_exists('get_final_report_approvers', $_GET)){
             $returnVal = $database->getFinalReportApprovers();
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to retrieve final report approvers due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to retrieve final report approvers due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to retrieve final report approvers due to an internal exception. ".$errorMessage;
         }
     }
@@ -586,7 +587,7 @@ else if(array_key_exists('get_committee_members', $_GET)){
             $returnVal = $database->getCommittee();
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to retrieve committee members due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to retrieve committee members due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to retrieve committee members due to an internal exception. ".$errorMessage;
         }
     }
@@ -610,7 +611,7 @@ else if(array_key_exists('get_application', $_GET)){
                 $returnVal->appEmails = $database->getEmails($appID); //get associated emails
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to retrieve application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to retrieve application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to retrieve application due to an internal exception. ".$errorMessage;
             }
         }
@@ -638,7 +639,7 @@ else if(array_key_exists('get_final_report', $_GET)){
                 $returnVal->reportEmails = $database->getEmails($appID); //get associated emails
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to retrieve final report due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to retrieve final report due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to retrieve final report due to an internal exception. ".$errorMessage;
             }
         }
@@ -665,7 +666,7 @@ else if(array_key_exists('remove_admin', $_GET)){
                     $returnVal = $database->removeAdmin($broncoNetID);
                 }
                 catch(Exception $e){
-                    $errorMessage = $logger->logError("Unable to remove administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                    $errorMessage = $logger->logError("Unable to remove administrator due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			        $returnVal["error"] = "Error: Unable to remove administrator due to an internal exception. ".$errorMessage;
                 }
             }
@@ -695,7 +696,7 @@ else if(array_key_exists('remove_application_approver', $_GET)){
                 $returnVal = $database->removeApplicationApprover($broncoNetID);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to remove application approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to remove application approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to remove application approver due to an internal exception. ".$errorMessage;
             }
         }
@@ -721,7 +722,7 @@ else if(array_key_exists('remove_final_report_approver', $_GET)){
                 $returnVal = $database->removeFinalReportApprover($broncoNetID);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to remove final report approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to remove final report approver due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to remove final report approver due to an internal exception. ".$errorMessage;
             }
         }
@@ -747,7 +748,7 @@ else if(array_key_exists('remove_committee_member', $_GET)){
                 $returnVal = $database->removeCommittee($broncoNetID);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to remove committee member due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to remove committee member due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to remove committee member due to an internal exception. ".$errorMessage;
             }
         }
@@ -773,7 +774,7 @@ else if(array_key_exists('remove_application', $_GET)){
                 $returnVal = $database->removeApplication($appID, $CASbroncoNetID);
             }
             catch(Exception $e){
-                $errorMessage = $logger->logError("Unable to remove application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                $errorMessage = $logger->logError("Unable to remove application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			    $returnVal["error"] = "Error: Unable to remove application due to an internal exception. ".$errorMessage;
             }
         }
@@ -800,7 +801,7 @@ else if(array_key_exists('save_site_warning', $_GET)){
                     $returnVal = $database->saveSiteWarning(trim($siteWarning));
                 }
                 catch(Exception $e){
-                    $errorMessage = $logger->logError("Unable to save site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+                    $errorMessage = $logger->logError("Unable to save site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
                     $returnVal["error"] = "Error: Unable to save site warning due to an internal exception. ".$errorMessage;
                 }
             }
@@ -824,7 +825,7 @@ else if(array_key_exists('clear_site_warning', $_GET)){
             $returnVal = $database->saveSiteWarning("");
         }
         catch(Exception $e){
-            $errorMessage = $logger->logError("Unable to clear site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, dirname(__FILE__), true);
+            $errorMessage = $logger->logError("Unable to clear site warning due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
             $returnVal["error"] = "Error: Unable to clear site warning due to an internal exception. ".$errorMessage;
         }
     }

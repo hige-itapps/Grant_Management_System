@@ -16,6 +16,7 @@ include_once(dirname(__FILE__) . "/Logger.php");
 
 class DatabaseHelper
 {
+	private $thisLocation; //get current location of file for logging purposes;
 	private $logger; //for logging to files
 	private $cycles; //for cycle functions
 	private $conn; //pdo database connection object
@@ -25,6 +26,8 @@ class DatabaseHelper
 
 	/* Constructior retrieves configurations and sets up a connection. Pass in a logger object for error logging. If a connection is passed in as a parameter, use that instead. */
 	public function __construct($logger, $connection = null){
+		$this->thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__);
+		
 		$this->logger = $logger;
 		$this->cycles = new Cycles(); //Cycles object
 		$this->config_url = dirname(__FILE__).'/../config.ini'; //set config file url
@@ -83,7 +86,7 @@ class DatabaseHelper
 	/*Save staff notes for a certain application*/
 	public function saveStaffNotes($appID, $note, $broncoNetID){
 		if ($appID != ""){ //valid app id
-			$this->logger->logInfo("Saving staff notes", $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Saving staff notes", $broncoNetID, $this->thisLocation);
 			/*Update note or insert if new*/
 			$this->sql = $this->conn->prepare("INSERT INTO notes(ApplicationID, Note) VALUES(:applicationid, :note) ON DUPLICATE KEY UPDATE Note = :updatenote");
 			$this->sql->bindParam(':applicationid', $appID);
@@ -117,7 +120,7 @@ class DatabaseHelper
 		$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 		
 		if($res[0][0] == 0){//only triggers if user doesn't already exist
-			$this->logger->logInfo("Inserting new applicant: ".$newID, $newID, dirname(__FILE__));
+			$this->logger->logInfo("Inserting new applicant: ".$newID, $newID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO applicants VALUES(:id)");
 			$this->sql->bindParam(':id', $newID);
 			return $this->sql->execute();
@@ -345,7 +348,7 @@ class DatabaseHelper
 	/* Add an admin to the administrators table */
 	public function addAdmin($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
-			$this->logger->logInfo("Inserting administrator (".$broncoNetID.", ".$name.")", $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Inserting administrator (".$broncoNetID.", ".$name.")", $broncoNetID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO administrators(BroncoNetID, Name) VALUES(:id, :name)");
 			$this->sql->bindParam(':id', $broncoNetID);
 			$this->sql->bindParam(':name', $name);
@@ -356,7 +359,7 @@ class DatabaseHelper
 	/* Add a committee member to the committee table */
 	public function addCommittee($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
-			$this->logger->logInfo("Inserting committee member (".$broncoNetID.", ".$name.")", $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Inserting committee member (".$broncoNetID.", ".$name.")", $broncoNetID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO committee(BroncoNetID, Name) VALUES(:id, :name)");
 			$this->sql->bindParam(':id', $broncoNetID);
 			$this->sql->bindParam(':name', $name);
@@ -367,7 +370,7 @@ class DatabaseHelper
 	/* Add a final report approver to the final_report_approval table */
 	public function addFinalReportApprover($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
-			$this->logger->logInfo("Inserting final report approver (".$broncoNetID.", ".$name.")", $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Inserting final report approver (".$broncoNetID.", ".$name.")", $broncoNetID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO final_report_approval(BroncoNetID, Name) VALUES(:id, :name)");
 			$this->sql->bindParam(':id', $broncoNetID);
 			$this->sql->bindParam(':name', $name);
@@ -378,7 +381,7 @@ class DatabaseHelper
 	/* Add an application approver to the application_approval table */
 	public function addApplicationApprover($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
-			$this->logger->logInfo("Inserting application approver (".$broncoNetID.", ".$name.")", $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Inserting application approver (".$broncoNetID.", ".$name.")", $broncoNetID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO application_approval(BroncoNetID, Name) VALUES(:id, :name)");
 			$this->sql->bindParam(':id', $broncoNetID);
 			$this->sql->bindParam(':name', $name);
@@ -778,7 +781,7 @@ class DatabaseHelper
 	/*Update an application to be approved*/
 	public function approveApplication($id, $amount, $broncoNetID){
 		if ($id != ""){//valid application id
-			$this->logger->logInfo("Approving application id: ".$id." for $".$amount, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Approving application id: ".$id." for $".$amount, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Approved', AmountAwarded = :aw WHERE ID = :id");
 			$this->sql->bindParam(':aw', $amount);
@@ -790,7 +793,7 @@ class DatabaseHelper
 	/*Update an application to be denied*/
 	public function denyApplication($id, $broncoNetID){
 		if ($id != ""){//valid application id
-			$this->logger->logInfo("Denying application id: ".$id, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Denying application id: ".$id, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Denied', AmountAwarded = 0 WHERE ID = :id");
 			$this->sql->bindParam(':id', $id);
@@ -802,7 +805,7 @@ class DatabaseHelper
 	/*Update an application to be put on hold*/
 	public function holdApplication($id, $broncoNetID){
 		if ($id != ""){//valid application id
-			$this->logger->logInfo("Holding application id: ".$id, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Holding application id: ".$id, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Hold', AmountAwarded = 0 WHERE ID = :id");
 			$this->sql->bindParam(':id', $id);
@@ -813,7 +816,7 @@ class DatabaseHelper
 	/*Update an application to be signed*/
 	public function signApplication($id, $signature, $broncoNetID){
 		if ($id != "" && $signature != ""){//valid application id & sig
-			$this->logger->logInfo("Signing application id: ".$id." with signature: ".$signature, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Signing application id: ".$id." with signature: ".$signature, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE applications SET DepartmentChairSignature = :sig WHERE ID = :id");
 			$this->sql->bindParam(':sig', $signature);
@@ -827,7 +830,7 @@ class DatabaseHelper
 	/*Update a Final Report to be approved*/
 	public function approveFinalReport($id, $broncoNetID){
 		if ($id != ""){//valid application id
-			$this->logger->logInfo("Approving final report id: ".$id, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Approving final report id: ".$id, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE final_reports SET Status = 'Approved' WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $id);
@@ -838,7 +841,7 @@ class DatabaseHelper
 	/*Update a Final Report to be on hold*/
 	public function holdFinalReport($id, $broncoNetID){
 		if ($id != ""){//valid application id
-			$this->logger->logInfo("Holding final report id: ".$id, $broncoNetID, dirname(__FILE__));
+			$this->logger->logInfo("Holding final report id: ".$id, $broncoNetID, $this->thisLocation);
 			/*Update any application with the given id*/
 			$this->sql = $this->conn->prepare("UPDATE final_reports SET Status = 'Hold' WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $id);
@@ -862,7 +865,7 @@ class DatabaseHelper
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
 			$purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetArray){
 
-		$this->logger->logInfo("Inserting application (updating? ".$updating.", updateID: ".$updateID.")", $broncoNetID, dirname(__FILE__));
+		$this->logger->logInfo("Inserting application (updating? ".$updating.", updateID: ".$updateID.")", $broncoNetID, $this->thisLocation);
 		$errors = array(); // array to hold validation errors
 		$data = array(); // array to pass back data
 
@@ -902,7 +905,7 @@ class DatabaseHelper
 			
 		}
 		catch(Exception $e){
-			$errorMessage = $this->logger->logError("Application not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("Application not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 			$errors["other"] = "Error: Application not saved, exception when sanitizing fields. ".$errorMessage;
 		}
 		
@@ -1114,7 +1117,7 @@ class DatabaseHelper
 									$this->sql->bindParam(':details', $i['details']);
 									
 									if ($this->sql->execute() !== TRUE){//query failed
-										$errorMessage = $this->logger->logError("Application not saved, query failed to insert budget items.", $broncoNetID, dirname(__FILE__), true);
+										$errorMessage = $this->logger->logError("Application not saved, query failed to insert budget items.", $broncoNetID, $this->thisLocation, true);
 										$errors["other"] = "Error: Application not saved, query failed to insert budget items. ".$errorMessage;
 										break;
 									}
@@ -1130,17 +1133,17 @@ class DatabaseHelper
 							}
 						}
 						catch(Exception $e){
-							$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert budget items: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+							$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert budget items: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 							$errors["other"] = "Error: Application not saved, internal exception when trying to insert budget items. ".$errorMessage;
 						}
 					} 
 					else{//query failed
-						$errorMessage = $this->logger->logError("Application not saved, query failed to insert application.", $broncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("Application not saved, query failed to insert application.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Application not saved, query failed to insert application. ".$errorMessage;
 					}
 				}
 				catch(Exception $e){
-					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert application: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert application: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 					$errors["other"] = "Error: Application not saved, internal exception when trying to insert application. ".$errorMessage;
 				}
 			}
@@ -1195,7 +1198,7 @@ class DatabaseHelper
 									$this->sql->bindParam(':details', $i['details']);
 									
 									if ($this->sql->execute() !== TRUE){//query failed
-										$errorMessage = $this->logger->logError("Application not saved, query failed to insert new budget items.", $broncoNetID, dirname(__FILE__), true);
+										$errorMessage = $this->logger->logError("Application not saved, query failed to insert new budget items.", $broncoNetID, $this->thisLocation, true);
 										$errors["other"] = "Error: Application not saved, query failed to insert new budget items. ".$errorMessage;
 										break;
 									}
@@ -1211,17 +1214,17 @@ class DatabaseHelper
 							}
 						}
 						else{
-							$errorMessage = $this->logger->logError("Application not saved, query failed to delete old budget items.", $broncoNetID, dirname(__FILE__), true);
+							$errorMessage = $this->logger->logError("Application not saved, query failed to delete old budget items.", $broncoNetID, $this->thisLocation, true);
 							$errors["other"] = "Error: Application not saved, query failed to delete old budget items. ".$errorMessage;
 						}
 					} 
 					else{//query failed
-						$errorMessage = $this->logger->logError("Application not saved, query failed to update application.", $broncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("Application not saved, query failed to update application.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Application not saved, query failed to update application. ".$errorMessage;
 					}
 				}
 				catch(Exception $e){
-					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to update application: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to update application: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 					$errors["other"] = "Error: Application not saved, internal exception when trying to update application. ".$errorMessage;
 				}
 			}
@@ -1256,7 +1259,7 @@ class DatabaseHelper
 	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the report's fields.
 	*/
 	public function insertFinalReport($updating, $updateID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $totalAwardSpent, $broncoNetID){
-		$this->logger->logInfo("Inserting final report (updating? ".$updating.", updateID: ".$updateID.")", $broncoNetID, dirname(__FILE__));
+		$this->logger->logInfo("Inserting final report (updating? ".$updating.", updateID: ".$updateID.")", $broncoNetID, $this->thisLocation);
 		$errors = array(); // array to hold validation errors
 		$data = array(); // array to pass back data
 		
@@ -1265,7 +1268,7 @@ class DatabaseHelper
 			$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
 		}
 		catch(Exception $e){
-			$errorMessage = $this->logger->logError("Final report not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("Final report not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 			$errors["other"] = "Error: Final report not saved, exception when sanitizing fields. ".$errorMessage;
 		}
 		
@@ -1334,13 +1337,13 @@ class DatabaseHelper
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
 					} 
 					else{//query failed
-						$errorMessage = $this->logger->logError("Final report not saved, query failed to insert final report.", $broncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("Final report not saved, query failed to insert final report.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Final report not saved, query failed to insert final report. ".$errorMessage;
 						$this->conn->rollBack();
 					}
 				}
 				catch(Exception $e){
-					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to insert final report: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to insert final report: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 					$errors["other"] = "Error: Final report not saved, internal exception when trying to insert final report. ".$errorMessage;
 				}
 			}
@@ -1362,13 +1365,13 @@ class DatabaseHelper
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
 					} 
 					else{//query failed
-						$errorMessage = $this->logger->logError("Final report not saved, query failed to update final report.", $broncoNetID, dirname(__FILE__), true);
+						$errorMessage = $this->logger->logError("Final report not saved, query failed to update final report.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Final report not saved, query failed to update final report. ".$errorMessage;
 						$this->conn->rollBack();
 					}
 				}
 				catch(Exception $e){
-					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to update final report: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Final report not saved, internal exception when trying to update final report: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 					$errors["other"] = "Error: Final report not saved, internal exception when trying to update final report. ".$errorMessage;
 				}
 			}
@@ -1399,7 +1402,7 @@ class DatabaseHelper
 	
 	*/
 	public function removeApplication($appID, $broncoNetID){
-		$this->logger->logInfo("Removing application id: ".$appID, $broncoNetID, dirname(__FILE__));
+		$this->logger->logInfo("Removing application id: ".$appID, $broncoNetID, $this->thisLocation);
 		$data = array(); // array to pass back data
 		$data["success"] = false; //set to true if successful
 		
@@ -1410,7 +1413,7 @@ class DatabaseHelper
 			$this->sql = $this->conn->prepare("DELETE FROM final_reports WHERE ApplicationID = :appID");
 			$this->sql->bindParam(':appID', $appID);
 			if($this->sql->execute() !== TRUE){ //query failed
-				$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated final reports.", $broncoNetID, dirname(__FILE__), true);
+				$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated final reports.", $broncoNetID, $this->thisLocation, true);
 				$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated final reports. ".$errorMessage;
 			}
 
@@ -1418,7 +1421,7 @@ class DatabaseHelper
 				$this->sql = $this->conn->prepare("DELETE FROM emails WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated emails.", $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated emails.", $broncoNetID, $this->thisLocation, true);
 					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated emails. ".$errorMessage;
 				}
 			}
@@ -1426,7 +1429,7 @@ class DatabaseHelper
 				$this->sql = $this->conn->prepare("DELETE FROM notes WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated notes.", $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated notes.", $broncoNetID, $this->thisLocation, true);
 					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated notes. ".$errorMessage;
 				}
 			}
@@ -1434,7 +1437,7 @@ class DatabaseHelper
 				$this->sql = $this->conn->prepare("DELETE FROM applications_budgets WHERE ApplicationID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated budget items.", $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove associated budget items.", $broncoNetID, $this->thisLocation, true);
 					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove associated budget items. ".$errorMessage;
 				}
 			}
@@ -1442,7 +1445,7 @@ class DatabaseHelper
 				$this->sql = $this->conn->prepare("DELETE FROM applications WHERE ID = :appID");
 				$this->sql->bindParam(':appID', $appID);
 				if($this->sql->execute() !== TRUE){ //query failed
-					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove the base application.", $broncoNetID, dirname(__FILE__), true);
+					$errorMessage = $this->logger->logError("Unable to remove application, query failed to remove the base application.", $broncoNetID, $this->thisLocation, true);
 					$data["error"][] = PHP_EOL."Error: Unable to remove application, query failed to remove the base application. ".$errorMessage;
 				}
 			}
@@ -1455,7 +1458,7 @@ class DatabaseHelper
 			}
 		}
 		catch(Exception $e){
-			$errorMessage = $this->logger->logError("Unable to remove application, internal exception when trying to delete application.", $broncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("Unable to remove application, internal exception when trying to delete application.", $broncoNetID, $this->thisLocation, true);
 			$data["error"][] = PHP_EOL."Error: Unable to remove application, internal exception when trying to delete application. ".$errorMessage;
 		}
 
@@ -1484,6 +1487,22 @@ class DatabaseHelper
 
 
 
+	/* Save the current timestamp in the database 'variables' table, to the variable 'DatabaseLastBackedUp' */
+    public function saveDatabaseLastBackedUpTime(){
+        $currentTime = time();
+        $this->sql = $this->conn->prepare("UPDATE variables v SET v.Value = :currentTime WHERE v.Name = 'DatabaseLastBackedUp'");
+		$this->sql->bindParam(':currentTime', $currentTime);
+		return $this->sql->execute();
+    }
+    /* Get the timestamp from the latest time the database was backed up */
+    public function getDatabaseLastBackedUpTime(){
+		$this->sql = $this->conn->prepare("SELECT v.Value FROM variables v WHERE v.Name = 'DatabaseLastBackedUp'");
+		$this->sql->execute();
+		return $this->sql->fetch(PDO::FETCH_COLUMN); //return value only
+	}
+
+
+
 
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	private function connect(){
@@ -1495,7 +1514,7 @@ class DatabaseHelper
 		}
 		catch(PDOException $e){
 			echo "Connection failed: " . $e->getMessage();
-			$errorMessage = $this->logger->logError("Unable to connect to database: ".$e->getMessage(), $broncoNetID, dirname(__FILE__), true);
+			$errorMessage = $this->logger->logError("Unable to connect to database: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 			echo "Error: Unable to connect to database. ".$errorMessage;
 		}
 	}

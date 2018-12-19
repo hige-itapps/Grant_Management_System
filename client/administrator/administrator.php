@@ -14,6 +14,7 @@
 	$logger = new Logger(); //for logging to files
 	$database = new DatabaseHelper($logger); //database helper object used for some verification and insertion
 	$siteWarning = new SiteWarning($database); //used to determine if a site warning exists and should be displayed
+	$databaseLastBackedUp = 0; //timestamp of the last time the database was backed up
 		
 	if($database->isAdministrator($CASbroncoNetID)) 
 	{ 
@@ -22,6 +23,7 @@
 		$committee = $database->getCommittee();
 		$finalReportApprovers = $database->getfinalReportApprovers();
 		$siteWarningString = $database->getSiteWarning();
+		$databaseLastBackedUp = 0; //timestamp of the last time the database was backed up
 ?>
 
 
@@ -42,6 +44,7 @@
 			var scope_applicationApprovers = <?php echo json_encode($applicationApprovers); ?>;
 			var scope_finalReportApprovers = <?php echo json_encode($finalReportApprovers); ?>;
 			var scope_siteWarningString = <?php echo json_encode($siteWarningString); ?>;
+			var var_databaseLastBackedUp = <?php echo json_encode($databaseLastBackedUp); ?>;
 		</script>
 		<!-- AngularJS Script -->
 		<script type="module" src="administrator.js"></script>
@@ -211,6 +214,10 @@
 						<button type="button" class="btn btn-danger" ng-click="clearSiteWarning()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Clear Message</button>
 					</form>
 					<hr>
+
+					<!-- Additional Information -->
+					<h3>Additional Information</h3>
+					<h4>Database last backed up: {{databaseLastBackedUp}}</h4>
 
 					<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
 						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
