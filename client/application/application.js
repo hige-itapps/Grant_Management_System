@@ -33,6 +33,25 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     if(app != null){
         app.appFiles = var_appFiles;
         app.appEmails = var_appEmails;//previously sent emails
+
+        if($scope.isAdmin || $scope.isApprover){//if user is an admin or approver, initialize the default emails for approval/holding/denial/declining/deletion
+            //set admin email checkboxes to true by default
+            $scope.approveAppEmailEnable = true;
+            $scope.holdAppEmailEnable = true;
+            $scope.denyAppEmailEnable = true;
+            $scope.declineAppEmailEnable = true;
+            $scope.deleteAppEmailEnable = true;
+
+            $scope.approveAppEmail = "Dear " + app.name + ",\nWe are pleased to inform you that your application on our site at iefdf.wmich.edu has been approved. You may review your application at any time to check your approved amount.";
+
+            $scope.holdAppEmail = "Dear " + app.name + ",\nYour application on our site at iefdf.wmich.edu has been temporarily place on hold. This was likely due to lacking and/or incorrect information.";
+
+            $scope.denyAppEmail = "Dear " + app.name + ",\nWe regret to inform you that your application on our site at iefdf.wmich.edu has been denied. You may submit a new application for another cycle if desired.";
+
+            $scope.declineAppEmail = "Dear " + app.name + ",\nWe have set the status of your application on our site at iefdf.wmich.edu to 'Declined'. You may submit a new application for another cycle if desired.";
+
+            $scope.deleteAppEmail = "Dear " + app.name + ",\nWe have removed your application from our site at iefdf.wmich.edu due to administrative causes.";
+        }
     }
     //for when creating application
     var CASemail = var_CASemail;
@@ -77,7 +96,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
                             var ngModelName = this.attributes['ng-model'].value;
 
-                            // if value for the specified ngModel is a property of 
+                            // if value for the specified ngModel is a property of
                             // another object on the scope
                             if (ngModelName.indexOf(".") != -1) {
                                 var objAttributes = ngModelName.split(".");
@@ -100,15 +119,17 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     }
 
 
-    
+
     /*Functions*/
 
     //submit the application - use a different function depending on the submitFunction variable
     $scope.submit = function(){
         if($scope.submitFunction === 'insertApplication'){$scope.insertApplication();}
-        else if($scope.submitFunction === 'approveApplication'){$scope.approveApplication('Approved');}
-        else if($scope.submitFunction === 'denyApplication'){$scope.approveApplication('Denied');}
-        else if($scope.submitFunction === 'holdApplication'){$scope.approveApplication('Hold');}
+        else if($scope.submitFunction === 'approveApplication'){$scope.approveApplication('Approved', $scope.approveAppEmail, $scope.approveAppEmailEnable);}
+        else if($scope.submitFunction === 'denyApplication'){$scope.approveApplication('Denied', $scope.denyAppEmail, $scope.denyAppEmailEnable);}
+        else if($scope.submitFunction === 'holdApplication'){$scope.approveApplication('Hold', $scope.holdAppEmail, $scope.holdAppEmailEnable);}
+        else if($scope.submitFunction === 'declineApplication'){$scope.approveApplication('Declined', $scope.declineAppEmail, $scope.declineAppEmailEnable);}
+        else if($scope.submitFunction === 'deleteApplication'){$scope.deleteApplication($scope.deleteAppEmail, $scope.deleteAppEmailEnable);}
         else if($scope.submitFunction === 'chairApproval'){$scope.chairApproval();}
         else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
     }
@@ -122,14 +143,14 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             expense: expense,
             details: details,
             amount: amount
-        })       
+        })
     }
     //Remove last budget item
     $scope.removeBudgetItem = function(index) {
         if($scope.formData.budgetItems.length > 1)
         {
             $scope.formData.budgetItems.splice(index, 1);
-        }  
+        }
     }
     //Get total budget cost
     $scope.getTotal = function(){
@@ -201,7 +222,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             $http({
                 method  : 'POST',
                 url     : '../api.php?get_application',
-                data    : $.param({appID: $scope.formData.updateID}),  // pass in data as strings
+                data    : $.param({appID: JSON.stringify($scope.formData.updateID)}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
@@ -257,10 +278,10 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 for(var i = 0; i < existingApp.budget.length; i++) {
                     $scope.addBudgetItem(existingApp.budget[i][2], existingApp.budget[i][4], existingApp.budget[i][3]);
                 }
-    
+
                 $scope.formData.deptChairApproval = existingApp.deptChairApproval;
                 $scope.formData.amountAwarded = existingApp.amountAwarded;
-                
+
                 $scope.appFiles = existingApp.appFiles;//refresh the associated files
                 $scope.appStatus = existingApp.status;//refresh the status
 
@@ -393,7 +414,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                             newAlertMessage += "You can return to your application at any time to upload more documents if necessary.";
                         //}
                     }
-                    
+
                     if(!$scope.isCreating){//updating
                         $scope.populateForm(null);//refresh form so that new files show up
                         $scope.uploadProposalNarrative = []; //empty array
@@ -404,7 +425,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                     else{//creating
                         $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
                     }
-                   
+
                 }
                 else{
                     $scope.errors = response.data.insert.errors;
@@ -426,7 +447,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
 
     //delete this entire application -- only admins are capable of doing this
-    $scope.deleteApplication = function(){
+    $scope.deleteApplication = function(emailMessage, sendEmail){
         var retVal = prompt("WARNING - BY DELETING THIS APPLICATION, EVERYTHING ASSOCIATED WITH THIS APPLICATION, EXCEPT FOR UPLOADED FILES, WILL BE PERMANENTLY WIPED! YOU WILL NOT BE ABLE TO UNDO THIS OPERATION! To confirm, please type 'DELETE' into the confirmation box: ", "confirm delete");
         if(retVal !== "DELETE"){
             return; //exit early if not confirmed
@@ -437,36 +458,72 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         $http({
             method  : 'POST',
             url     : '../api.php?remove_application',
-            data    : $.param({appID: $scope.formData.updateID}),  // pass in appID string
+            data    : $.param({appID: JSON.stringify($scope.formData.updateID), emailAddress: JSON.stringify($scope.formData.email), emailMessage: JSON.stringify(emailMessage), sendEmail: JSON.stringify(sendEmail)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
             console.log(response, 'res');
             if(typeof response.data.error === 'undefined') //ran function as expected
             {
-                var newAlertType = "success";
-                var newAlertMessage = "Success! The application was deleted.";
-                $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
+                if(response.data.success === true)//deleted
+                {
+                    var newAlertType = "";
+                    var newAlertMessage = "";
+
+                    if(sendEmail)//only check email status if email was specified
+                    {
+                        if(response.data.email.saveSuccess === true) //email saved correctly
+                        {
+                            if(response.data.email.sendSuccess === true) //email was sent correctly
+                            {
+                                newAlertType = "success";
+                                newAlertMessage = "Success! The application has been deleted. The email was successfully saved and sent out to the applicant.";
+                            }
+                            else
+                            {
+                                newAlertType = "warning";
+                                newAlertMessage = "Warning: The application has been deleted, and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
+                            }
+                        }
+                        else
+                        {
+                            newAlertType = "warning";
+                            newAlertMessage = "Warning: The application was deleted, but the email was neither saved nor sent out to the applicant.";
+                        }
+                    }
+                    else{
+                        newAlertType = "success";
+                        newAlertMessage = "Success! The application has been deleted.";
+                    }
+
+                    $scope.redirectToHomepage(newAlertType, newAlertMessage); //redirect to the homepage with the message
+                }
+                else//didn't delete
+                {
+                    $scope.alertType = "warning";
+                    $scope.alertMessage = "Warning: The application may not have been deleted.";
+                    $scope.populateForm(); //refresh the form again
+                }
             }
             else //failure!
             {
                 console.log(response.data.error);
                 $scope.alertType = "danger";
-                $scope.alertMessage = "There was an error when trying to delete this application: " + response.data.error;
+                $scope.alertMessage = "There was an error with your deletion: " + response.data.error;
                 $scope.populateForm(); //refresh the form again
             }
         },function (error){
             console.log(error, 'can not get data.');
             $scope.alertType = "danger";
             $scope.alertMessage = "There was an unexpected error when trying to delete this application! Please let an administrator know the details and time of this issue.";
+            $scope.populateForm(); //refresh the form again
         });
     }
 
 
     //approve, hold, or deny application with the status parameter
-    $scope.approveApplication = function(status){
-
-        if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this application's status to " + status + "?"))
+    $scope.approveApplication = function(status, emailMessage, sendEmail){
+        if(confirm ("Are you sure you want to set this application's status to " + status + "? If specified, an email will also be sent to the applicant."))
         {
             //start a loading alert
             $scope.loadingAlert();
@@ -474,7 +531,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             $http({
                 method  : 'POST',
                 url     : '../api.php?approve_application',
-                data    : $.param({appID: $scope.formData.updateID, status: status, amount: $scope.formData.amountAwarded, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
+                data    : $.param({appID: JSON.stringify($scope.formData.updateID), status: JSON.stringify(status), amount: JSON.stringify($scope.formData.amountAwarded), emailAddress: JSON.stringify($scope.formData.email), emailMessage: JSON.stringify(emailMessage), sendEmail: JSON.stringify(sendEmail)}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
@@ -483,23 +540,30 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
                 {
                     if(response.data.success === true)//updated
                     {
-                        if(response.data.email.saveSuccess === true) //email saved correctly
+                        if(sendEmail)//only check email status if email was specified
                         {
-                            if(response.data.email.sendSuccess === true) //email was sent correctly
+                            if(response.data.email.saveSuccess === true) //email saved correctly
                             {
-                                $scope.alertType = "success";
-                                $scope.alertMessage = "Success! The application's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                                if(response.data.email.sendSuccess === true) //email was sent correctly
+                                {
+                                    $scope.alertType = "success";
+                                    $scope.alertMessage = "Success! The application's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                                }
+                                else
+                                {
+                                    $scope.alertType = "warning";
+                                    $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
+                                }
                             }
                             else
                             {
                                 $scope.alertType = "warning";
-                                $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
+                                $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
                             }
                         }
-                        else
-                        {
-                            $scope.alertType = "warning";
-                            $scope.alertMessage = "Warning: The application's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
+                        else{
+                            $scope.alertType = "success";
+                            $scope.alertMessage = "Success! The application's status has been updated to: \"" + status + "\".";
                         }
                     }
                     else//didn't update
@@ -535,7 +599,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
             $http({
                 method  : 'POST',
                 url     : '../api.php?chair_approval',
-                data    : $.param({appID: $scope.formData.updateID, deptChairApproval: $scope.formData.deptChairApproval}),  // pass in data as strings
+                data    : $.param({appID: JSON.stringify($scope.formData.updateID), deptChairApproval: JSON.stringify($scope.formData.deptChairApproval)}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
@@ -579,7 +643,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
         $http({
             method  : 'POST',
             url     : '../api.php?save_note',
-            data    : $.param({appID: $scope.formData.updateID, note: $scope.staffNotes[1]}),  // pass in data as strings
+            data    : $.param({appID: JSON.stringify($scope.formData.updateID), note: JSON.stringify($scope.staffNotes[1])}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -704,28 +768,29 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
     $scope.uploadProposalNarrative = []; //array new proposal narratives
 
     //expense types
-    $scope.options = [{ name: "Air Travel"}, 
+    $scope.options = [{ name: "Air Travel"},
                         { name: "Ground Travel"},
                         { name: "Hotel"},
                         { name: "Registration Fee"},
                         { name: "Per Diem"},
                         { name: "Other"}];
-    
+
     //$scope.appStatus = null;
     /*If not creating, get app data and populate entire form*/
-
     if(!$scope.isCreating)
     {
-        $scope.formData.updateID = app.id; //set the update id for the server
-        $scope.dateSubmitted = app.dateSubmitted; //set the submission date
-        $scope.appStatus = app.status; //set the application's status
+        if(app){
+            $scope.formData.updateID = app.id; //set the update id for the server
+            $scope.dateSubmitted = app.dateSubmitted; //set the submission date
+            $scope.appStatus = app.status; //set the application's status
 
-        $scope.allowedFirstCycle = true; //allow selection of first cycle- only relevant if user is an admin updating.
-        $scope.appFieldsDisabled = true; //disable app inputs
+            $scope.allowedFirstCycle = true; //allow selection of first cycle- only relevant if user is an admin updating.
+            $scope.appFieldsDisabled = true; //disable app inputs
 
 
-        //populate the form with the app data
-        $scope.populateForm(app);
+            //populate the form with the app data
+            $scope.populateForm(app);
+        }
     }
     else //otherwise, only fill in a few fields, and alert user with warning
     {
@@ -745,6 +810,7 @@ higeApp.controller('appCtrl', ['$scope', '$http', '$sce', '$filter', function($s
 
         alert("Please complete your application fully; applications in progress cannot be saved. Your proposal narrative and supporting documents may be uploaded later if preferred. Uploaded files cannot be deleted once submitted.");
     }
+
 
 }]);
 

@@ -1,13 +1,13 @@
 <?php
 	/*User validation*/
 	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
-	
+
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
-	
+
 	/*Cycle functions*/
 	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
-	
+
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
@@ -28,12 +28,12 @@
 
 	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
 	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
-	
+
 	/*get initial character limits for text fields*/
 	$reportCharMax = $database->getFinalReportsMaxLengths();
 
 	$maxProjectSummary = $reportCharMax[array_search('ProjectSummary', array_column($reportCharMax, 0))][1]; //project summary char limit
-	
+
 	$report = null; //only set report if it exists (when not creating a new one)
 	$reportFiles = null; //^
 	$reportEmails = null; //^
@@ -47,9 +47,9 @@
 	$isCommittee = false; //user is a committee member
 	$isChairReviewing = false; //user is the associated department chair, but cannot do anything (just for reviewing purposes)
 	$isFinalReportApprover = false; //user is a final report approver
-	
+
 	$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
-	
+
 	/*Get all user permissions. THESE ARE TREATED AS IF THEY ARE MUTUALLY EXCLUSIVE; ONLY ONE CAN BE TRUE!
 	No matter what, the app ID MUST BE SET*/
 	if(isset($_GET["id"]))
@@ -62,7 +62,7 @@
 		else if($permissionSet = $isCreating = $database->isUserAllowedToCreateFinalReport($CASbroncoNetID, $_GET['id'])){} //applicant creating check
 		else if($permissionSet = $isReviewing = $database->doesUserOwnApplication($CASbroncoNetID, $_GET['id']) && $database->getFinalReport($_GET['id'])){} //applicant reviewing check
 	}
-	
+
 	/*Verify that user is allowed to render report*/
 	if($permissionSet)
 	{
@@ -80,7 +80,7 @@
 			{
 				$staffNotes = $database->getStaffNotes($appID);
 			}
-		} 
+		}
 ?>
 
 
@@ -94,7 +94,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-	
+
 	<!-- Page Head -->
 	<head>
 		<!-- Shared head content -->
@@ -123,7 +123,7 @@
 
 	<!-- Page Body -->
 	<body ng-app="HIGE-app">
-	
+
 		<!-- Shared Site Banner -->
 		<?php include '../include/site_banner.html'; ?>
 
@@ -131,32 +131,32 @@
 		<?php $siteWarning->showIfExists() ?> <!-- show site warning if it exists -->
 		<script src="../include/outdatedbrowser.js" nomodule></script> <!-- show site error if outdated -->
 		<?php include '../include/noscript.html'; ?> <!-- show site error if javascript is disabled -->
-		
+
 			<!--AngularJS Controller-->
 			<div class="container-fluid" ng-controller="reportCtrl" id="reportCtrl" ng-cloak>
 
 				<h1 ng-cloak ng-show="!isCreating" class="{{reportStatus}}-background status-bar">Report Status: {{reportStatus}}</h1>
 
-				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group"> 
+				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group">
 					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning"><span class="glyphicon" ng-class="{'glyphicon-unchecked': isAdminUpdating, 'glyphicon-edit': !isAdminUpdating}" aria-hidden="true"></span>TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
 					<button type="button" ng-click="populateForm(null)" class="btn btn-warning"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>RELOAD SAVED DATA</button>
 					<button type="button" ng-click="insertReport()" class="btn btn-warning"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>SUBMIT CHANGES</button>
 				</div>
-				
+
 				<!-- final report form -->
 				<form enctype="multipart/form-data" class="form-horizontal" id="reportForm" name="reportForm" ng-submit="submit()">
-				
 
-				
+
+
 					<div class="row">
 						<h1 class="title">FINAL REPORT:</h1>
 					</div>
-				
+
 					<!--APPLICANT INFO-->
 					<div class="row">
 						<h2 class="title">Applicant Information:</h2>
 					</div>
-					
+
 
 
 					<div class="row">
@@ -175,9 +175,9 @@
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 					<!--DEPARTMENT-->
 						<div class="col-md-5">
@@ -194,14 +194,14 @@
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--RESEARCH INFO-->
 					<div class="row">
 						<p><h2 class="title">Final Report Information:</h2></p>
 					</div>
-					
+
 
 
 					<div class="row">
@@ -221,15 +221,15 @@
 						</div>
 					</div>
 
-					
-					
+
+
 					<div class="row">
 					<!--TRAVEL DATE FROM-->
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="travelFrom">Travel Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.travelFrom" ng-disabled="reportFieldsDisabled" id="travelFrom" name="travelFrom" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.travelFrom" aria-live="polite">{{ errors.travelFrom }}</span> 
+								<span class="help-block" ng-show="errors.travelFrom" aria-live="polite">{{ errors.travelFrom }}</span>
 							</div>
 						</div>
 					<!--TRAVEL DATE TO-->
@@ -237,7 +237,7 @@
 							<div class="form-group">
 								<label for="travelTo">Travel Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.travelTo" ng-disabled="reportFieldsDisabled" id="travelTo" name="travelTo" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.travelTo" aria-live="polite">{{ errors.travelTo }}</span> 
+								<span class="help-block" ng-show="errors.travelTo" aria-live="polite">{{ errors.travelTo }}</span>
 							</div>
 						</div>
 					<!--ACTIVITY DATE FROM-->
@@ -245,7 +245,7 @@
 							<div class="form-group">
 								<label for="activityFrom">Activity Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.activityFrom"ng-disabled="reportFieldsDisabled"  id="activityFrom" name="activityFrom" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.activityFrom" aria-live="polite">{{ errors.activityFrom }}</span> 
+								<span class="help-block" ng-show="errors.activityFrom" aria-live="polite">{{ errors.activityFrom }}</span>
 							</div>
 						</div>
 					<!--ACTIVITY DATE TO-->
@@ -253,33 +253,33 @@
 							<div class="form-group">
 								<label for="activityTo">Activity Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.activityTo" ng-disabled="reportFieldsDisabled" id="activityTo" name="activityTo" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.activityTo" aria-live="polite">{{ errors.activityTo }}</span> 
+								<span class="help-block" ng-show="errors.activityTo" aria-live="polite">{{ errors.activityTo }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--AMOUNT AWARDED SPENT-->
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="amountAwardedSpent">Awarded Amount Spent($){{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="text" class="form-control" ng-model="formData.amountAwardedSpent" ng-disabled="reportFieldsDisabled" id="amountAwardedSpent" name="amountAwardedSpent" placeholder="Enter Awarded Amount Spent($)" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
-								<span class="help-block" ng-show="errors.amountAwardedSpent" aria-live="polite">{{ errors.amountAwardedSpent }}</span> 
+								<span class="help-block" ng-show="errors.amountAwardedSpent" aria-live="polite">{{ errors.amountAwardedSpent }}</span>
 							</div>
 						</div>
 					</div>
 
 
-					
+
 					<!--PROJECT SUMMARY-->
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="projectSummary">Project Summary{{isCreating || isAdminUpdating ? " (Required) ("+(maxProjectSummary-formData.projectSummary.length)+" characters remaining)" : ""}}:</label>
 								<textarea class="form-control" maxlength="{{maxProjectSummary}}" ng-model="formData.projectSummary" ng-disabled="reportFieldsDisabled" id="projectSummary" name="projectSummary" placeholder="Enter Project Summary" rows="10"> </textarea>
-								<span class="help-block" ng-show="errors.projectSummary" aria-live="polite">{{ errors.projectSummary }}</span> 
+								<span class="help-block" ng-show="errors.projectSummary" aria-live="polite">{{ errors.projectSummary }}</span>
 							</div>
 						</div>
 					</div>
@@ -290,9 +290,9 @@
 						<h2 class="title">Attachments:</h2>
 						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Travel Expense Vouchers, Receipts, Travel Authorization Forms, Etc.). The maximum allowed size for each file is {{maxUploadSize/1048576}}MB.</h3>
 					</div>
-					
-					
-					
+
+
+
 					<!--UPLOADS-->
 					<div class="row">
 						<div class="col-md-12">
@@ -344,20 +344,8 @@
 							</li>
 						</ol>
 					</div>
-					
-					
-					
-					<div class="row" ng-cloak ng-show="isAdmin || isFinalReportApprover">
-					<!--EMAIL EDIT-->
-						<div class="col-md-12">
-							<div class="form-group">
-								<label for="approverEmail">EMAIL TO BE SENT:</label>
-								<textarea class="form-control" ng-model="formData.approverEmail" id="approverEmail" name="approverEmail" placeholder="Enter email body, with greetings." rows=20 /></textarea>
-							</div>
-						</div>
-					</div>
-					
-					
+
+
 
 					<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
 						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
@@ -365,10 +353,44 @@
 
 
 
-					<div class="buttons-group bottom-buttons"> 
+					<!-- For admin to approve, hold, deny, or decline report -->
+					<div class="appDecisionBox" ng-show="isFinalReportApprover || isAdmin">
+						<label for="reportDecision">Select what to do with this report:</label>
+						<select ng-model="reportDecision" id="reportDecision" name="reportDecision">
+							<option value=""></option>
+							<option value="Approve">Approve</option>
+							<option value="Hold">Put On Hold</option>
+						</select>
+
+						<div ng-show="reportDecision === 'Approve'" class="approve-button-holder"> <!-- Administrator-only approve report button -->
+							<button type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="approveReportEmailEnable" name="approveReportEmailEnable" id="approveReportEmailEnable" type="checkbox" value="approveReportEmailEnable">Send Email Upon Approval</label>
+							</div>
+							<div class="form-group" ng-show="approveReportEmailEnable">
+								<label for="approveReportEmail">Approval Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="approveReportEmail" ng-disabled="!approveReportEmailEnable" id="approveReportEmail" name="approveReportEmail" placeholder="Enter approval email to be sent to the report owner"></textarea>
+							</div>
+						</div>
+
+						<div ng-show="reportDecision === 'Hold'" class="hold-button-holder"> <!-- Administrator-only hold report button -->
+							<button type="submit" ng-click="submitFunction='holdReport'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="holdReportEmailEnable" name="holdReportEmailEnable" id="holdReportEmailEnable" type="checkbox" value="holdReportEmailEnable">Send Email Upon Holding</label>
+							</div>
+							<div class="form-group" ng-show="holdReportEmailEnable">
+								<label for="holdReportEmail">On Hold Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="holdReportEmail" ng-disabled="!holdReportEmailEnable" id="holdReportEmail" name="holdReportEmail" placeholder="Enter hold email to be sent to the report owner"></textarea>
+							</div>
+						</div>
+					</div>
+
+
+
+					<div class="buttons-group bottom-buttons">
 						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertReport'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SUBMIT FINAL REPORT</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='approveReport'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE REPORT</button> <!-- For approver or admin approving -->
-						<button ng-show="isFinalReportApprover || isAdmin" type="submit" ng-click="submitFunction='holdReport'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD REPORT</button> <!-- For approver or admin holding -->
 						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>UPLOAD DOCS</button> <!-- For applicant reviewing report -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
 					</div>

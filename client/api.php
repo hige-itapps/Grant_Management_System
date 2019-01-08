@@ -1,11 +1,11 @@
 <?php
-/*This file serves as the project's RESTful API. Simply send a GET request to this file with a specified function name, with additional POST data where necessary. 
+/*This file serves as the project's RESTful API. Simply send a GET request to this file with a specified function name, with additional POST data where necessary.
 Only 1 API function can be called at a time through the GET paramater.*/
 $thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__); //get current location of file for logging purposes;
 
 /*User validation*/
 include_once(dirname(__FILE__) . "/../CAS/CAS_login.php");
-	
+
 /*Get DB connection*/
 include_once(dirname(__FILE__) . "/../server/DatabaseHelper.php");
 
@@ -29,8 +29,8 @@ $returnVal = []; //initialize return value as empty. If there is an error, it is
 //for downloading files, uses GET parameters for appID and filename
 if (array_key_exists('download_file', $_GET)) {
     if(isset($_GET["appID"]) && isset($_GET["filename"])){
-        $appID = $_GET["appID"];
-        $file = $_GET["filename"];
+        $appID = json_decode($_GET["appID"]);
+        $file = json_decode($_GET["filename"]);
 
         /*Verify that user is allowed to see this file*/
         if($database->isUserAllowedToSeeApplications($CASbroncoNetID) || $database->doesUserOwnApplication($CASbroncoNetID, $appID) || $database->isUserDepartmentChair($CASemail, $appID, $CASbroncoNetID)){
@@ -50,7 +50,7 @@ if (array_key_exists('download_file', $_GET)) {
 //for uploading files
 else if(array_key_exists('upload_file', $_GET)){
     if(isset($_POST["appID"]) && isset($_FILES)){
-        $appID = $_POST["appID"];
+        $appID = json_decode($_POST["appID"]);
         $files = $_FILES;
 
         /*Verify that user is allowed to upload files*/
@@ -71,13 +71,12 @@ else if(array_key_exists('upload_file', $_GET)){
 //for saving staff notes
 else if(array_key_exists('save_note', $_GET)){
     if(isset($_POST["appID"]) && isset($_POST["note"])){
-        $appID = $_POST["appID"];
-        $note = $_POST["note"];
+        $appID = json_decode($_POST["appID"]);
+        $note = trim(json_decode($_POST["note"]));
 
         /*Verify that user is allowed to save this note*/
         if($database->isAdministrator($CASbroncoNetID) || $database->isApplicationApprover($CASbroncoNetID) || $database->isFinalReportApprover($CASbroncoNetID)){
             try{
-                $note = trim($note);
                 $returnVal = $database->saveStaffNotes($appID, $note, $CASbroncoNetID);
             }
             catch(Exception $e){
@@ -108,9 +107,9 @@ else if(array_key_exists('submit_application', $_GET)){
             /*Get the budget items*/
             $budgetItems = null;
             if(isset($_POST["budgetItems"])){$budgetItems = json_decode($_POST["budgetItems"], true);}
-            
+
             /*get the 4 purposes and 4 goals, set to 1 or 0*/
-            $purpose1 = 0; $purpose2 = 0; $purpose3 = 0; $purpose4Other = ""; 
+            $purpose1 = 0; $purpose2 = 0; $purpose3 = 0; $purpose4Other = "";
             $goal1 = 0; $goal2 = 0; $goal3 = 0; $goal4 = 0;
             if(isset($_POST["purpose1"])){$purpose1 = $_POST["purpose1"] === "true" ? 1 : 0;}
             if(isset($_POST["purpose2"])){$purpose2 = $_POST["purpose2"] === "true" ? 1 : 0;}
@@ -152,19 +151,19 @@ else if(array_key_exists('submit_application', $_GET)){
                 else if ($chosen === "this") //user chose to submit this cycle
                 {$nextCycle = 0;}
             }
-            
+
             /*Insert data into database - receive the new application id if success, or 0 if failure*/
             if($isAdmin){//updating
-                $returnVal["insert"] = $database->insertApplication(true, $updateID, $CASbroncoNetID, $name, $email, $department, $deptChairEmail, 
-                    $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
+                $returnVal["insert"] = $database->insertApplication(true, $updateID, $CASbroncoNetID, $name, $email, $department, $deptChairEmail,
+                    $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested,
                     $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
             }
             else{//new insert
-                $returnVal["insert"] = $database->insertApplication(false, null, $CASbroncoNetID, $name, $email, $department, $deptChairEmail, 
-                    $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested, 
+                $returnVal["insert"] = $database->insertApplication(false, null, $CASbroncoNetID, $name, $email, $department, $deptChairEmail,
+                    $travelFrom, $travelTo, $activityFrom, $activityTo, $title, $destination, $amountRequested,
                     $purpose1, $purpose2, $purpose3, $purpose4Other, $otherFunding, $proposalSummary, $goal1, $goal2, $goal3, $goal4, $nextCycle, $budgetItems);
             }
-            
+
             if(isset($returnVal["insert"]["success"])){//returned normally
                 if($returnVal["insert"]["success"] === true){//if it was successful; try to upload all files and send an email to the department chair
                     $appID = $returnVal["insert"]["appID"]; //get the new application ID
@@ -174,7 +173,7 @@ else if(array_key_exists('submit_application', $_GET)){
                         $uploadReturn = $documentsHelper->uploadDocs($appID, $files, $CASbroncoNetID);
 
                         if(isset($uploadReturn["error"])){//if there was an error with the upload
-                            $returnVal["fileSuccess"] = false; 
+                            $returnVal["fileSuccess"] = false;
                             $returnVal["fileError"] = $uploadReturn["error"];
                         }
                         else {$returnVal["fileSuccess"] = true;} //it was successful
@@ -189,7 +188,7 @@ else if(array_key_exists('submit_application', $_GET)){
         catch(Exception $e){
             $errorMessage = $logger->logError("Unable to insert application and/or upload files due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
 			$returnVal["error"] = "Error: Unable to insert application and/or upload files due to an internal exception. ".$errorMessage;
-        }     
+        }
     }
     else{
         $returnVal["error"] = "Permission denied, you are not permitted to create an application at this time.";
@@ -231,7 +230,7 @@ else if(array_key_exists('submit_final_report', $_GET)){
                 else{
                     $returnVal["insert"] = $database->insertFinalReport(false, $appID, $travelFrom, $travelTo, $activityFrom, $activityTo, $projectSummary, $amountAwardedSpent, $CASbroncoNetID);
                 }
-                
+
                 if(isset($returnVal["insert"]["success"])){//returned normally
                     if($returnVal["insert"]["success"] === true){//if it was successful
                         $returnVal["fileSuccess"] = null; //variable to tell whether file upload was successful. If not, this will be set to false, and ["fileError"] will hold a detailed error message
@@ -240,7 +239,7 @@ else if(array_key_exists('submit_final_report', $_GET)){
                             $uploadReturn = $documentsHelper->uploadDocs($appID, $files, $CASbroncoNetID);
 
                             if(isset($uploadReturn["error"])){//if there was an error with the upload
-                                $returnVal["fileSuccess"] = false; 
+                                $returnVal["fileSuccess"] = false;
                                 $returnVal["fileError"] = $$uploadReturn["error"];
                             }
                             else {$returnVal["fileSuccess"] = true;} //it was successful
@@ -269,8 +268,8 @@ else if(array_key_exists('submit_final_report', $_GET)){
 //for adding administrators
 else if(array_key_exists('add_admin', $_GET)){
     if(isset($_POST["broncoNetID"]) && isset($_POST["name"])){
-        $broncoNetID = $_POST["broncoNetID"];
-        $name = $_POST["name"];
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+        $name = json_decode($_POST["name"]);
 
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
@@ -296,8 +295,8 @@ else if(array_key_exists('add_admin', $_GET)){
 //for adding application approvers
 else if(array_key_exists('add_application_approver', $_GET)){
     if(isset($_POST["broncoNetID"]) && isset($_POST["name"])){
-        $broncoNetID = $_POST["broncoNetID"];
-        $name = $_POST["name"];
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+        $name = json_decode($_POST["name"]);
 
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
@@ -323,8 +322,8 @@ else if(array_key_exists('add_application_approver', $_GET)){
 //for adding final report approvers
 else if(array_key_exists('add_final_report_approver', $_GET)){
     if(isset($_POST["broncoNetID"]) && isset($_POST["name"])){
-        $broncoNetID = $_POST["broncoNetID"];
-        $name = $_POST["name"];
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+        $name = json_decode($_POST["name"]);
 
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
@@ -350,8 +349,8 @@ else if(array_key_exists('add_final_report_approver', $_GET)){
 //for adding committee members
 else if(array_key_exists('add_committee_member', $_GET)){
     if(isset($_POST["broncoNetID"]) && isset($_POST["name"])){
-        $broncoNetID = $_POST["broncoNetID"];
-        $name = $_POST["name"];
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+        $name = json_decode($_POST["name"]);
 
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
@@ -377,13 +376,12 @@ else if(array_key_exists('add_committee_member', $_GET)){
 //for a department chair to approve an application
 else if(array_key_exists('chair_approval', $_GET)){
     if(isset($_POST["appID"]) && isset($_POST["deptChairApproval"])){
-        $appID = $_POST["appID"];
-        $deptChairApproval = $_POST["deptChairApproval"];
+        $appID = json_decode($_POST["appID"]);
+        $deptChairApproval = trim(json_decode($_POST["deptChairApproval"]));
 
         /*Verify that user is allowed to approve an application*/
         if($database->isUserAllowedToSignApplication($CASemail, $appID, $CASbroncoNetID)){
             try{
-                $deptChairApproval = trim($deptChairApproval);
                 if($deptChairApproval !== '') {
                     $returnVal = $database->signApplication($appID, $deptChairApproval, $CASbroncoNetID);
                 }
@@ -407,14 +405,17 @@ else if(array_key_exists('chair_approval', $_GET)){
 
 //for HIGE staff to approve an application
 else if(array_key_exists('approve_application', $_GET)){
-    if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"]))
+    if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"]) && isset($_POST["sendEmail"]))
     {
-        $appID = $_POST["appID"];
-        $status = $_POST["status"];
-        $emailAddress = $_POST["emailAddress"];
-        $emailMessage = $_POST["emailMessage"];
-    
-        if(trim($emailMessage) === '' || $emailMessage == null) {$returnVal["error"] = "Email message must not be empty!";}
+        $appID = json_decode($_POST["appID"]);
+        $status = json_decode($_POST["status"]);
+        $emailAddress = json_decode($_POST["emailAddress"]);
+        $emailMessage = trim(json_decode($_POST["emailMessage"]));
+				$sendEmail = json_decode($_POST["sendEmail"]);
+
+				if($sendEmail && ($emailMessage === '' || $emailMessage == null)){ //wants to send email, but it's empty
+						$returnVal["error"] = "Email message must not be empty!";
+				}
         else
         {
             /*Verify that user is allowed to approve an application*/
@@ -422,37 +423,45 @@ else if(array_key_exists('approve_application', $_GET)){
             {
                 try{
                     $returnVal["success"] = false; //default to failure just in case
-                    if($status === 'Approved'){ 
-                        if(isset($_POST["amount"])){
-                            if($_POST["amount"] > 0){ 
-                                $returnVal["success"] = $database->approveApplication($appID, $_POST["amount"], $CASbroncoNetID); 
-                                if(!$returnVal["success"]){
-                                    $errorMessage = $logger->logError("Unable to approve application.", $CASbroncoNetID, $thisLocation, true);
-                                    $returnVal["error"] = "Error: Unable to approve application. ".$errorMessage;
-                                }
+                    if($status === 'Approved'){
+
+											$amount = 0;
+											if(isset($_POST["amount"])){$amount = json_decode($_POST["amount"]);}
+
+                        if($amount > 0){
+                            $returnVal["success"] = $database->approveApplication($appID, $amount, $CASbroncoNetID);
+                            if(!$returnVal["success"]){
+                                $errorMessage = $logger->logError("Unable to approve application.", $CASbroncoNetID, $thisLocation, true);
+                                $returnVal["error"] = "Error: Unable to approve application. ".$errorMessage;
                             }
-                            else {$returnVal["error"] = "Amount awarded must be greater than $0";}
                         }
-                        else {$returnVal["error"] = "No amount specified";}
+												else {$returnVal["error"] = "Amount awarded must be greater than $0";}
                     }
-                    else if($status === 'Hold') { 
-                        $returnVal["success"] = $database->holdApplication($appID, $CASbroncoNetID); 
+                    else if($status === 'Hold') {
+                        $returnVal["success"] = $database->holdApplication($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
                             $errorMessage = $logger->logError("Unable to hold application.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to hold application. ".$errorMessage;
                         }
                     }
-                    else if($status === 'Denied') { 
-                        $returnVal["success"] = $database->denyApplication($appID, $CASbroncoNetID); 
+                    else if($status === 'Denied') {
+                        $returnVal["success"] = $database->denyApplication($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
                             $errorMessage = $logger->logError("Unable to deny application.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to deny application. ".$errorMessage;
                         }
                     }
+										else if($status === 'Declined') {
+                        $returnVal["success"] = $database->declineApplication($appID, $CASbroncoNetID);
+                        if(!$returnVal["success"]){
+                            $errorMessage = $logger->logError("Unable to set application as declined.", $CASbroncoNetID, $thisLocation, true);
+			                $returnVal["error"] = "Error: Unable to set application as declined. ".$errorMessage;
+                        }
+                    }
                     else { $returnVal["error"] = "Invalid status given"; }
-    
-                    //if everything has been successful so far, send off the email as well
-                    if($returnVal["success"]){
+
+                    //if everything has been successful so far, send off the email as well if specified
+                    if($returnVal["success"] && $sendEmail){
                         $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
                     }
                 }
@@ -467,7 +476,7 @@ else if(array_key_exists('approve_application', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "AppID, status, and/or email is not set";
+        $returnVal["error"] = "AppID, status, email address, email message, and/or send email boolean is not set";
     }
 }
 
@@ -475,27 +484,30 @@ else if(array_key_exists('approve_application', $_GET)){
 
 //for HIGE staff to approve a final report
 else if(array_key_exists('approve_final_report', $_GET)){
-    if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"])){
-        $appID = $_POST["appID"];
-        $status = $_POST["status"];
-        $emailAddress = $_POST["emailAddress"];
-        $emailMessage = $_POST["emailMessage"];
-    
-    
-        if(trim($emailMessage) === '' || $emailMessage == null) {$returnVal["error"] = "Email message must not be empty!";}
+    if(isset($_POST["appID"]) && isset($_POST["status"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"]) && isset($_POST["sendEmail"])){
+        $appID = json_decode($_POST["appID"]);
+        $status = json_decode($_POST["status"]);
+        $emailAddress = json_decode($_POST["emailAddress"]);
+        $emailMessage = trim(json_decode($_POST["emailMessage"]));
+				$sendEmail = json_decode($_POST["sendEmail"]);
+
+
+				if($sendEmail && ($emailMessage === '' || $emailMessage == null)){ //wants to send email, but it's empty
+						$returnVal["error"] = "Email message must not be empty!";
+				}
         else{
             /*Verify that user is allowed to approve a report*/
             if($database->isFinalReportApprover($CASbroncoNetID) || $database->isAdministrator($CASbroncoNetID)){
                 try{
                     $returnVal["success"] = false; //default to failure, just in case
-                    if($status === 'Approved') { 
+                    if($status === 'Approved') {
                         $returnVal["success"] = $database->approveFinalReport($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
                             $errorMessage = $logger->logError("Unable to approve final report.", $CASbroncoNetID, $thisLocation, true);
 			                $returnVal["error"] = "Error: Unable to approve final report. ".$errorMessage;
                         }
                     }
-                    else if($status === 'Hold') { 
+                    else if($status === 'Hold') {
                         $returnVal["success"] = $database->holdFinalReport($appID, $CASbroncoNetID);
                         if(!$returnVal["success"]){
                             $errorMessage = $logger->logError("Unable to hold final report.", $CASbroncoNetID, $thisLocation, true);
@@ -503,9 +515,9 @@ else if(array_key_exists('approve_final_report', $_GET)){
                         }
                     }
                     else { $returnVal["error"] = "Invalid status given"; }
-    
+
                     //if everything has been successful so far, send off the email as well
-                    if($returnVal["success"]){
+                    if($returnVal["success"] && $sendEmail){
                         $returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
                     }
                 }
@@ -520,7 +532,7 @@ else if(array_key_exists('approve_final_report', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "AppID, status, and/or email is not set";
+        $returnVal["error"] = "AppID, status, email address, email message, and/or send email boolean is not set";
     }
 }
 
@@ -601,8 +613,8 @@ else if(array_key_exists('get_committee_members', $_GET)){
 //for getting applications
 else if(array_key_exists('get_application', $_GET)){
     if(isset($_POST["appID"])){
-        $appID = $_POST["appID"];
-    
+        $appID = json_decode($_POST["appID"]);
+
         /*Verify that user is allowed to retrieve an application*/
         if($database->isUserAllowedToSeeApplications($CASbroncoNetID) || $database->doesUserOwnApplication($CASbroncoNetID, $appID) || $database->isUserDepartmentChair($CASemail, $appID, $CASbroncoNetID)){
             try{
@@ -629,8 +641,8 @@ else if(array_key_exists('get_application', $_GET)){
 //for getting final reports
 else if(array_key_exists('get_final_report', $_GET)){
     if(isset($_POST["appID"])){
-        $appID = $_POST["appID"];
-    
+        $appID = json_decode($_POST["appID"]);
+
         /*Verify that user is allowed to retrieve a report*/
         if($database->isUserAllowedToSeeApplications($CASbroncoNetID) || $database->doesUserOwnApplication($CASbroncoNetID, $appID) || $database->isUserDepartmentChair($CASemail, $appID)){
             try{
@@ -657,8 +669,8 @@ else if(array_key_exists('get_final_report', $_GET)){
 //for removing an admin
 else if(array_key_exists('remove_admin', $_GET)){
     if(isset($_POST["broncoNetID"])){
-        $broncoNetID = $_POST["broncoNetID"];
-    
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
             if(strcasecmp($CASbroncoNetID, $broncoNetID) != 0){ //not trying to remove self
@@ -688,8 +700,8 @@ else if(array_key_exists('remove_admin', $_GET)){
 //for removing an application approver
 else if(array_key_exists('remove_application_approver', $_GET)){
     if(isset($_POST["broncoNetID"])){
-        $broncoNetID = $_POST["broncoNetID"];
-    
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
             try{
@@ -714,8 +726,8 @@ else if(array_key_exists('remove_application_approver', $_GET)){
 //for removing a final report approver
 else if(array_key_exists('remove_final_report_approver', $_GET)){
     if(isset($_POST["broncoNetID"])){
-        $broncoNetID = $_POST["broncoNetID"];
-    
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
             try{
@@ -740,8 +752,8 @@ else if(array_key_exists('remove_final_report_approver', $_GET)){
 //for removing a committee member
 else if(array_key_exists('remove_committee_member', $_GET)){
     if(isset($_POST["broncoNetID"])){
-        $broncoNetID = $_POST["broncoNetID"];
-    
+        $broncoNetID = json_decode($_POST["broncoNetID"]);
+
         //must have permission to do this
         if($database->isAdministrator($CASbroncoNetID)){
             try{
@@ -765,13 +777,23 @@ else if(array_key_exists('remove_committee_member', $_GET)){
 
 //for removing an application
 else if(array_key_exists('remove_application', $_GET)){
-    if(isset($_POST["appID"])){
-        $appID = $_POST["appID"];
-    
-        //must have permission to do this
-        if($database->isAdministrator($CASbroncoNetID)){
+    if(isset($_POST["appID"]) && isset($_POST["emailAddress"]) && isset($_POST["emailMessage"]) && isset($_POST["sendEmail"])){
+        $appID = json_decode($_POST["appID"]);
+				$emailAddress = json_decode($_POST["emailAddress"]);
+        $emailMessage = trim(json_decode($_POST["emailMessage"]));
+				$sendEmail = json_decode($_POST["sendEmail"]);
+
+				if($sendEmail && ($emailMessage === '' || $emailMessage == null)){ //wants to send email, but it's empty
+						$returnVal["error"] = "Email message must not be empty!";
+				}
+        else if($database->isAdministrator($CASbroncoNetID)){//must have permission to do this
             try{
                 $returnVal = $database->removeApplication($appID, $CASbroncoNetID);
+
+								//if everything has been successful so far, send off the email as well if specified
+								if($returnVal["success"] && $sendEmail){
+										$returnVal["email"] = $emailHelper->customEmail($appID, $emailAddress, $emailMessage, null, $CASbroncoNetID); //get results of trying to save/send email message
+								}
             }
             catch(Exception $e){
                 $errorMessage = $logger->logError("Unable to remove application due to an internal exception: ".$e->getMessage(), $CASbroncoNetID, $thisLocation, true);
@@ -783,7 +805,7 @@ else if(array_key_exists('remove_application', $_GET)){
         }
     }
     else{
-        $returnVal["error"] = "appID is not set";
+        $returnVal["error"] = "appID, email address, email message, and/or send email boolean is not set";
     }
 }
 
@@ -792,9 +814,9 @@ else if(array_key_exists('remove_application', $_GET)){
 //for saving a site warning
 else if(array_key_exists('save_site_warning', $_GET)){
     if(isset($_POST["siteWarning"])){
-        $siteWarning = $_POST["siteWarning"];
+        $siteWarning = trim(json_decode($_POST["siteWarning"]));
 
-        if(isset($siteWarning) && trim($siteWarning) !== ''){ //must not be an empty string
+        if(isset($siteWarning) && $siteWarning !== ''){ //must not be an empty string
             //must have permission to do this
             if($database->isAdministrator($CASbroncoNetID)){
                 try{

@@ -66,11 +66,13 @@ caption{
 .Approved{	color: #178500; /*darkish green*/}
 .Pending{	color: #867000; /*darkish yellow*/}
 .Denied{	color: #e00404; /*darkish red*/}
-.Hold{	color: #c517bf; /*dark pink*/}
+.Hold{	color: #0f138d; /*dark blue*/}
+.Declined{	color: #c517bf; /*dark pink*/}
 .Approved-background{	color: white; background-color: #17890a; /*darkish green*/}
 .Pending-background{	color: white; background-color: #897600; /*darkish yellow*/}
 .Denied-background{	color: white; background-color: #ed0909; /*darkish red*/}
-.Hold-background{	color: white; background-color: #c517bf; /*dark pink*/}
+.Hold-background{	color: white; background-color: #0f138d; /*dark blue*/}
+.Declined-background{	color: white; background-color: #c517bf; /*dark pink*/}
 
 /*format status bar*/
 .status-bar{
@@ -167,16 +169,28 @@ h2.HomeText{
 /*format button groups*/
 .buttons-group{
 	text-align: center;
-}
-.buttons-group > .btn{
 	margin-bottom: 5px;
 }
-.delete-button-holder{
-	display: inline-block;
-	float: right;
+.delete-button-holder, .hold-button-holder, .deny-button-holder, .decline-button-holder, .approve-button-holder{
 	padding: 30px;
-    background-color: rgba(255, 0, 0, 0.2);
-    border-radius: 5px;
+	border-radius: 5px;
+	margin-bottom: 10px;
+}
+.delete-button-holder > .form-group, .hold-button-holder > .form-group, .deny-button-holder > .form-group, .decline-button-holder > .form-group, .approve-button-holder > .form-group{
+	margin-left: 0!important;
+	margin-right: 0!important;
+}
+.delete-button-holder, .deny-button-holder{
+	background-color: rgba(255, 0, 0, 0.2);
+}
+.decline-button-holder{
+	background-color: rgba(255, 150, 0, 0.2);
+}
+.approve-button-holder{
+	background-color: rgba(0, 255, 0, 0.2);
+}
+.hold-button-holder{
+	background-color: rgba(0, 0, 255, 0.2);
 }
 .bottom-buttons{
 	margin-top: 20px;
@@ -206,7 +220,7 @@ h2.HomeText{
 	text-align: center;
 }
 
-#applicantTableButton, #applicationTableButton{	
+#applicantTableButton, #applicationTableButton{
 	margin-top: 60px;
 }
 #applicationSummaryDownload{
@@ -361,7 +375,7 @@ hr{
 	font-size: 20px;
 	padding: 15px 0px;
 }
-#site-warning-banner > p{ 
+#site-warning-banner > p{
 	margin: 0;
 	display: inline-block;
 	background-color: #fffdc4;
@@ -410,7 +424,14 @@ hr{
 	background-color: #f0f8ff;
 }
 
-
+/*Format admin approve/deny/delete decision box*/
+.appDecisionBox{
+	text-align: center;
+	margin-top: 30px;
+}
+.appDecisionBox select{
+	margin-bottom: 20px;
+}
 
 /*Change default bootstrap button colors to make them WCAG 2.0 AA compliant
 Source: https://codepen.io/scottloway/pen/Xjazjw*/

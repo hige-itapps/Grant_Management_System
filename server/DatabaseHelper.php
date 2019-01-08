@@ -27,7 +27,7 @@ class DatabaseHelper
 	/* Constructior retrieves configurations and sets up a connection. Pass in a logger object for error logging. If a connection is passed in as a parameter, use that instead. */
 	public function __construct($logger, $connection = null){
 		$this->thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__);
-		
+
 		$this->logger = $logger;
 		$this->cycles = new Cycles(); //Cycles object
 		$this->config_url = dirname(__FILE__).'/../config.ini'; //set config file url
@@ -53,7 +53,7 @@ class DatabaseHelper
 	/*Save a new email message to the database, return true if successful or false otherwise*/
 	public function saveEmail($appID, $subject, $message){
 		$curTime = date('Y-m-d H:i:s');//get current timestamp
-					
+
 		$this->sql = $this->conn->prepare("INSERT INTO emails(ApplicationID, Subject, Message, Time) VALUES(:applicationid, :subject, :message, :time)");
 		$this->sql->bindParam(':applicationid', $appID);
 		$this->sql->bindParam(':subject', $subject);
@@ -65,7 +65,7 @@ class DatabaseHelper
 	/*Return all emails for a given application*/
 	public function getEmails($appID){
 		$curTime = date('Y-m-d H:i:s');//get current timestamp
-					
+
 		$this->sql = $this->conn->prepare("Select * FROM emails WHERE ApplicationID = :applicationid");
 		$this->sql->bindParam(':applicationid', $appID);
 		$this->sql->execute();
@@ -97,28 +97,28 @@ class DatabaseHelper
 		}
 		else{return null;}
 	}
-	
+
 	/* Returns array of all administrators */
 	public function getAdministrators(){
 		$this->sql = $this->conn->prepare("Select BroncoNetID, Name FROM administrators");
 		$this->sql->execute();
 		return $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 	}
-	
+
 	/* Returns array of all applicants */
 	public function getApplicants(){
 		$this->sql = $this->conn->prepare("Select BroncoNetID FROM applicants");
 		$this->sql->execute();
 		return $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 	}
-	
+
 	/*Adds applicant to database IF they don't already exist. Otherwise, just ignore*/
 	public function insertApplicantIfNew($newID){
 		$this->sql = $this->conn->prepare("Select Count(*) FROM applicants WHERE BroncoNetID = :id");
 		$this->sql->bindParam(':id', $newID);
 		$this->sql->execute();
 		$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-		
+
 		if($res[0][0] == 0){//only triggers if user doesn't already exist
 			$this->logger->logInfo("Inserting new applicant: ".$newID, $newID, $this->thisLocation);
 			$this->sql = $this->conn->prepare("INSERT INTO applicants VALUES(:id)");
@@ -129,7 +129,7 @@ class DatabaseHelper
 			return false;
 		}
 	}
-	
+
 	/*Returns a single application for a specified application ID*/
 	public function getApplication($appID){
 		$this->sql = $this->conn->prepare("Select * FROM applications WHERE ID = :appID");
@@ -140,14 +140,14 @@ class DatabaseHelper
 		if(!empty($res)){
 			/*create application object*/
 			$application = new Application($res[0]);
-			
+
 			$this->sql = $this->conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $application->id);
 			$this->sql->execute();
 			$resBudget = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			$application->budget = $resBudget;
-			
+
 			/* return application */
 			return $application;
 		}
@@ -155,14 +155,14 @@ class DatabaseHelper
 			return null;
 		}
 	}
-	
+
 	/*Returns a single final report for a specified application ID*/
 	public function getFinalReport($appID){
 		$this->sql = $this->conn->prepare("Select * FROM final_reports WHERE ApplicationID = :appID");
 		$this->sql->bindParam(':appID', $appID);
 		$this->sql->execute();
 		$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-		
+
 		if(!empty($res)){
 			/*create application object*/
 			$FinalReport = new FinalReport($res[0]);
@@ -173,7 +173,7 @@ class DatabaseHelper
 		else{
 			return null;
 		}
-		
+
 	}
 
 
@@ -186,20 +186,20 @@ class DatabaseHelper
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			$applicationsArray = []; //create new array of applications
-			
+
 			/*go through all applications, adding them to the array*/
 			for($i = 0; $i < count($res); $i++){
 				$application = new Application($res[$i]); //initialize
-				
+
 				$this->sql = $this->conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$this->sql->bindParam(':id', $application->id);
 				$this->sql->execute();
 				$resBudget = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-				
+
 				$application->budget = $resBudget;
-				
+
 				/*add application to array*/
 				$applicationsArray[$i] = $application;
 			}
@@ -218,24 +218,24 @@ class DatabaseHelper
 			$this->sql->bindParam(':dEmail', $email);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			$applicationsArray = []; //create new array of applications
-			
+
 			/*go through all applications, adding them to the array*/
 			for($i = 0; $i < count($res); $i++){
 				$application = new Application($res[$i]); //initialize
-				
+
 				$this->sql = $this->conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$this->sql->bindParam(':id', $application->id);
 				$this->sql->execute();
 				$resBudget = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-				
+
 				$application->budget = $resBudget;
-				
+
 				/*add application to array*/
 				$applicationsArray[$i] = $application;
 			}
-			
+
 			/* return array */
 			return $applicationsArray;
 		}
@@ -263,12 +263,12 @@ class DatabaseHelper
 			$this->sql->bindParam(':dEmail', $email);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			return $res[0][0];
 		}
 	}
 
-	
+
 	/* Returns array of all applications for a specified BroncoNetID, or ALL applications if no ID is provided */
 	public function getApplications($broncoNetID){
 		if ($broncoNetID != ""){//valid username
@@ -280,27 +280,27 @@ class DatabaseHelper
 			/* Select all applications */
 			$this->sql = $this->conn->prepare("Select * FROM applications");
 		}
-		
+
 		$this->sql->execute();
 		$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-		
+
 		$applicationsArray = []; //create new array of applications
-		
+
 		/*go through all applications, adding them to the array*/
 		for($i = 0; $i < count($res); $i++){
 			$application = new Application($res[$i]); //initialize
-			
+
 			$this->sql = $this->conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 			$this->sql->bindParam(':id', $application->id);
 			$this->sql->execute();
 			$resBudget = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			$application->budget = $resBudget;
-			
+
 			/*add application to array*/
 			$applicationsArray[$i] = $application;
 		}
-		
+
 		/* return array */
 		return $applicationsArray;
 	}
@@ -317,34 +317,34 @@ class DatabaseHelper
 			/* Select all applications */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications");
 		}
-		
+
 		$this->sql->execute();
 		$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-		
+
 		return $res[0][0];
 	}
-	
+
 	/* Returns array of application approvers */
 	public function getApplicationApprovers(){
 		$this->sql = $this->conn->prepare("Select BroncoNetID, Name FROM application_approval");
 		$this->sql->execute();
 		return $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 	}
-	
+
 	/* Returns array of committee members */
 	public function getCommittee(){
 		$this->sql = $this->conn->prepare("Select BroncoNetID, Name FROM committee");
 		$this->sql->execute();
 		return $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 	}
-	
+
 	/* Returns array of final report approvers */
 	public function getFinalReportApprovers(){
 		$this->sql = $this->conn->prepare("Select BroncoNetID, Name FROM final_report_approval");
 		$this->sql->execute();
 		return $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
 	}
-	
+
 	/* Add an admin to the administrators table */
 	public function addAdmin($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
@@ -355,7 +355,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Add a committee member to the committee table */
 	public function addCommittee($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
@@ -366,7 +366,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Add a final report approver to the final_report_approval table */
 	public function addFinalReportApprover($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
@@ -377,7 +377,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Add an application approver to the application_approval table */
 	public function addApplicationApprover($broncoNetID, $name){
 		if ($broncoNetID != "" && $name != ""){//valid params
@@ -388,8 +388,8 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
-	
+
+
 	/* Remove an admin to the administrators table */
 	public function removeAdmin($broncoNetID){
 		if ($broncoNetID != ""){//valid params
@@ -398,7 +398,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Remove a committee member to the committee table */
 	public function removeCommittee($broncoNetID){
 		if ($broncoNetID != ""){//valid params
@@ -407,7 +407,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Remove a final report approver to the final_report_approval table */
 	public function removeFinalReportApprover($broncoNetID){
 		if ($broncoNetID != ""){//valid params
@@ -416,7 +416,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/* Remove an application approver to the application_approval table */
 	public function removeApplicationApprover($broncoNetID){
 		if ($broncoNetID != ""){//valid params
@@ -425,7 +425,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 
 
 
@@ -436,7 +436,7 @@ class DatabaseHelper
 		$this->sql->execute();
 		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
-	
+
 	/*Checks if a user is an application approver (true or false)*/
 	public function isApplicationApprover($broncoNetID){
 		$this->sql = $this->conn->prepare("Select * FROM application_approval WHERE BroncoNetID = :id");
@@ -444,7 +444,7 @@ class DatabaseHelper
 		$this->sql->execute();
 		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
-	
+
 	/*Checks if a user is a final report approver (true or false)*/
 	public function isFinalReportApprover($broncoNetID){
 		$this->sql = $this->conn->prepare("Select * FROM final_report_approval WHERE BroncoNetID = :id");
@@ -452,7 +452,7 @@ class DatabaseHelper
 		$this->sql->execute();
 		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
-	
+
 	/*Checks if a user is a committee member (true or false)*/
 	public function isCommitteeMember($broncoNetID){
 		$this->sql = $this->conn->prepare("Select * FROM committee WHERE BroncoNetID = :id");
@@ -460,7 +460,7 @@ class DatabaseHelper
 		$this->sql->execute();
 		return boolval($this->sql->fetch(PDO::FETCH_COLUMN));
 	}
-	
+
 	/*Checks if a user is allowed to create an application
 	Rules:
 	2. Must not have a pending application
@@ -472,7 +472,7 @@ class DatabaseHelper
 		if(!$this->isCommitteeMember($broncoNetID) && !$this->isApplicationApprover($broncoNetID) && !$this->isAdministrator($broncoNetID) && !$this->isFinalReportApprover($broncoNetID)){
 			$lastApproved = false; //set to true if last approved application was long enough ago
 			$lastApprovedApp = $this->getMostRecentApprovedApplication($broncoNetID);
-			
+
 			if($lastApprovedApp != null){//if a previous application exists
 				$lastDate = DateTime::createFromFormat('Y-m-d', $lastApprovedApp->dateSubmitted);
 				$lastCycle = $this->cycles->getCycleName($lastDate, $lastApprovedApp->nextCycle, false);
@@ -482,7 +482,7 @@ class DatabaseHelper
 			else{//no previous application
 				$lastApproved = true;
 			}
-			
+
 			if(!$this->hasPendingApplication($broncoNetID) && !$this->hasApplicationOnHold($broncoNetID) && $lastApproved){
 				return true;
 			}
@@ -508,7 +508,7 @@ class DatabaseHelper
 			return false;
 		}
 	}
-	
+
 	/*Checks if a user is allowed to freely see applications. ALSO USED FOR VIEWING FINAL REPORTS
 	Rules: Must be an application approver, final report approver, administrator, or a committee member*/
 	public function isUserAllowedToSeeApplications($broncoNetID){
@@ -526,7 +526,7 @@ class DatabaseHelper
 	/* Returns true if the given email == the deptChairEmail for a given app ID, or false otherwise */
 	public function isUserAllowedToSignApplication($email, $appID, $broncoNetID){
 		$is = false; //initialize boolean to false
-		
+
 		if ($email != "" && $appID != ""){//valid email & ID
 			/* Only count applications meant for this person that HAVEN'T already been signed; also, don't grab any where the applicant's broncoNetID == this broncoNetID*/
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NULL AND Applicant != :broncoNetID");
@@ -535,19 +535,19 @@ class DatabaseHelper
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//this is the correct user to sign
 				$is = true;
 			}
 		}
-		
+
 		return $is;
 	}
 
 	/* Returns true if this user signed a given application */
 	public function hasUserSignedApplication($email, $appID){
 		$is = false; //initialize boolean to false
-		
+
 		if ($email != "" && $appID != ""){//valid email & ID
 			/* Only count applications meant for this person that HAVE already been signed */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND DepartmentChairSignature IS NOT NULL");
@@ -555,19 +555,19 @@ class DatabaseHelper
 			$this->sql->bindParam(':appID', $appID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//this is the correct user to sign
 				$is = true;
 			}
 		}
-		
+
 		return $is;
 	}
 
 	/* Returns true if this user is the department chair specified by an application */
 	public function isUserDepartmentChair($email, $appID, $broncoNetID){
 		$is = false; //initialize boolean to false
-		
+
 		if ($email != "" && $appID != ""){//valid email & ID
 			/* Only count applications meant for this person */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND DepartmentChairEmail = :dEmail AND Applicant != :broncoNetID");
@@ -576,19 +576,19 @@ class DatabaseHelper
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//this is the correct user to sign
 				$is = true;
 			}
 		}
-		
+
 		return $is;
 	}
 
 	/*returns true if the user owns this application, or false if they don't*/
 	public function doesUserOwnApplication($broncoNetID, $appID){
 		$is = false; //initialize boolean to false
-		
+
 		if ($broncoNetID != "" && $appID != ""){//valid broncoNetID & appID
 			/* Only count applications with the right ID that this user has submitted */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :appID AND Applicant = :broncoNetID");
@@ -596,47 +596,47 @@ class DatabaseHelper
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//this is the correct user to sign
 				$is = true;
 			}
 		}
-		
+
 		return $is;
 	}
 
-	
-	
-	
+
+
+
 	/* Returns true if applicant's application has been approved, or false otherwise */
 	public function isApplicationApproved($appID){
 		$is = false;
-		
+
 		if ($appID != ""){//valid Id
 			/* Select only applications that this user has has submitted */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND Status = 'Approved'");
 			$this->sql->bindParam(':id', $appID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//at least one result
 				$is = true;
 			}
 		}
-		
+
 		return $is;
 	}
-	
+
 	/* Returns 1 if applicant's application has been signed, or 0 otherwise */
 	public function isApplicationSigned($appID){
-		
+
 		if ($appID != ""){//valid Id
 			/* Select only applications that this user has has submitted that have a signature */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE ID = :id AND DepartmentChairSignature IS NOT NULL");
 			$this->sql->bindParam(':id', $appID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){ //at least one result
 				return 1;
 			}else{
@@ -645,67 +645,67 @@ class DatabaseHelper
 		}else
 			return 0;
 	}
-	
+
 	/* Returns true if this applicant has a pending application, or false otherwise */
 	public function hasPendingApplication($broncoNetID){
 		$ret = false;
-		
+
 		if ($broncoNetID != ""){//valid username
 			/* Select only pending applications that this user has has submitted */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Status = 'Pending' AND Applicant = :broncoNetID");
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//at least one result
 				$ret = true;
 			}
 		}
-		
+
 		return $ret;
 	}
 
 	/* Returns true if this applicant has an application on hold, or false otherwise */
 	public function hasApplicationOnHold($broncoNetID){
 		$ret = false;
-		
+
 		if ($broncoNetID != ""){//valid username
 			/* Select only pending applications that this user has has submitted */
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM applications WHERE Status = 'Hold' AND Applicant = :broncoNetID");
 			$this->sql->bindParam(':broncoNetID', $broncoNetID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//at least one result
 				$ret = true;
 			}
 		}
-		
+
 		return $ret;
 	}
-	
+
 	/* Returns true if this applicant has a final report already created, or false otherwise */
 	public function hasFinalReport($appID){
 		$ret = false;
-		
+
 		if ($appID != ""){//valid username
 			$this->sql = $this->conn->prepare("Select COUNT(*) AS Count FROM final_reports WHERE ApplicationID = :appID");
 			$this->sql->bindParam(':appID', $appID);
 			$this->sql->execute();
 			$res = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-			
+
 			if($res[0][0] > 0){//at least one result
 				$ret = true;
 			}
 		}
-		
+
 		return $ret;
 	}
-	
+
 	/*Get the most recently approved application of a user- return null if none*/
 	public function getMostRecentApprovedApplication($broncoNetID){
 		$mostRecent = null;
-		
+
 		if ($broncoNetID != ""){//valid username
 			/* Select the most recent from this applicant */
 			$this->sql = $this->conn->prepare("SELECT * FROM applications WHERE Applicant = :broncoNetID AND Status = 'Approved' ORDER BY Date DESC LIMIT 1");
@@ -715,25 +715,25 @@ class DatabaseHelper
 
 			if($res != null){
 				$mostRecent = new Application($res[0]); //initialize
-				
+
 				$this->sql = $this->conn->prepare("Select * FROM applications_budgets WHERE ApplicationID = :id");
 				$this->sql->bindParam(':id', $mostRecent->id);
 				$this->sql->execute();
 				$resBudget = $this->sql->fetchAll(PDO::FETCH_NUM); //return indexes as keys
-				
+
 				$mostRecent->budget = $resBudget;
 			}
-			
+
 			/* return value */
 			return $mostRecent;
 		}
-		
+
 	}
 
 	/*Get all past approved cycles for this user- return null if none*/
 	public function getPastApprovedCycles($broncoNetID){
 		$pastCycles = null;
-		
+
 		if ($broncoNetID != ""){//valid username
 			/* Select all dates from past approved applications */
 			$this->sql = $this->conn->prepare("SELECT Date, NextCycle FROM applications WHERE Applicant = :broncoNetID AND Status = 'Approved'");
@@ -751,19 +751,19 @@ class DatabaseHelper
 				}
 				$pastCycles = $this->cycles->sortCycles($pastCycles); //sort cycles in descending order
 			}
-			
+
 			/* return value */
 			return $pastCycles;
-		}	
+		}
 	}
-	
+
 	/*return an array of the maximum lengths of every column in the applications table*/
 	public function getApplicationsMaxLengths(){
 		$this->sql = $this->conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = '" . $this->settings["database_name"] . "' AND table_name = 'applications'");
 		$this->sql->execute();
 		return $this->sql->fetchAll(); //return indexes AND names as keys
 	}
-	
+
 	/*return an array of the maximum lengths of every column in the applications_budgets table*/
 	public function getApplicationsBudgetsMaxLengths(){
 		$this->sql = $this->conn->prepare("Select COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_schema = '" . $this->settings["database_name"] . "' AND table_name = 'applications_budgets'");
@@ -777,7 +777,7 @@ class DatabaseHelper
 		$this->sql->execute();
 		return $this->sql->fetchAll(); //return indexes AND names as keys
 	}
-	
+
 	/*Update an application to be approved*/
 	public function approveApplication($id, $amount, $broncoNetID){
 		if ($id != ""){//valid application id
@@ -789,7 +789,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/*Update an application to be denied*/
 	public function denyApplication($id, $broncoNetID){
 		if ($id != ""){//valid application id
@@ -800,8 +800,19 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
-	
+
+	/*Update an application to be declined*/
+	public function declineApplication($id, $broncoNetID){
+		if ($id != ""){//valid application id
+			$this->logger->logInfo("Declining application id: ".$id, $broncoNetID, $this->thisLocation);
+			/*Update any application with the given id*/
+			$this->sql = $this->conn->prepare("UPDATE applications SET Status = 'Declined', AmountAwarded = 0 WHERE ID = :id");
+			$this->sql->bindParam(':id', $id);
+			return $this->sql->execute();
+		}
+	}
+
+
 	/*Update an application to be put on hold*/
 	public function holdApplication($id, $broncoNetID){
 		if ($id != ""){//valid application id
@@ -812,7 +823,7 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
+
 	/*Update an application to be signed*/
 	public function signApplication($id, $signature, $broncoNetID){
 		if ($id != "" && $signature != ""){//valid application id & sig
@@ -824,8 +835,8 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
-	
+
+
 
 	/*Update a Final Report to be approved*/
 	public function approveFinalReport($id, $broncoNetID){
@@ -848,8 +859,8 @@ class DatabaseHelper
 			return $this->sql->execute();
 		}
 	}
-	
-	
+
+
 	/*
 	Insert an application into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 	Most fields are self-explanatory. It's worth mentioning that $budgetArray is a 2-dimensional array of expenses.
@@ -859,7 +870,7 @@ class DatabaseHelper
 
 	This function returns a data array; If the application is successfully inserted or updated, then data["success"] is set to true.
 	Otherwise, data["success"] is set to false, and data["errors"] is set to an array of errors following the format of ["field", "message"], where field corresponds to one of the application's fields.
-	
+
 	*/
 	public function insertApplication($updating, $updateID, $broncoNetID, $name, $email, $department, $deptChairEmail, $travelFrom, $travelTo,
 			$activityFrom, $activityTo, $title, $destination, $amountRequested, $purpose1, $purpose2, $purpose3,
@@ -874,7 +885,7 @@ class DatabaseHelper
 		if(!$updating){//First, add this user to the applicants table IF they don't already exist
 			$this->insertApplicantIfNew($broncoNetID);
 		}
-		
+
 		/*Sanitize everything - keep quotes. This may be a bit redundant since PDO already sanitizes everything in prepared statements*/
 		try{
 			$name = trim(filter_var($name, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
@@ -894,7 +905,7 @@ class DatabaseHelper
 			$goal4 = filter_var($goal4, FILTER_SANITIZE_NUMBER_INT);
 			$deptChairEmail = trim(filter_var($deptChairEmail, FILTER_SANITIZE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES));
 			$nextCycle = filter_var($nextCycle, FILTER_SANITIZE_NUMBER_INT);
-			
+
 			/*go through budget array*/
 			foreach($budgetArray as $i){
 				if(!empty($i)){
@@ -902,13 +913,13 @@ class DatabaseHelper
 					if(isset($i["details"])){ $i["details"] = trim(filter_var($i["details"], FILTER_SANITIZE_STRING)); }
 				}
 			}
-			
+
 		}
 		catch(Exception $e){
 			$errorMessage = $this->logger->logError("Application not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 			$errors["other"] = "Error: Application not saved, exception when sanitizing fields. ".$errorMessage;
 		}
-		
+
 		/*Now validate everything that needs it*/
 		if(empty($errors)){//no errors yet
 
@@ -983,7 +994,7 @@ class DatabaseHelper
 				if($travelFrom > $activityFrom){
 					$errors["travelFrom"] = "Travel dates are impossible (activity cannot start before travel!).";
 				}
-			}	
+			}
 			if(!isset($errors["activityFrom"]) && !isset($errors["activityTo"])){//making sure dates were set
 				if($activityFrom > $activityTo){
 					$errors["activityFrom"] = "Travel dates are impossible (activity cannot end before it begins!).";
@@ -1060,18 +1071,18 @@ class DatabaseHelper
 		else{//no budget items
 			$errors["budgetArray"] = "There must be at least one budget item.";
 		}
-		
+
 		/*Now insert new application into database*/
 		if(empty($errors)){//no errors yet
 			if(!$updating){//adding, not updating
 				try{
 					$curDate = date("Y/m/d");
-					
+
 					$this->conn->beginTransaction(); //begin atomic transaction
-					
-					$this->sql = $this->conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested, 
-						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle, Status) 
-						VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested, 
+
+					$this->sql = $this->conn->prepare("INSERT INTO applications(Applicant, Date, Name, Department, Email, Title, TravelStart, TravelEnd, EventStart, EventEnd, Destination, AmountRequested,
+						IsResearch, IsConference, IsCreativeActivity, IsOtherEventText, OtherFunding, ProposalSummary, FulfillsGoal1, FulfillsGoal2, FulfillsGoal3, FulfillsGoal4, DepartmentChairEmail, NextCycle, Status)
+						VALUES(:applicant, :date, :name, :department, :email, :title, :travelstart, :travelend, :eventstart, :eventend, :destination, :amountrequested,
 						:isresearch, :isconference, :iscreativeactivity, :isothereventtext, :otherfunding, :proposalsummary, :fulfillsgoal1, :fulfillsgoal2, :fulfillsgoal3, :fulfillsgoal4, :departmentchairemail, :nextcycle, 'Pending')");
 					$this->sql->bindParam(':applicant', $broncoNetID);
 					$this->sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
@@ -1097,15 +1108,15 @@ class DatabaseHelper
 					$this->sql->bindParam(':fulfillsgoal4', $goal4);
 					$this->sql->bindParam(':departmentchairemail', $deptChairEmail);
 					$this->sql->bindParam(':nextcycle', $nextCycle);
-					
+
 					if ($this->sql->execute() === TRUE){//query executed correctly
-						
+
 						/*get the application ID of the just-added application*/
 						$this->sql = $this->conn->prepare("select max(ID) from applications where Applicant = :applicant LIMIT 1");
 						$this->sql->bindParam(':applicant', $broncoNetID);
 						$this->sql->execute();
 						$newAppID = $this->sql->fetchAll(PDO::FETCH_NUM)[0][0];//now we have the current ID!
-						
+
 						try{
 							foreach($budgetArray as $i){//go through budget array
 								if(!empty($i)){
@@ -1115,7 +1126,7 @@ class DatabaseHelper
 									$this->sql->bindParam(':name', $i['expense']);
 									$this->sql->bindParam(':cost', $i['amount']);
 									$this->sql->bindParam(':details', $i['details']);
-									
+
 									if ($this->sql->execute() !== TRUE){//query failed
 										$errorMessage = $this->logger->logError("Application not saved, query failed to insert budget items.", $broncoNetID, $this->thisLocation, true);
 										$errors["other"] = "Error: Application not saved, query failed to insert budget items. ".$errorMessage;
@@ -1136,7 +1147,7 @@ class DatabaseHelper
 							$errorMessage = $this->logger->logError("Application not saved, internal exception when trying to insert budget items: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 							$errors["other"] = "Error: Application not saved, internal exception when trying to insert budget items. ".$errorMessage;
 						}
-					} 
+					}
 					else{//query failed
 						$errorMessage = $this->logger->logError("Application not saved, query failed to insert application.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Application not saved, query failed to insert application. ".$errorMessage;
@@ -1150,12 +1161,12 @@ class DatabaseHelper
 			else{//just updating
 				try{
 					$this->conn->beginTransaction(); //begin atomic transaction
-					
+
 					$this->sql = $this->conn->prepare("UPDATE applications SET Name=:name, Department=:department, Email=:email, Title=:title, TravelStart=:travelstart, TravelEnd=:travelend, EventStart=:eventstart, EventEnd=:eventend,
 						Destination=:destination, AmountRequested=:amountrequested, IsResearch=:isresearch, IsConference=:isconference, IsCreativeActivity=:iscreativeactivity, IsOtherEventText=:isothereventtext,
 						OtherFunding=:otherfunding, ProposalSummary=:proposalsummary, FulfillsGoal1=:fulfillsgoal1, FulfillsGoal2=:fulfillsgoal2, FulfillsGoal3=:fulfillsgoal3, FulfillsGoal4=:fulfillsgoal4,
 						DepartmentChairEmail=:departmentchairemail, NextCycle=:nextcycle WHERE ID=:id");
-					
+
 					$this->sql->bindParam(':name', $name);
 					$this->sql->bindParam(':department', $department);
 					$this->sql->bindParam(':email', $email);
@@ -1179,7 +1190,7 @@ class DatabaseHelper
 					$this->sql->bindParam(':departmentchairemail', $deptChairEmail);
 					$this->sql->bindParam(':nextcycle', $nextCycle);
 					$this->sql->bindParam(':id', $updateID);
-					
+
 					if ($this->sql->execute() === TRUE){//query executed correctly
 
 						/*delete previous budget items*/
@@ -1196,7 +1207,7 @@ class DatabaseHelper
 									$this->sql->bindParam(':name', $i['expense']);
 									$this->sql->bindParam(':cost', $i['amount']);
 									$this->sql->bindParam(':details', $i['details']);
-									
+
 									if ($this->sql->execute() !== TRUE){//query failed
 										$errorMessage = $this->logger->logError("Application not saved, query failed to insert new budget items.", $broncoNetID, $this->thisLocation, true);
 										$errors["other"] = "Error: Application not saved, query failed to insert new budget items. ".$errorMessage;
@@ -1217,7 +1228,7 @@ class DatabaseHelper
 							$errorMessage = $this->logger->logError("Application not saved, query failed to delete old budget items.", $broncoNetID, $this->thisLocation, true);
 							$errors["other"] = "Error: Application not saved, query failed to delete old budget items. ".$errorMessage;
 						}
-					} 
+					}
 					else{//query failed
 						$errorMessage = $this->logger->logError("Application not saved, query failed to update application.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Application not saved, query failed to update application. ".$errorMessage;
@@ -1235,7 +1246,7 @@ class DatabaseHelper
 			// if there are items in our errors array, return those errors
 			$data['success'] = false;
 			$data['errors']  = $errors;
-		} 
+		}
 		else {
 			// if there are no errors, return true and the appID
 			$data['success'] = true;
@@ -1249,9 +1260,9 @@ class DatabaseHelper
 
 		return $data; //return both the return code and status
 	}
-	
-	
-	
+
+
+
 	/*
 	Insert a final report into the database WITH SERVER-SIDE VALIDATION. Must pass in a database connection to use. If $updating is true, update this entry rather than inserting a new one.
 
@@ -1262,7 +1273,7 @@ class DatabaseHelper
 		$this->logger->logInfo("Inserting final report (updating? ".$updating.", updateID: ".$updateID.")", $broncoNetID, $this->thisLocation);
 		$errors = array(); // array to hold validation errors
 		$data = array(); // array to pass back data
-		
+
 		/*Sanitize everything, may be redundant since PDO sanitizes prepared statements*/
 		try{
 			$projectSummary = trim(filter_var($projectSummary, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
@@ -1271,7 +1282,7 @@ class DatabaseHelper
 			$errorMessage = $this->logger->logError("Final report not saved, exception when sanitizing fields. Exception: ".$e->getMessage(), $broncoNetID, $this->thisLocation, true);
 			$errors["other"] = "Error: Final report not saved, exception when sanitizing fields. ".$errorMessage;
 		}
-		
+
 		/*Now validate everything that needs it*/
 		if(empty($errors)){//no errors yet
 			if($projectSummary === ''){
@@ -1312,7 +1323,7 @@ class DatabaseHelper
 				}
 			}
 		}
-		
+
 		/*Now insert new final report into database*/
 		if(empty($errors)){//no errors yet
 			if(!$updating){//adding, not updating
@@ -1322,7 +1333,7 @@ class DatabaseHelper
 
 					$this->conn->beginTransaction(); //begin atomic transaction
 
-					$this->sql = $this->conn->prepare("INSERT INTO final_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date, Status) 
+					$this->sql = $this->conn->prepare("INSERT INTO final_reports(ApplicationID, TravelStart, TravelEnd, EventStart, EventEnd, ProjectSummary, TotalAwardSpent, Date, Status)
 						VALUES(:applicationid, :travelstart, :travelend, :eventstart, :eventend, :projectsummary, :totalawardspent, :date, 'Pending')");
 					$this->sql->bindParam(':applicationid', $updateID);
 					$this->sql->bindParam(':travelstart', $travelFrom);
@@ -1332,10 +1343,10 @@ class DatabaseHelper
 					$this->sql->bindParam(':projectsummary', $projectSummary);
 					$this->sql->bindParam(':totalawardspent', $totalAwardSpent);
 					$this->sql->bindParam(':date', $curDate); //create a new date right when inserting to save current time
-					
+
 					if ($this->sql->execute() === TRUE){//query executed correctly
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
-					} 
+					}
 					else{//query failed
 						$errorMessage = $this->logger->logError("Final report not saved, query failed to insert final report.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Final report not saved, query failed to insert final report. ".$errorMessage;
@@ -1360,10 +1371,10 @@ class DatabaseHelper
 					$this->sql->bindParam(':projectsummary', $projectSummary);
 					$this->sql->bindParam(':totalawardspent', $totalAwardSpent);
 					$this->sql->bindParam(':applicationid', $updateID);
-					
+
 					if ($this->sql->execute() === TRUE){//query executed correctly
 						$this->conn->commit();//commit transaction (probably don't need transactions for this since it is only 1 command)
-					} 
+					}
 					else{//query failed
 						$errorMessage = $this->logger->logError("Final report not saved, query failed to update final report.", $broncoNetID, $this->thisLocation, true);
 						$errors["other"] = "Error: Final report not saved, query failed to update final report. ".$errorMessage;
@@ -1376,18 +1387,18 @@ class DatabaseHelper
 				}
 			}
 		}
-		
+
 		// response if there are errors
 		if ( ! empty($errors)) {
 			// if there are items in our errors array, return those errors
 			$data['success'] = false;
 			$data['errors']  = $errors;
-		} 
+		}
 		else {
 			// if there are no errors, return true
 			$data['success'] = true;
 		}
-		
+
 		return $data; //return both the return code and status
 	}
 
@@ -1399,13 +1410,13 @@ class DatabaseHelper
 
 	This function returns a data array; If the application is successfully deleted then data["success"] is set to true.
 	Otherwise, data["success"] is set to false, and data["error"] will contain any relevant errors.
-	
+
 	*/
 	public function removeApplication($appID, $broncoNetID){
 		$this->logger->logInfo("Removing application id: ".$appID, $broncoNetID, $this->thisLocation);
 		$data = array(); // array to pass back data
 		$data["success"] = false; //set to true if successful
-		
+
 		try{
 			$this->conn->beginTransaction(); //begin atomic transaction
 
@@ -1466,7 +1477,7 @@ class DatabaseHelper
 		if (!isset($data["error"])){
 			$data['success'] = true;
 		}
-		
+
 		return $data; //return both the return code and status
 	}
 
@@ -1507,7 +1518,7 @@ class DatabaseHelper
 	/* Establishes an sql connection to the database, and returns the object; MAKE SURE TO SET OBJECT TO NULL WHEN FINISHED */
 	private function connect(){
 		try{
-			$this->conn = new AtomicPDO("mysql:host=" . $this->settings["hostname"] . ";dbname=" . $this->settings["database_name"] . ";charset=utf8", $this->settings["database_username"], 
+			$this->conn = new AtomicPDO("mysql:host=" . $this->settings["hostname"] . ";dbname=" . $this->settings["database_name"] . ";charset=utf8", $this->settings["database_username"],
 				$this->settings["database_password"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // set the PDO error mode to exception
 			$this->conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, true ); //emulate prepared statements, allows for more flexibility
@@ -1519,10 +1530,10 @@ class DatabaseHelper
 		}
 	}
 }
-	
-	
-	
-	
+
+
+
+
 /*allow for atomic transactions (to ensure one insert only occurs when another has succeeded, so that either both or neither of them succeed)
 found at http://php.net/manual/en/pdo.begintransaction.php*/
 class AtomicPDO extends PDO
@@ -1551,7 +1562,7 @@ class AtomicPDO extends PDO
 		}
 		return parent::rollback();
 	}
-	
+
 }
-	
+
 ?>

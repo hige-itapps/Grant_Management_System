@@ -1,13 +1,13 @@
 <?php
 	/*User validation*/
 	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
-	
+
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
-	
+
 	/*Cycle functions*/
 	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
-	
+
 	/*Document functions*/
 	include_once(dirname(__FILE__) . "/../../server/DocumentsHelper.php");
 
@@ -25,9 +25,9 @@
 
 	$config_url = dirname(__FILE__).'/../../config.ini'; //set config file url
 	$settings = parse_ini_file($config_url); //get all settings
-	
+
 	$currentDate = DateTime::createFromFormat('Y/m/d', date("Y/m/d")); //save the current date
-	
+
 	$maxUploadSize = $documentsHelper->file_upload_max_size(); //get the max file upload size
 	$uploadTypes = $settings["upload_types"]; //get the allowed upload types, keep it as a comma separated string
 
@@ -41,11 +41,11 @@
 	$appEmails = null; //^
 
 	$staffNotes = null; //only set if app exists AND user is a staff member
-	
+
 	/*get initial character limits for text fields*/
 	$appCharMax = $database->getApplicationsMaxLengths();
 	$appBudgetCharMax = $database->getApplicationsBudgetsMaxLengths();
-	
+
 	$maxName = $appCharMax[array_search('Name', array_column($appCharMax, 0))][1]; //name char limit
 	$maxDepartment = $appCharMax[array_search('Department', array_column($appCharMax, 0))][1]; //department char limit
 	$maxTitle = $appCharMax[array_search('Title', array_column($appCharMax, 0))][1]; //title char limit
@@ -54,10 +54,10 @@
 	$maxOtherFunding = $appCharMax[array_search('OtherFunding', array_column($appCharMax, 0))][1]; //other funding char limit
 	$maxProposalSummary = $appCharMax[array_search('ProposalSummary', array_column($appCharMax, 0))][1]; //proposal summary char limit
 	$maxDeptChairApproval = $appCharMax[array_search('DepartmentChairSignature', array_column($appCharMax, 0))][1];//signature char limit
-	
+
 	$maxBudgetDetails = $appBudgetCharMax[array_search('Details', array_column($appBudgetCharMax, 0))][1]; //budget details char limit
-	
-	
+
+
 	/*Initialize all user permissions to false*/
 	$isCreating = false; //user is an applicant initially creating application
 	$isReviewing = false; //user is an applicant reviewing their already created application
@@ -66,9 +66,9 @@
 	$isChair = false; //user is the associated department chair
 	$isChairReviewing = false; //user is the associated department chair, but cannot do anything (just for reviewing purposes)
 	$isApprover = false; //user is an application approver (director)
-	
+
 	$permissionSet = false; //boolean set to true when a permission has been set- used to force only 1 permission at most
-	
+
 	/*Get all user permissions. THESE ARE TREATED AS IF THEY ARE MUTUALLY EXCLUSIVE; ONLY ONE CAN BE TRUE!
 	For everything besides application creation, the app ID MUST BE SET*/
 	if(isset($_GET["id"]))
@@ -88,29 +88,31 @@
 
 	/*Verify that user is allowed to render application*/
 	if($permissionSet)
-	{	
+	{
 		/*Initialize variables if application has already been created*/
 		if(!$isCreating)
 		{
 			$appID = $_GET["id"];
-			
+
 			$app = $database->getApplication($appID); //get application Data
-			$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
-			$appFiles = $documentsHelper->getFileNames($appID);
-			$appEmails = $database->getEmails($appID);
+			if($app){
+				$submitDate = DateTime::createFromFormat('Y-m-d', $app->dateSubmitted);
+				$appFiles = $documentsHelper->getFileNames($appID);
+				$appEmails = $database->getEmails($appID);
 
-			$thisCycle = $cycles->getCycleName($submitDate, false, true);
-			$nextCycle = $cycles->getCycleName($submitDate, true, true);
+				$thisCycle = $cycles->getCycleName($submitDate, false, true);
+				$nextCycle = $cycles->getCycleName($submitDate, true, true);
 
-			if($isAdmin || $isApprover || $isCommittee) //if hige staff, then retrieve staff notes
-			{
-				$staffNotes = $database->getStaffNotes($appID);
+				if($isAdmin || $isApprover || $isCommittee) //if hige staff, then retrieve staff notes
+				{
+					$staffNotes = $database->getStaffNotes($appID);
+				}
 			}
 		}
 		else
 		{
 			$thisCycle = $cycles->getCycleName($currentDate, false, true);
-			$nextCycle = $cycles->getCycleName($currentDate, true, true); 
+			$nextCycle = $cycles->getCycleName($currentDate, true, true);
 		}
 ?>
 
@@ -125,7 +127,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-	
+
 	<!-- Page Head -->
 	<head>
 		<!-- Shared head content -->
@@ -168,7 +170,7 @@
 
 	<!-- Page Body -->
 	<body ng-app="HIGE-app">
-	
+
 		<!-- Shared Site Banner -->
 		<?php include '../include/site_banner.html'; ?>
 
@@ -182,24 +184,21 @@
 
 				<h1 ng-cloak ng-show="!isCreating" class="{{appStatus}}-background status-bar">Application Status: {{appStatus}}</h1>
 
-				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group"> 
+				<div ng-cloak ng-show="isAdmin || isAdminUpdating" class="buttons-group">
 					<button type="button" ng-click="toggleAdminUpdate()" class="btn btn-warning"><span class="glyphicon" ng-class="{'glyphicon-unchecked': isAdminUpdating, 'glyphicon-edit': !isAdminUpdating}" aria-hidden="true"></span>TURN {{isAdminUpdating ? "OFF" : "ON"}} ADMIN UPDATE MODE</button>
 					<button type="button" ng-click="populateForm(null)" class="btn btn-warning"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>RELOAD SAVED DATA</button>
 					<button type="button" ng-click="insertApplication()" class="btn btn-warning"><span class="glyphicon glyphicon-open" aria-hidden="true"></span>SUBMIT CHANGES</button>
-					<div class="delete-button-holder">
-						<button type="button" ng-click="deleteApplication()" class="btn btn-danger"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>DELETE APPLICATION</button>
-					</div>
 				</div>
 
 					<!-- application form -->
 				<form enctype="multipart/form-data" class="form-horizontal" id="applicationForm" name="applicationForm" ng-submit="submit()">
 
-					
+
 
 					<div class="row">
 						<h1 class="title">APPLICATION:</h1>
 					</div>
-					
+
 
 
 					<!--SUBMISSION CYCLE WARNING-->
@@ -207,7 +206,7 @@
 						<h3 class="title warning">WARNING! DO NOT SUBMIT APPLICATION AFTER THE MIDNIGHT OF A CYCLE'S DUE DATE! <br/>
 							<br/>If you do, your application will be automatically moved forward by one cycle!</h3>
 					</div>
-				
+
 
 
 					<!--SUBMISSION CYCLE-->
@@ -225,28 +224,28 @@
 									<label><input ng-disabled="appFieldsDisabled" type="radio" value="next" ng-model="formData.cycleChoice" name="cycleChoice">Submit For Next Cycle ({{nextCycle}})</label>
 									</div>
 								</div>
-								<span class="help-block" ng-show="errors.cycleChoice" aria-live="polite">{{ errors.cycleChoice }}</span> 
+								<span class="help-block" ng-show="errors.cycleChoice" aria-live="polite">{{ errors.cycleChoice }}</span>
 							</fieldset>
 						</div>
 						<div class="col-md-4"></div>
 					</div>
-				
-				
-				
+
+
+
 					<!--APPLICANT INFO-->
 					<div class="row">
 						<h2 class="title">Applicant Information:</h2>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 					<!--NAME-->
 						<div class="col-md-5">
 							<div class="form-group">
 								<label for="name">Name{{isCreating || isAdminUpdating ? " (Required) ("+(maxName-formData.name.length)+" characters remaining)" : ""}}:</label>
 								<input type="text" class="form-control" maxlength="{{maxName}}" ng-model="formData.name" ng-disabled="appFieldsDisabled" id="name" name="name" placeholder="Enter Name" />
-								<span class="help-block" ng-show="errors.name" aria-live="polite">{{ errors.name }}</span> 
+								<span class="help-block" ng-show="errors.name" aria-live="polite">{{ errors.name }}</span>
 							</div>
 						</div>
 					<!--EMAIL-->
@@ -254,20 +253,20 @@
 							<div class="form-group">
 								<label for="email">Email Address{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="email" class="form-control" ng-model="formData.email" ng-disabled="appFieldsDisabled" id="email" name="email" placeholder="Enter Email Address" />
-								<span class="help-block" ng-show="errors.email" aria-live="polite">{{ errors.email }}</span> 
+								<span class="help-block" ng-show="errors.email" aria-live="polite">{{ errors.email }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 					<!--DEPARTMENT-->
 					<div class="col-md-5">
 							<div class="form-group">
 								<label for="department">Department{{isCreating || isAdminUpdating ? " (Required) ("+(maxDepartment-formData.department.length)+" characters remaining)" : ""}}:</label>
 								<input type="text" class="form-control" maxlength="{{maxDepartment}}" ng-model="formData.department" ng-disabled="appFieldsDisabled" id="department" name="department" placeholder="Enter Department" />
-								<span class="help-block" ng-show="errors.department" aria-live="polite">{{ errors.department }}</span> 
+								<span class="help-block" ng-show="errors.department" aria-live="polite">{{ errors.department }}</span>
 							</div>
 						</div>
 					<!--DEPT CHAIR EMAIL-->
@@ -275,27 +274,27 @@
 							<div class="form-group">
 								<label for="deptChairEmail">Department Chair's WMU Email Address{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="email" class="form-control" ng-model="formData.deptChairEmail" ng-disabled="appFieldsDisabled" id="deptChairEmail" name="deptChairEmail" placeholder="Enter Department Chair's Email Address" />
-								<span class="help-block" ng-show="errors.deptChairEmail" aria-live="polite">{{ errors.deptChairEmail }}</span> 
+								<span class="help-block" ng-show="errors.deptChairEmail" aria-live="polite">{{ errors.deptChairEmail }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--RESEARCH INFO-->
 					<div class="row">
 						<h2 class="title">Travel Information:</h2>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 					<!--TRAVEL DATE FROM-->
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="travelFrom">Travel Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.travelFrom" ng-disabled="appFieldsDisabled" id="travelFrom" name="travelFrom" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.travelFrom" aria-live="polite">{{ errors.travelFrom }}</span> 
+								<span class="help-block" ng-show="errors.travelFrom" aria-live="polite">{{ errors.travelFrom }}</span>
 							</div>
 						</div>
 					<!--TRAVEL DATE TO-->
@@ -303,7 +302,7 @@
 							<div class="form-group">
 								<label for="travelTo">Travel Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.travelTo" ng-disabled="appFieldsDisabled" id="travelTo" name="travelTo" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.travelTo" aria-live="polite">{{ errors.travelTo }}</span> 
+								<span class="help-block" ng-show="errors.travelTo" aria-live="polite">{{ errors.travelTo }}</span>
 							</div>
 						</div>
 					<!--ACTIVITY DATE FROM-->
@@ -311,7 +310,7 @@
 							<div class="form-group">
 								<label for="activityFrom">Activity Date From{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.activityFrom"ng-disabled="appFieldsDisabled"  id="activityFrom" name="activityFrom" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.activityFrom" aria-live="polite">{{ errors.activityFrom }}</span> 
+								<span class="help-block" ng-show="errors.activityFrom" aria-live="polite">{{ errors.activityFrom }}</span>
 							</div>
 						</div>
 					<!--ACTIVITY DATE TO-->
@@ -319,20 +318,20 @@
 							<div class="form-group">
 								<label for="activityTo">Activity Date To{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="date" class="form-control" ng-model="formData.activityTo" ng-disabled="appFieldsDisabled" id="activityTo" name="activityTo" placeholder="yyyy-mm-dd" datepicker/>
-								<span class="help-block" ng-show="errors.activityTo" aria-live="polite">{{ errors.activityTo }}</span> 
+								<span class="help-block" ng-show="errors.activityTo" aria-live="polite">{{ errors.activityTo }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 					<!--TITLE-->
 						<div class="col-md-4">
 							<div class="form-group">
 								<label for="title">Project Title{{isCreating || isAdminUpdating ? " (Required) ("+(maxTitle-formData.title.length)+" characters remaining)" : ""}}:</label>
 								<input type="text" class="form-control" maxlength="{{maxTitle}}" ng-model="formData.title" ng-disabled="appFieldsDisabled" id="title" name="title" placeholder="Enter Title of Research" />
-								<span class="help-block" ng-show="errors.title" aria-live="polite">{{ errors.title }}</span> 
+								<span class="help-block" ng-show="errors.title" aria-live="polite">{{ errors.title }}</span>
 							</div>
 						</div>
 					<!--DESTINATION-->
@@ -340,7 +339,7 @@
 							<div class="form-group">
 								<label for="destination">Destination{{isCreating || isAdminUpdating ? " (Required) ("+(maxDestination-formData.destination.length)+" characters remaining)" : ""}}:</label>
 								<input type="text" class="form-control" maxlength="{{maxDestination}}" ng-model="formData.destination" ng-disabled="appFieldsDisabled" id="destination" name="destination" placeholder="Enter Destination" />
-								<span class="help-block" ng-show="errors.destination" aria-live="polite">{{ errors.destination }}</span> 
+								<span class="help-block" ng-show="errors.destination" aria-live="polite">{{ errors.destination }}</span>
 							</div>
 						</div>
 					<!--AMOUNT REQ-->
@@ -348,17 +347,17 @@
 							<div class="form-group">
 								<label for="amountRequested">Amount Requested($){{isCreating || isAdminUpdating ? " (Required)" : ""}}:</label>
 								<input type="text" class="form-control" ng-model="formData.amountRequested" ng-disabled="appFieldsDisabled" id="amountRequested" name="amountRequested" placeholder="Enter Amount Requested($)" onkeypress='return (event.which >= 48 && event.which <= 57) || event.which == 8 || event.which == 46' />
-								<span class="help-block" ng-show="errors.amountRequested" aria-live="polite">{{ errors.amountRequested }}</span> 
+								<span class="help-block" ng-show="errors.amountRequested" aria-live="polite">{{ errors.amountRequested }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--PURPOSES-->
 					<fieldset>
 					<legend>Purpose of Travel {{isCreating || isAdminUpdating ? " (Required)" : ""}}:</legend>
-					
+
 						<!--PURPOSE:RESEARCH-->
 						<div class="row">
 							<div class="col-md-12">
@@ -398,42 +397,42 @@
 								</div>
 							</div>
 						</div>
-					
-						<span class="help-block" ng-show="errors.purpose" aria-live="polite">{{ errors.purpose }}</span> 
+
+						<span class="help-block" ng-show="errors.purpose" aria-live="polite">{{ errors.purpose }}</span>
 					</fieldset>
-					
-					
+
+
 
 					<!--OTHER FUNDING-->
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="otherFunding">Are you receiving other funding? Who is providing the funds? How much?{{isCreating || isAdminUpdating ? " ("+(maxOtherFunding-formData.otherFunding.length)+" characters remaining)" : ""}}:</label>
-								<input type="text" class="form-control" maxlength="{{maxOtherFunding}}" ng-model="formData.otherFunding" ng-disabled="appFieldsDisabled" id="otherFunding" name="otherFunding" placeholder="Explain here" />	
-								<span class="help-block" ng-show="errors.otherFunding" aria-live="polite">{{ errors.otherFunding }}</span> 
+								<input type="text" class="form-control" maxlength="{{maxOtherFunding}}" ng-model="formData.otherFunding" ng-disabled="appFieldsDisabled" id="otherFunding" name="otherFunding" placeholder="Explain here" />
+								<span class="help-block" ng-show="errors.otherFunding" aria-live="polite">{{ errors.otherFunding }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--PROPOSAL SUMMARY-->
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="proposalSummary">Proposal Summary{{isCreating || isAdminUpdating ? " (Required) ("+(maxProposalSummary-formData.proposalSummary.length)+" characters remaining)" : ""}} (We recommend up to 150 words):</label>
 								<textarea class="form-control" maxlength="{{maxProposalSummary}}" ng-model="formData.proposalSummary" ng-disabled="appFieldsDisabled" id="proposalSummary" name="proposalSummary" placeholder="Enter Proposal Summary" rows="10"> </textarea>
-								<span class="help-block" ng-show="errors.proposalSummary" aria-live="polite">{{ errors.proposalSummary }}</span> 
+								<span class="help-block" ng-show="errors.proposalSummary" aria-live="polite">{{ errors.proposalSummary }}</span>
 							</div>
 						</div>
 					</div>
-					
-					
-					
+
+
+
 					<!--GOALS-->
 					<fieldset>
 					<legend>Please indicate which of the prioritized goals of the IEFDF this proposal fulfills{{isCreating || isAdminUpdating ? " (Required)" : ""}}:</legend>
-					
+
 						<!--GOAL 1-->
 						<div class="row">
 							<div class="col-md-12">
@@ -472,26 +471,26 @@
 							</div>
 						</div>
 
-						<span class="help-block" ng-show="errors.goal" aria-live="polite">{{ errors.goal }}</span> 
+						<span class="help-block" ng-show="errors.goal" aria-live="polite">{{ errors.goal }}</span>
 					</fieldset>
-					
-					
+
+
 					<!--BUDGET-->
 					<div class="row">
 						<h2 class="title">Budget{{isCreating || isAdminUpdating ? " (Required) (please separate room and board calculating per diem)" : ""}}:</h2>
 					</div>
-					
+
 					<div id="exampleBudgetHolder">
 						<button type="button" id="budgetExampleButton" data-toggle="collapse" class="btn btn-info" data-target="#budgetExample"><span class="glyphicon glyphicon-list" aria-hidden="true"></span>Click here for an example of how to construct a budget!</button>
 						<div id="budgetExample" class="collapse">
 							<img src="../images/BudgetExample.PNG" alt="Here is an example budget item: Expense: Registration Fee, Description: Conference Registration, Amount($): 450" class="exampleBudget" />
 						</div>
 					</div>
-					
+
 					<div class="row">
 						<div class="col-md-12">
 							<ol id="budgetList" class="list-group list-group-flush">
-								<li ng-repeat="budgetItem in formData.budgetItems" class="row list-group-item"> 
+								<li ng-repeat="budgetItem in formData.budgetItems" class="row list-group-item">
 								<!--BUDGET:EXPENSE-->
 									<div class="form-group col-md-4">
 										<label for="budgetExpense{{$index+1}}">Expense:</label>
@@ -522,8 +521,8 @@
 						</div>
 					</div>
 
-					
-					
+
+
 					<!--BUDGET:ADD NEW ITEM-->
 					<div class="row" ng-show="isCreating || isAdminUpdating">
 						<div class="col-md-3"></div>
@@ -532,9 +531,9 @@
 						</div>
 						<div class="col-md-3"></div>
 					</div>
-					
-					
-					
+
+
+
 					<!--BUDGET:TOTAL-->
 					<div class="row">
 						<div class="col-md-5"></div>
@@ -543,16 +542,16 @@
 						</div>
 						<div class="col-md-5"></div>
 					</div>
-					
-					
-					
+
+
+
 					<div class="row">
 						<h2 class="title">Attachments:</h2>
 						<h3 ng-show="isCreating || isReviewing || isAdminUpdating">Please Upload Documentation (Proposal Narrative, Conference Acceptance, Letter Of Invitation For Research, Etc.). The maximum allowed size for each file is {{maxUploadSize/1048576}}MB. </h3>
 					</div>
-					
-					
-					
+
+
+
 					<!--UPLOADS-->
 					<div class="row">
 						<div class="col-md-6">
@@ -575,7 +574,7 @@
 								</ul>
 							</div>
 						</div>
-						
+
 						<div class="col-md-6">
 							<div ng-cloak ng-show="isCreating || isReviewing || isAdminUpdating" class="uploadedList">
 								<hr>
@@ -598,8 +597,8 @@
 						</div>
 					</div>
 
-					
-					
+
+
 					<div class="row">
 					<!--DEPARTMENT CHAIR APPROVAL-->
 						<div class="col-md-3"></div>
@@ -645,8 +644,8 @@
 
 
 
+					<!--
 					<div class="row" ng-cloak ng-show="isAdmin || isApprover">
-					<!--EMAIL EDIT-->
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="approverEmail">EMAIL TO BE SENT:</label>
@@ -654,11 +653,93 @@
 							</div>
 						</div>
 					</div>
+					-->
 
 
 
+					<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
+						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
+					</div>
+
+
+
+					<!-- For admin to approve, hold, deny, or decline application -->
+					<div class="appDecisionBox" ng-show="isApprover || isAdmin">
+						<label for="appDecision">Select what to do with this application:</label>
+						<select ng-model="appDecision" id="appDecision" name="appDecision">
+							<option value=""></option>
+							<option value="Approve">Approve</option>
+							<option value="Hold">Put On Hold</option>
+							<option value="Deny">Deny</option>
+							<option value="Decline">Set As Declined</option>
+							<option value="Delete">Delete</option>
+						</select>
+
+						<div ng-show="appDecision === 'Approve'" class="approve-button-holder"> <!-- Administrator-only approve application button -->
+							<button type="submit" ng-click="submitFunction='approveApplication'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="approveAppEmailEnable" name="approveAppEmailEnable" id="approveAppEmailEnable" type="checkbox" value="approveAppEmailEnable">Send Email Upon Approval</label>
+							</div>
+							<div class="form-group" ng-show="approveAppEmailEnable">
+								<label for="approveAppEmail">Approval Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="approveAppEmail" ng-disabled="!approveAppEmailEnable" id="approveAppEmail" name="approveAppEmail" placeholder="Enter approval email to be sent to the application owner"></textarea>
+							</div>
+						</div>
+
+						<div ng-show="appDecision === 'Hold'" class="hold-button-holder"> <!-- Administrator-only hold application button -->
+							<button type="submit" ng-click="submitFunction='holdApplication'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="holdAppEmailEnable" name="holdAppEmailEnable" id="holdAppEmailEnable" type="checkbox" value="holdAppEmailEnable">Send Email Upon Holding</label>
+							</div>
+							<div class="form-group" ng-show="holdAppEmailEnable">
+								<label for="holdAppEmail">On Hold Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="holdAppEmail" ng-disabled="!holdAppEmailEnable" id="holdAppEmail" name="holdAppEmail" placeholder="Enter hold email to be sent to the application owner"></textarea>
+							</div>
+						</div>
+
+						<div ng-show="appDecision === 'Deny'" class="deny-button-holder"> <!-- Administrator-only deny application button -->
+							<button type="submit" ng-click="submitFunction='denyApplication'" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>DENY APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="denyAppEmailEnable" name="denyAppEmailEnable" id="denyAppEmailEnable" type="checkbox" value="denyAppEmailEnable">Send Email Upon Denial</label>
+							</div>
+							<div class="form-group" ng-show="denyAppEmailEnable">
+								<label for="denyAppEmail">Denial Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="denyAppEmail" ng-disabled="!denyAppEmailEnable" id="denyAppEmail" name="denyAppEmail" placeholder="Enter denial email to be sent to the application owner"></textarea>
+							</div>
+						</div>
+
+						<div ng-show="appDecision === 'Decline'" class="decline-button-holder"> <!-- Administrator-only decline application button -->
+							<button type="submit" ng-click="submitFunction='declineApplication'" class="btn btn-warning"><span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>DECLINE APPLICATION FOR OWNER</button>
+
+							<div class="checkbox">
+								<label><input ng-model="declineAppEmailEnable" name="declineAppEmailEnable" id="declineAppEmailEnable" type="checkbox" value="declineAppEmailEnable">Send Email Upon Declining</label>
+							</div>
+							<div class="form-group" ng-show="declineAppEmailEnable">
+								<label for="declineAppEmail">Declinal Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="declineAppEmail" ng-disabled="!declineAppEmailEnable" id="declineAppEmail" name="declineAppEmail" placeholder="Enter declinal email to be sent to the application owner"></textarea>
+							</div>
+						</div>
+
+						<div ng-show="appDecision === 'Delete'" class="delete-button-holder"> <!-- Administrator-only delete application button -->
+							<button type="submit" ng-click="submitFunction='deleteApplication'" class="btn btn-danger"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>DELETE APPLICATION</button>
+
+							<div class="checkbox">
+								<label><input ng-model="deleteAppEmailEnable" name="deleteAppEmailEnable" id="deleteAppEmailEnable" type="checkbox" value="deleteAppEmailEnable">Send Email Upon Deletion</label>
+							</div>
+							<div class="form-group" ng-show="deleteAppEmailEnable">
+								<label for="deleteAppEmail">Deletion Email (Contact info will be automatically appended):</label>
+								<textarea class="form-control" rows="8" ng-model="deleteAppEmail" ng-disabled="!deleteAppEmailEnable" id="deleteAppEmail" name="deleteAppEmail" placeholder="Enter deletion email to be sent to the application owner"></textarea>
+							</div>
+						</div>
+					</div>
+
+
+
+					<!-- Amount awarded -->
 					<div class="row" ng-cloak ng-show="!isCreating">
-					<!--AMOUNT AWARDED-->
 						<div class="col-md-5"></div>
 						<div class="col-md-2">
 							<div class="form-group">
@@ -671,17 +752,8 @@
 
 
 
-					<div class="alert alert-{{alertType}} alert-dismissible" ng-class="{hideAlert: !alertMessage}">
-						<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
-					</div>
-
-
-
-					<div class="buttons-group bottom-buttons"> 
+					<div class="buttons-group bottom-buttons">
 						<button ng-show="isCreating" type="submit" ng-click="submitFunction='insertApplication'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>SUBMIT APPLICATION</button> <!-- For applicant submitting for first time -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='approveApplication'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button> <!-- For approver or admin approving -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='holdApplication'" class="btn btn-primary"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>HOLD APPLICATION</button> <!-- For approver or admin holding -->
-						<button ng-show="isApprover || isAdmin" type="submit" ng-click="submitFunction='denyApplication'" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>DENY APPLICATION</button> <!-- For approver or admin denying -->
 						<button ng-show="isChair" type="submit" ng-click="submitFunction='chairApproval'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>APPROVE APPLICATION</button> <!-- For department chair approving -->
 						<button ng-show="isReviewing" type="submit" ng-click="submitFunction='uploadFiles'" class="btn btn-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>UPLOAD DOCS</button> <!-- For applicant reviewing application -->
 						<a href="" class="btn btn-info" ng-click="redirectToHomepage(null, null)"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
@@ -690,7 +762,7 @@
 
 			</div>
 
-		</div>	
+		</div>
 
 		<!-- Shared Site Footer -->
 		<?php include '../include/site_footer.php'; ?>

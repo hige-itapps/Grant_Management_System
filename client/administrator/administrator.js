@@ -37,7 +37,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?add_admin',
-            data    : $.param({broncoNetID: $scope.addAdminID, name: $scope.addAdminName}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify($scope.addAdminID), name: JSON.stringify($scope.addAdminName)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -76,7 +76,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?add_committee_member',
-            data    : $.param({broncoNetID: $scope.addCommitteeID, name: $scope.addCommitteeName}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify($scope.addCommitteeID), name: JSON.stringify($scope.addCommitteeName)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -115,7 +115,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?add_application_approver',
-            data    : $.param({broncoNetID: $scope.addApplicationApproverID, name: $scope.addApplicationApproverName}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify($scope.addApplicationApproverID), name: JSON.stringify($scope.addApplicationApproverName)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -154,7 +154,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?add_final_report_approver',
-            data    : $.param({broncoNetID: $scope.addFinalReportApproverID, name: $scope.addFinalReportApproverName}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify($scope.addFinalReportApproverID), name: JSON.stringify($scope.addFinalReportApproverName)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -201,7 +201,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?remove_admin',
-            data    : $.param({broncoNetID: id}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify(id)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -240,7 +240,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?remove_committee_member',
-            data    : $.param({broncoNetID: id}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify(id)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -279,7 +279,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?remove_application_approver',
-            data    : $.param({broncoNetID: id}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify(id)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -318,7 +318,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
         $http({
             method  : 'POST',
             url     : '../api.php?remove_final_report_approver',
-            data    : $.param({broncoNetID: id}),  // pass in data as strings
+            data    : $.param({broncoNetID: JSON.stringify(id)}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {
@@ -462,7 +462,7 @@ myApp.controller('adminCtrl', function($scope, $http) {
             $http({
                 method  : 'POST',
                 url     : '../api.php?save_site_warning',
-                data    : $.param({siteWarning: $scope.siteWarning}),  // pass in data as strings
+                data    : $.param({siteWarning: JSON.stringify($scope.siteWarning)}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
@@ -513,7 +513,3 @@ myApp.controller('adminCtrl', function($scope, $http) {
     };
 
 });
-
-
-
-

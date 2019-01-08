@@ -1,10 +1,10 @@
 <?php
 	/*User validation*/
 	include_once(dirname(__FILE__) . "/../../CAS/CAS_login.php");
-	
+
 	/*Get DB connection*/
 	include_once(dirname(__FILE__) . "/../../server/DatabaseHelper.php");
-	
+
 	/*Cycle functions*/
 	include_once(dirname(__FILE__) . "/../../server/Cycles.php");
 
@@ -43,7 +43,7 @@
 		}
 
 		$appCycles = []; //array to hold all app cycles as strings
-		
+
 		foreach($apps as $curApp)
 		{
 			//If this is a user's own application and they are allowed, let them create a final report
@@ -63,7 +63,7 @@
 
 			$curApp->pastApprovedCycles = $database->getPastApprovedCycles($curApp->broncoNetID); //save the previously approved cycles for this user
 		}
-		
+
 		$appCycles = $cycles->sortCycles($appCycles); //sort cycles in descending order
 ?>
 
@@ -78,7 +78,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-	
+
 	<!-- Page Head -->
 	<head>
 		<!-- Shared head content -->
@@ -154,6 +154,7 @@
 								<option value="Pending">Pending</option>
 								<option value="Denied">Denied</option>
 								<option value="Hold">Hold</option>
+								<option value="Declined">Declined</option>
 							</select>
 						</div>
 					</div>
@@ -203,7 +204,7 @@
 					<button type="button" title="Close this alert." class="close" aria-label="Close" ng-click="removeAlert()"><span aria-hidden="true">&times;</span></button>{{alertMessage}}
 				</div>
 
-				<div class="buttons-group bottom-buttons"> 
+				<div class="buttons-group bottom-buttons">
 					<button type="button" ng-click="exportExcelSheet()" class="btn btn-success"><span class="glyphicon glyphicon-save" aria-hidden="true"></span>DOWNLOAD SUMMARY SHEET</button> <!-- For anyone to download excel sheet of current data -->
 					<a href="../home/home.php" class="btn btn-info"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>LEAVE PAGE</a> <!-- For anyone to leave the page -->
 				</div>

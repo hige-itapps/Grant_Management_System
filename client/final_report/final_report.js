@@ -17,6 +17,17 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
     $scope.isFinalReportApprover = scope_isFinalReportApprover;
     //previous application data
     var app = var_app;
+    if(app != null){
+        if($scope.isAdmin || $scope.isFinalReportApprover){//if user is an admin or approver, initialize the default emails for approval/holding
+            //set admin email checkboxes to true by default
+            $scope.approveReportEmailEnable = true;
+            $scope.holdReportEmailEnable = true;
+
+            $scope.approveReportEmail = "Dear " + app.name + ",\nWe are pleased to inform you that your final report on our site at iefdf.wmich.edu has been approved.";
+
+            $scope.holdReportEmail = "Dear " + app.name + ",\nYour final report on our site at iefdf.wmich.edu has been temporarily place on hold. This was likely due to lacking and/or incorrect information.";
+        }
+    }
     //for when not creating report
     var report = var_report;
     if(report != null){
@@ -62,7 +73,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
                             var ngModelName = this.attributes['ng-model'].value;
 
-                            // if value for the specified ngModel is a property of 
+                            // if value for the specified ngModel is a property of
                             // another object on the scope
                             if (ngModelName.indexOf(".") != -1) {
                                 var objAttributes = ngModelName.split(".");
@@ -88,15 +99,15 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
 
 
-    
+
 
     /*Functions*/
 
     //submit the report - use a different function depending on the submitFunction variable
     $scope.submit = function(){
         if($scope.submitFunction === 'insertReport'){$scope.insertReport();}
-        else if($scope.submitFunction === 'approveReport'){$scope.approveReport('Approved');}
-        else if($scope.submitFunction === 'holdReport'){$scope.approveReport('Hold');}
+        else if($scope.submitFunction === 'approveReport'){$scope.approveReport('Approved', $scope.approveReportEmail, $scope.approveReportEmailEnable);}
+        else if($scope.submitFunction === 'holdReport'){$scope.approveReport('Hold', $scope.holdReportEmail, $scope.holdReportEmailEnable);}
         else if($scope.submitFunction === 'uploadFiles'){$scope.uploadFiles();}
     }
 
@@ -187,7 +198,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
                 $scope.formData.deptChairApproval = existingReport.deptChairApproval;
                 $scope.formData.amountAwarded = existingReport.amountAwarded;
-                
+
                 $scope.reportFiles = existingReport.reportFiles;//refresh the associated files
 
                 existingReport.reportEmails.forEach(function (email){ //iterate over sent emails
@@ -223,7 +234,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             {
                 //a warning for missing files
                 if(totalDocs === 0)
-                {  
+                {
                     if(!confirm( "Warning: you have not selected any files to upload with your final report. Are you sure you want to submit anyway?")) {return;} //exit function early if not confirmed
                 }
             }
@@ -261,7 +272,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                      $scope.errors = []; //clear any old errors
                      var newAlertType = null;
                      var newAlertMessage = null;
- 
+
                      if(response.data.fileSuccess)
                      {
                          newAlertType = "success";
@@ -305,9 +316,9 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
 
 
     //approve or hold report with the status parameter
-    $scope.approveReport = function(status){
+    $scope.approveReport = function(status, emailMessage, sendEmail){
 
-        if(confirm ("By confirming, your email will be sent to the applicant! Are you sure you want to set this report's status to " + status + "?"))
+        if(confirm ("Are you sure you want to set this report's status to " + status + "? If specified, an email will also be sent to the applicant."))
         {
             //start a loading alert
             $scope.loadingAlert();
@@ -315,7 +326,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
             $http({
                 method  : 'POST',
                 url     : '../api.php?approve_final_report',
-                data    : $.param({appID: app.id, status: status, emailAddress: $scope.formData.email, emailMessage: $scope.formData.approverEmail}),  // pass in data as strings
+                data    : $.param({appID: JSON.stringify(app.id), status: JSON.stringify(status), emailAddress: JSON.stringify($scope.formData.email), emailMessage: JSON.stringify(emailMessage), sendEmail: JSON.stringify(sendEmail)}),  // pass in data as strings
                 headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
             })
             .then(function (response) {
@@ -324,23 +335,30 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
                 {
                     if(response.data.success === true)//updated
                     {
-                        if(response.data.email.saveSuccess === true) //email saved correctly
+                        if(sendEmail)//only check email status if email was specified
                         {
-                            if(response.data.email.sendSuccess === true) //email was sent correctly
+                            if(response.data.email.saveSuccess === true) //email saved correctly
                             {
-                                $scope.alertType = "success";
-                                $scope.alertMessage = "Success! The report's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                                if(response.data.email.sendSuccess === true) //email was sent correctly
+                                {
+                                    $scope.alertType = "success";
+                                    $scope.alertMessage = "Success! The report's status has been updated to: \"" + status + "\". The email was successfully saved and sent out to the applicant.";
+                                }
+                                else
+                                {
+                                    $scope.alertType = "warning";
+                                    $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
+                                }
                             }
                             else
                             {
                                 $scope.alertType = "warning";
-                                $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", and the email was saved, but it could not be sent out to the applicant: " + response.data.email.sendError;
+                                $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
                             }
                         }
-                        else
-                        {
-                            $scope.alertType = "warning";
-                            $scope.alertMessage = "Warning: The report's status was successfully updated to: \"" + status + "\", but the email was neither saved nor sent out to the applicant.";
+                        else{
+                            $scope.alertType = "success";
+                            $scope.alertMessage = "Success! The report's status has been updated to: \"" + status + "\".";
                         }
                     }
                     else//didn't update

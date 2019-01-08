@@ -37,7 +37,7 @@ class EmailHelper
 	/* Constructior retrieves configurations and initializes private vars */
 	public function __construct($logger){
 		$this->thisLocation = dirname(__FILE__).DIRECTORY_SEPARATOR.basename(__FILE__);
-		
+
 		$this->logger = $logger;
 		$config_url = dirname(__FILE__).'/../config.ini'; //set config file url
 		$settings = parse_ini_file($config_url); //get all settings		
@@ -50,7 +50,7 @@ class EmailHelper
 
 		$this->defaultSubject = "IEFDF Application Update";
 		$this->customFooter = "
-		
+
 		<strong>Please do not reply to this email, this account is not being monitored.
 		If you need more information, please contact the IEFDF administrator (michelle.metro-roland@wmich.edu or 387-3908).</strong>";
 	}
@@ -94,7 +94,7 @@ class EmailHelper
 				//Recipients
 				$mail->setFrom($this->mailAddress, 'Mailer');
 				$mail->addReplyTo($this->mailNoReply, 'No-Reply');
-					
+
 				//Content
 				$mail->isHTML(true);                                  // Set email format to HTML
 				$mail->addAddress($toAddress);
@@ -130,7 +130,7 @@ class EmailHelper
 	public function chairApprovalEmail($appID, $toAddress, $applicantName, $applicantEmail, $CASbroncoNetID){
 		$subject = "IEFDF Application - Chair Approval Required";
 
-		$body = "Dear Department Chair, 
+		$body = "Dear Department Chair,
 			Your approval is needed for an IEFDF application for #name (#email). Your name confirms that the applicant is part of the bargaining unit and is therefore eligible to receive IEFDF funds. Directions:
 
 			1. Go to the IEFDF website at iefdf.wmich.edu
@@ -146,7 +146,7 @@ class EmailHelper
 			6. Click the 'Approve Application' button
 
 			If there are no errors, you should then be redirected to the homepage with a confirmation message. You can go back to the site at any point to review applications that you have approved.
-			
+
 			Best Regards, Dr. Michelle Metro-Roland";
 		$body = str_replace("#name", nl2br($applicantName), $body); //insert the applicant's name into the message
 		$body = str_replace("#email", nl2br($applicantEmail), $body); //insert the applicant's email into the message
@@ -154,5 +154,5 @@ class EmailHelper
 		return $this->customEmail($appID, $toAddress, $body, $subject, $CASbroncoNetID);
 	}
 }
-	
+
 ?>
