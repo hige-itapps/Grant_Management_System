@@ -142,13 +142,11 @@ DROP TABLE IF EXISTS `emails`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `emails` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `ApplicationID` int(11) NOT NULL,
+  `ApplicationID` int(11) DEFAULT NULL,
   `Subject` varchar(100) NOT NULL,
   `Message` text NOT NULL,
   `Time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`ID`),
-  KEY `fk_emails_applications_id_idx` (`ApplicationID`),
-  CONSTRAINT `fk_emails_applications_id` FOREIGN KEY (`ApplicationID`) REFERENCES `applications` (`ID`)
+  PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
