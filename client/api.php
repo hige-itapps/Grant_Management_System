@@ -29,8 +29,8 @@ $returnVal = []; //initialize return value as empty. If there is an error, it is
 //for downloading files, uses GET parameters for appID and filename
 if (array_key_exists('download_file', $_GET)) {
     if(isset($_GET["appID"]) && isset($_GET["filename"])){
-        $appID = json_decode($_GET["appID"]);
-        $file = json_decode($_GET["filename"]);
+        $appID = $_GET["appID"];
+        $file = $_GET["filename"];
 
         /*Verify that user is allowed to see this file*/
         if($database->isUserAllowedToSeeApplications($CASbroncoNetID) || $database->doesUserOwnApplication($CASbroncoNetID, $appID) || $database->isUserDepartmentChair($CASemail, $appID, $CASbroncoNetID)){
