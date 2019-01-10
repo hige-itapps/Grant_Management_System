@@ -672,7 +672,7 @@
 							<option value="Hold">Put On Hold</option>
 							<option value="Deny">Deny</option>
 							<option value="Decline">Set As Declined</option>
-							<option value="Delete">Delete</option>
+							<option ng-show="isAdmin" value="Delete">Delete</option>
 						</select>
 
 						<div ng-show="appDecision === 'Approve'" class="approve-button-holder"> <!-- Administrator-only approve application button -->
