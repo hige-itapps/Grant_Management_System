@@ -394,7 +394,7 @@ higeApp.controller('reportCtrl', ['$scope', '$http', '$sce', '$filter', function
         $http({
             method  : 'POST',
             url     : '../api.php?save_note',
-            data    : $.param({appID: app.id, note: $scope.staffNotes[1]}),  // pass in data as strings
+            data    : $.param({appID: JSON.stringify(app.id), note: JSON.stringify($scope.staffNotes[1])}),  // pass in data as strings
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
         .then(function (response) {

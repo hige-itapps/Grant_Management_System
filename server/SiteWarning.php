@@ -12,7 +12,7 @@ class SiteWarning
 	public function __construct($database){
 		$this->siteWarning = $database->getSiteWarning();
 	}
-	
+
 	/*Render the site warning banner if the warning exists*/
 	public function showIfExists()
 	{
